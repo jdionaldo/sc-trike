@@ -10,9 +10,11 @@ K = 370.0 / 250.0
 X0, Z0 = -337.0, -59.2
 S = 0.523
 TOP = [(52, 46), (73, 64), (111, 69), (141, 69), (163, 67), (189, 56), (215, 51), (246, 41)]
-BOT = [(52, 33), (87, 21), (115, 14), (163, 11.5), (195, 12), (225, 22), (242, 34), (246, 38)]
+BOT = [(52, 33), (87, 21), (115, 14), (163, 11.5), (195, 12), (225, 20), (242, 27), (246, 30)]
 HW = [(52, 28), (76, 44), (100, 55), (143, 47), (182, 43), (188, 49), (219, 38), (235, 27), (246, 14)]
-STATIONS = [52, 62, 76, 100, 120, 141, 163, 182, 189, 205, 219, 235, 246]
+STATIONS = [52, 62, 76, 100, 111, 120, 141, 163, 181, 189, 205, 219, 235, 246]
+RW = [(52, 0.55), (98, 0.55), (111, 0.30), (181, 0.30), (192, 0.62), (246, 0.62)]      # roof half-width fraction
+SD = [(52, 0.22), (98, 0.22), (111, 0.40), (181, 0.40), (192, 0.20), (246, 0.18)]      # shoulder drop fraction of h
 
 
 def interp(table, d):
@@ -26,7 +28,8 @@ def ring(d):
     w, zt, zb = K * interp(HW, d), K * interp(TOP, d) + Z0, K * interp(BOT, d) + Z0
     h = zt - zb
     x = K * d + X0
-    half = [(0.0, zt), (0.42 * w, zt - 0.02 * h), (0.82 * w, zt - 0.30 * h), (w, zb + 0.46 * h),
+    rw, sd = interp(RW, d), interp(SD, d)
+    half = [(0.0, zt), (rw * w, zt - 0.015 * h), (0.86 * w, zt - sd * h), (w, zb + 0.44 * h),
             (0.88 * w, zb + 0.16 * h), (0.58 * w, zb), (0.0, zb)]
     left = [(x, -y, z) for y, z in half[1:-1]]
     right = [(x, y, z) for y, z in reversed(half[1:-1])]
@@ -79,8 +82,14 @@ def build():
         n = p.normal
         if abs(n.y) > 0.35:                      # flank: the traced side panels decide
             yel = any(inside(pl, px, py) for pl in polys)
-        elif n.z > 0.35:                         # top: yellow hood and rear deck, black glass between
-            yel = d >= 192 or d <= 98
+        elif n.z > 0.5:                          # top: yellow hood and rear deck, black glass between
+            wd = K * interp(HW, d)
+            if 98 < d < 192 and abs(c.y) / wd < 0.5:
+                yel = False
+            elif d >= 192 or d <= 98:
+                yel = True
+            else:
+                yel = any(inside(pl, px, py) for pl in polys)
         else:                                    # belly and undersides
             yel = False
         p.material_index = 0 if yel else 1
@@ -119,3 +128,4 @@ if __name__ == "__main__":
     render("side", (-100, -900, -10), (math.pi / 2, 0, 0), ortho=480)
     render("iso", (350, -520, 260), (math.radians(68), 0, math.radians(32)))
     render("top", (-100, 0, 900), (0, 0, 0), ortho=480)
+    render("front", (900, 0, 0), (math.pi / 2, 0, math.pi / 2), ortho=300)
