@@ -1,0 +1,7 @@
+.venv/
+out/
+__pycache__/
+.pytest_cache/
+*.sc
+*.bak
+ws02/refs/
