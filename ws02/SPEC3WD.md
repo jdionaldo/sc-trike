@@ -38,3 +38,9 @@ Stages
 - Zero interference over lean -30..+30 deg in 5 deg steps, each with steer 0, +17 and -17 (39 poses), both tie rods solved in all of them.
 - Both wheels steer the same way (rotation about +z for both).
 - Not yet checked: 1 mm clearance to bought parts, belts/pulleys/dogbone as solids, cantilevered kingpin strength, arm cover vs shell, ground clearance of the knuckle web (z -29 vs ground -41.5).
+
+## S3 drivetrain decisions
+- Tires: skinny off-road 83 x 24 front, thick big off-road 112 x 62 rear.
+- Rake: chassis pitched nose-down 4 deg, so the platform rises toward the rear middle. In the chassis frame the rear axle sits 8.6 mm below the swingarm pivot (arm points down 6 deg) and the drivetrain axes stay level at the front axle height.
+- Gearing: motor 15T to centre diff ring 45T (module 0.8, centre distance 24 mm), 3:1. One bevel set for both ends, module 1.0, 12T pinion / 30T ring, 2.5:1. Front belt 22T to 18T (0.82), rear belt 20T to 22T (1.1). Target 8.2:1 rear, 6.1:1 front (front tire is smaller). Top speed about 34 km/h at 3S.
+- Layout: front diff axis (arm pivots) at x -100, ring on its +y end; bevel pinion shaft level with the diff axis, y +18.5, running back to the centre diff (axis along x, y +18.5). Motor above the centre diff (z +24), 15T pinion meshing its ring. Rear shaft continues back to the rear bevel set at x -250, whose lateral output is the rear swingarm pivot. ESC above the shaft, battery in the nose bay.
