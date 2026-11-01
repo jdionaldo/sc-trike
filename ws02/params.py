@@ -270,6 +270,20 @@ class Params:
     batt_bay: tuple = (-108.0, -42.0)    # tray centring, kept clear of the link anchors
     hex_af: float = 12.0                 # wheel hex drive across flats (UNVERIFIED)
     hub_len: float = 12.0
+    motor_pad_dia: float = 24.0          # motor face pad on the cradle's left wall
+    esc_l: float = 38.0                  # 60 A ESC envelope (bought), lies along x behind the motor
+    esc_w: float = 46.0
+    esc_h: float = 33.0
+    esc_x: float = -111.0
+    esc_z: float = 8.5
+    motor_flange_t: float = 3.0
+    motor_boss_len: float = 1.9
+    motor_bore_dia: float = 6.0          # shaft bore through pad, wall and boss
+    m25_clear: float = 2.7
+    m25_head: float = 4.4                # M2.5 pan head counterbore in the wall's outer face
+    rear_axle_dia: float = 8.0           # cantilevered rear axle (single-sided swingarm)
+    rear_bearing_od: float = 16.0        # 8 x 16 x 5 bearing in the arm's outer wall
+    rear_bearing_w: float = 5.0
     set_screw_pilot: float = 1.6         # M2 tap pilot
 
     # ---- body panels (chassis frame; flat plates, yellow upper, black lower) ----
@@ -408,7 +422,7 @@ _KEEP = {"scale", "bed_x", "bed_y", "bed_z", "overhang_max_deg", "overhang_fail_
          "ch_key_socket", "ch_key_socket_depth", "ch_pin_dia", "servo_tab_pilot", "servo_ear_insert_depth",
          "sw_cup_depth", "sw_cbore_depth", "sw_vent_dia", "sw_shim_slot_t", "sw_gear_clr", "sw_motor_clr",
          "gear_module", "front_axle_dia", "ch_ear_socket_depth", "pu_dia", "pu_len", "pu_shaft_dia", "pu_shaft_len",
-         "servo_l", "servo_w", "servo_h", "servo_ear_span", "servo_shaft_offset", "br_pilot_depth"}
+         "esc_l", "esc_w", "esc_h", "esc_x", "esc_z", "motor_pad_dia", "motor_flange_t", "motor_boss_len", "motor_bore_dia", "m25_clear", "m25_head", "pu_mount_m25_pcd", "pu_mount_m3_pcd", "pu_mount_screw_depth", "pu_lead_bend_radius", "pu_lead_dia", "servo_l", "servo_w", "servo_h", "servo_ear_span", "servo_shaft_offset", "br_pilot_depth"}
 
 
 def _k(v):
@@ -429,7 +443,8 @@ _LEN = [f.name for f in dataclasses.fields(Params) if f.type in (float, tuple) a
 _FORCE = ["kingpin_gap", "sw_y_out_a", "sw_y_cavity_out", "sw_hatch_cone_h", "sw_vent_r", "sw_plate_r_axle", "sw_cup_dia",
           "ch_access_dia", "br_arm", "body_arch_r", "steer_arm_xyz", "link_anchor_bar_xyz"]
 _over = {n: _k(getattr(Params(), n)) for n in _LEN + _FORCE}
-_over.update(mass_total_g=1123.5, cg_height=61.1, sw_hatch_open=33.0, sw_hatch_cone_h=9.0, sw_hatch_flange=48.6, sw_screw_r=20.3, sw_hatch_flange_t=13.4, sw_hatch_depth=6.0, sw_vent_r=9.0, sw_shim_y=4.0, rear_tire_od=92.0, rear_tire_w=59.0, front_tire_od=77.0, front_tire_w=24.0, rear_hex=12.0)
+_over.update(ch_in_rear=31.0, sw_y_cavity_out=49.5, sw_y_tire_face=36.4, rear_axle_dia=8.0, rear_bearing_od=16.0, rear_bearing_w=5.0, ch_boss_dia=11.0,
+             mass_total_g=1123.5, cg_height=61.1, sw_hatch_open=33.0, sw_hatch_cone_h=9.0, sw_hatch_flange=48.6, sw_screw_r=20.3, sw_hatch_flange_t=13.4, sw_hatch_depth=6.0, sw_vent_r=9.0, sw_shim_y=4.0, rear_tire_od=92.0, rear_tire_w=59.0, front_tire_od=77.0, front_tire_w=24.0, rear_hex=12.0)
 _over.update(steer_arm_xyz=(-7.4, -19.79, -32.56), link_anchor_bar_xyz=(-50.11, 86.982, 9.844),
              coupling_link_len=61.172, shock_stroke=9.932,
              spring_rate_n_per_mm=1.339, shock_motion_ratio=0.7456,
@@ -445,10 +460,9 @@ _over.update(
     body_pod_w=86.0, body_band_w=70.0, body_band_x=(-57.0, -176.0), body_band_z=(-8.3, 2.0, 12.3), body_floor_z=-26.6,
     body_open_hw=62.0, body_open_x=-205.0, body_x_tail=-337.4, body_pod_windows=(),
     ch_body_keys_tub=((-80.0, -12.0), (-116.0, -6.0), (-150.0, 2.0)),
-    ch_body_keys_rear=((-185.3, 33.0), (-254.0, 20.0), (-255.0, -30.0)),
+    ch_body_keys_rear=((-190.0, 20.0), (-222.0, 28.0)),
     ch_profile=((-16.428, -29.6), (-16.428, 68.08), (-20.72, 68.08), (-20.72, 18.0), (-57.0, 24.0), (-96.0, 36.0),
                 (-112.0, 38.48), (-168.128, 38.48), (-168.128, -29.6)),
-    ch_rear_profile=((-176.416, -44.4), (-176.416, 38.5), (-260.48, 38.5), (-260.48, 40.0), (-281.2, 40.0),
-                     (-281.2, 33.0), (-260.48, 33.0), (-260.48, -44.4)),
+    ch_rear_profile=((-176.416, -44.4), (-176.416, 38.5), (-236.0, 38.5), (-236.0, -44.4)),
     ch_bulkheads=((-16.428, -8.14, 68.08), (-168.128, -159.84, 38.5)), ch_rear_bulkhead=(-176.416, -168.128, 38.5))
 P = dataclasses.replace(Params(), **_over)

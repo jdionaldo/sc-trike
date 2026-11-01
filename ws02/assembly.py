@@ -16,7 +16,7 @@ from scipy.optimize import brentq
 import kinematics as K
 from params import P
 from parts import body as body_parts
-from parts.swingarm import layout
+from parts.swingarm import layout, gear_planes
 
 STL = Path("out/stl")
 D2R = math.pi / 180.0
@@ -88,7 +88,6 @@ def print_to_local(name):
     y_tub = P.ch_in + P.ch_wall
     y_cra = P.ch_in_rear + P.ch_wall
     y0 = P.front_track / 2 - P.front_tire_w / 2 - P.hub_thick - P.hub_lug_len
-    y_step = -P.sw_y_out_a + P.sw_hatch_depth
     left = lambda y_out: M4([[1, 0, 0], [0, 0, -1], [0, 1, 0]], (0, y_out, 0))
     right = lambda y_out: M4([[1, 0, 0], [0, 0, 1], [0, -1, 0]], (0, -y_out, 0))
     bar = M4([[0, 0, 1], [1, 0, 0], [0, 1, 0]], (-P.bar_w / 2, 0, 0))
@@ -105,11 +104,8 @@ def print_to_local(name):
         "chassis_tub_right": right(y_tub),
         "chassis_cradle_left": left(y_cra),
         "chassis_cradle_right": right(y_cra),
-        "pivot_plate": M4([[-1, 0, 0], [0, 0, 1], [0, 1, 0]], (P.pivot_xz[0], -(y_cra + P.pp_t), P.pivot_xz[1])),
-        "swingarm_a": M4([[1, 0, 0], [0, 0, 1], [0, -1, 0]], (0, -P.sw_y_out_a, 0)),
-        "swingarm_b": M4([[1, 0, 0], [0, 0, -1], [0, 1, 0]], (0, P.sw_y_tire_face, 0)),
-        "swingarm_gearbox": M4([[1, 0, 0], [0, 0, -1], [0, 1, 0]], (0, P.sw_y_out_b, 0)),
-        "swingarm_hatch": M4([[1, 0, 0], [0, 0, -1], [0, 1, 0]], (0, y_step, 0)),
+        "motor_flange": M4([[1, 0, 0], [0, 0, 1], [0, -1, 0]], (P.pivot_xz[0], y_cra, P.pivot_xz[1])),
+        "swingarm_arm": M4([[1, 0, 0], [0, 0, -1], [0, 1, 0]], (0, P.sw_y_out_b, 0)),
         "rear_hub": M4([[-1, 0, 0], [0, 0, 1], [0, 1, 0]], (0, -P.hub_len / 2, 0)),
     }
     return table[name]
@@ -162,8 +158,7 @@ def scene(lean_deg=0.0, travel=0.0, lead=True, body=False):
     def add(name, mesh, kind="printed", group="chassis"):
         items.append(Item(name, mesh, kind, group))
 
-    for n in ("chassis_tub_left", "chassis_tub_right", "front_yoke", "chassis_cradle_left", "chassis_cradle_right",
-              "pivot_plate"):
+    for n in ("chassis_tub_left", "chassis_tub_right", "front_yoke", "chassis_cradle_left", "chassis_cradle_right"):
         add(n, place(n, print_to_local(n)))
 
     fe = front_end(phi)
@@ -214,21 +209,22 @@ def scene(lean_deg=0.0, travel=0.0, lead=True, body=False):
     def sw(name, mesh, kind="printed"):
         add(name, mesh.apply_transform(g), kind, "swingarm")
 
-    for n in ("swingarm_a", "swingarm_b", "swingarm_gearbox", "swingarm_hatch"):
-        sw(n, place(n, print_to_local(n)))
-    sw("POWER_UNIT", cyl_y((0, 0, 0), P.pu_dia / 2, -P.pu_len / 2, P.pu_len / 2), "bought")
-    p1, p2 = (P.sw_y_cavity_out - 5.2, P.sw_y_cavity_out - 0.2), (P.sw_y_cavity_out - 10.2, P.sw_y_cavity_out - 5.2)
-    sw("GEAR_PINION_1", cyl_y((0, 0, 0), L["r_pin1"], *p1), "bought")
-    sw("GEAR_1", cyl_y((L["I"][0], 0, L["I"][1]), L["r_gear1"], *p1), "bought")
-    sw("GEAR_PINION_2", cyl_y((L["I"][0], 0, L["I"][1]), L["r_pin2"], *p2), "bought")
-    sw("GEAR_2", cyl_y((L["A"][0], 0, L["A"][1]), L["r_gear2"], *p2), "bought")
-    sw("AXLE_REAR", cyl_y((L["A"][0], 0, L["A"][1]), P.axle_dia / 2, -P.sw_y_out_a + 1.5, P.sw_y_cavity_out + 1.0), "bought")
+    sw("swingarm_arm", place("swingarm_arm", print_to_local("swingarm_arm")))
+    add("motor_flange", place("motor_flange", print_to_local("motor_flange")), "printed", "chassis")
+    y_face = P.ch_in_rear
+    add("POWER_UNIT", cyl_y((mx, 0, mz), P.pu_dia / 2, y_face - P.pu_len, y_face), "bought", "chassis")
+    add("POWER_UNIT_SHAFT", cyl_y((mx, 0, mz), P.pu_shaft_dia / 2, y_face, y_face + P.pu_shaft_len), "bought", "chassis")
+    (s0, s1), (b0, b1) = gear_planes(P)
+    sw("GEAR_PINION_1", cyl_y((0, 0, 0), L["r_pin1"], s0, s1), "bought")
+    sw("GEAR_1", cyl_y((L["I"][0], 0, L["I"][1]), L["r_gear1"], s0, s1), "bought")
+    sw("GEAR_PINION_2", cyl_y((L["I"][0], 0, L["I"][1]), L["r_pin2"], b0, b1), "bought")
+    sw("GEAR_2", cyl_y((L["A"][0], 0, L["A"][1]), L["r_gear2"], b0, b1), "bought")
+    sw("AXLE_REAR", cyl_y((L["A"][0], 0, L["A"][1]), P.rear_axle_dia / 2, -P.rear_tire_w / 2 - 3.0, P.sw_y_out_b + 1.0), "bought")
     sw("SHAFT_INTERMEDIATE", cyl_y((L["I"][0], 0, L["I"][1]), P.pin_dia / 2, P.sw_y_tire_face, P.sw_y_cavity_out + 1.0), "bought")
     sw("REAR_TIRE_WHEEL", cyl_y((L["A"][0], 0, L["A"][1]), P.rear_tire_od / 2, -P.rear_tire_w / 2, P.rear_tire_w / 2), "bought")
     sw("rear_hub", place("rear_hub", T(L["A"][0], 0, L["A"][1]) @ print_to_local("rear_hub")))
-    if lead:
-        for i, (name, mesh) in enumerate(lead_segments(g)):
-            add(name, mesh, "bought", "swingarm" if i < 2 else "chassis")
+    esc_x = P.esc_x
+    add("ESC", box((esc_x, 0, P.esc_z), (P.esc_l, P.esc_w, P.esc_h)), "bought", "chassis")
     if body:
         items.extend(body_items())
     return items

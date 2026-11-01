@@ -1,12 +1,8 @@
-"""Two-half clamshell swingarm around the 2-in-1 power unit, split on the y = 0 plane.
+"""Single-sided swingarm: one left-hand plate that carries the gear and belt train and the cantilevered rear axle.
 
-Swingarm frame: origin on the motor axis (also the swing pivot), x forward, y along the axle (left positive), z up.
-Left is +y. The motor tail faces -y (the right side); its leads leave through a radial slot toward +x and the motor
-is withdrawn through the hatch opening on the -y arm.
-Print frames (proper rotations, outer face on the bed, split face up):
-  half B (left block, ends at the tire face): (u, v, w) = (x, z, y_tire_face - y)
-  gearbox (left arm plate): same mapping with y_out_b
-  half A (right, -y):  (u, v, w) = (x, -z, y + y_out_a)
+The 2830 motor is fixed in the cradle; the arm pivots about the motor shaft axis on a boss that stands out of the cradle's
+left wall. Swingarm frame: origin on the motor axis, x forward, y along the axle (left positive), z up.
+Print frame (proper rotation, outer face on the bed, gear cavity open upward): (u, v, w) = (x, z, y_out - y).
 """
 import math
 
@@ -38,93 +34,38 @@ def hull_xy(circles, n=24):
     return pts[ConvexHull(pts).vertices]
 
 
-def _split_screws(p):
-    s = p.sw_split_screw
-    return [(sx, sz) for sx in (-s, s) for sz in (-s, s)]
+def gear_planes(p):
+    """y ranges of the spur plane (pinion and 60T) and the belt plane (pulleys), outboard of the cradle wall."""
+    y0 = p.sw_y_tire_face + 2.6
+    return (y0, y0 + 4.0), (y0 + 4.5, y0 + 8.5)
 
 
-def half_a(p):
-    L = layout(p)
-    f = Frame(-1, p.sw_y_out_a)
-    part = Part("swingarm_a", "outer face on bed, split face up, motor pocket vertical", "PETG-CF")
-    b = p.sw_block_half
-    f.box(part, (-b, b), (-p.sw_y_out_a, 0.0), (-b, b))
-    f.poly(part, hull_xy([(L["M"], p.sw_plate_r_pivot), (L["A"], p.sw_plate_r_axle)]), (-p.sw_y_out_a, -p.sw_y_tire_face))
-    ang = math.radians(p.swing_lug_deg)
-    lug = (p.swing_lug_r * math.cos(ang), p.swing_lug_r * math.sin(ang))
-    f.poly(part, hull_xy([(L["M"], p.sw_plate_r_pivot * 0.6), (lug, 5.0)]), (-p.sw_y_out_a, -p.sw_y_tire_face))
-
-    y_step = -p.sw_y_out_a + p.sw_hatch_depth
-    f.cyl(part, 0.0, 0.0, p.pu_dia + p.sw_motor_clr, (y_step, 1.0), op="cut")
-    f.cyl(part, 0.0, 0.0, p.sw_hatch_open, (-p.sw_y_out_a - 1.0, y_step), op="cut")
-    for k in range(4):
-        a = math.radians(45 + 90 * k)
-        f.cyl(part, p.sw_screw_r * math.cos(a), p.sw_screw_r * math.sin(a), p.m2_insert_hole,
-              (-p.sw_y_out_a - 1.0, -p.sw_y_out_a + 5.0), op="cut")
-    for sx, sz in _split_screws(p):
-        f.cyl(part, sx, sz, p.m2_clear, (-p.sw_y_out_a - 1.0, 1.0), op="cut")
-    f.box(part, (0.0, p.sw_lead_slot_reach), (y_step, -p.pu_len / 2), (-p.sw_lead_slot_w / 2, p.sw_lead_slot_w / 2), op="cut")
-
-    ax, az = L["A"]
-    f.cyl(part, ax, az, p.axle_dia + p.clr_slide, (-p.sw_y_out_a - 1.0, -p.sw_y_tire_face + 1.0), op="cut")
-    f.cyl(part, ax, az, p.bearing_od + p.clr_press, (-p.sw_y_tire_face - p.bearing_w, -p.sw_y_tire_face + 1.0), op="cut")
-    f.cyl(part, lug[0], lug[1], p.pin_dia + p.clr_slide, (-p.sw_y_out_a - 1.0, -p.sw_y_tire_face + 1.0), op="cut")
-    return part
-
-
-def half_b(p):
-    f = Frame(+1, p.sw_y_tire_face)
-    part = Part("swingarm_b", "gearbox end face on bed, split face up, motor pocket vertical", "PETG-CF")
-    b = p.sw_block_half
-    f.box(part, (-b, b), (0.0, p.sw_y_tire_face), (-b, b))
-    f.cyl(part, 0.0, 0.0, p.pu_dia + p.sw_motor_clr, (-1.0, p.pu_len / 2), op="cut")
-    f.cyl(part, 0.0, 0.0, p.pu_shaft_dia + 1.1, (p.pu_len / 2 - 1.0, p.sw_y_tire_face + 1.0), op="cut")
-    for sx, sz in _split_screws(p):
-        f.cyl(part, sx, sz, p.m2_insert_hole, (-1.0, 7.0), op="cut")
-    for sx in (p.sw_split_screw,):
-        for sz in (-p.sw_split_screw, p.sw_split_screw):
-            f.cyl(part, sx, sz, p.m2_insert_hole, (p.sw_y_tire_face - 7.0, p.sw_y_tire_face + 1.0), op="cut")
-    return part
-
-
-def gearbox(p):
+def arm(p):
     L = layout(p)
     f = Frame(+1, p.sw_y_out_b)
-    part = Part("swingarm_gearbox", "outer face on bed, gear cavity open upward", "PETG-CF")
+    part = Part("swingarm_arm", "outer face on bed, gear cavity open upward", "PETG-CF")
     r_i = L["r_gear1"] + p.sw_gear_clr
     r_a = L["r_gear2"] + p.sw_gear_clr
     r_m = L["r_pin1"] + p.sw_gear_clr + 1.0
-    f.poly(part, hull_xy([(L["M"], p.sw_plate_r_pivot), (L["I"], r_i + p.sw_rim), (L["A"], r_a + p.sw_rim)]),
-           (p.sw_y_tire_face, p.sw_y_out_b))
-    for c, r in ((L["I"], r_i), (L["A"], r_a), (L["M"], r_m)):
+    yr = (p.sw_y_tire_face, p.sw_y_out_b)
+    f.poly(part, hull_xy([(L["M"], p.sw_plate_r_pivot), (L["I"], r_i + p.sw_rim), (L["A"], r_a + p.sw_rim + 4.0)]), yr)
+    ang = math.radians(p.swing_lug_deg)
+    lug = (p.swing_lug_r * math.cos(ang), p.swing_lug_r * math.sin(ang))
+    f.poly(part, hull_xy([(L["M"], p.sw_plate_r_pivot * 0.6), (lug, 5.0)]), yr)
+    (s0, s1), (b0, b1) = gear_planes(p)
+    y_step = s0 - 0.5                                   # the boss bore ends here; the pinion pocket opens beyond
+    for c, r in ((L["I"], r_i), (L["A"], r_a)):
         f.cyl(part, c[0], c[1], 2 * r, (p.sw_y_tire_face - 1.0, p.sw_y_cavity_out), op="cut")
+    f.cyl(part, 0.0, 0.0, 2 * r_m, (y_step, p.sw_y_cavity_out), op="cut")
+    f.cyl(part, 0.0, 0.0, p.ch_boss_dia + 0.4, (p.sw_y_tire_face - 1.0, y_step + 0.1), op="cut")   # rides on the cradle boss
     wall = p.sw_y_cavity_out + 1.5
     f.cyl(part, L["I"][0], L["I"][1], p.pin_dia + p.clr_press, (p.sw_y_tire_face, wall), op="cut")
-    f.cyl(part, L["A"][0], L["A"][1], p.axle_dia + p.clr_slide, (p.sw_y_tire_face, wall), op="cut")
-    for sz in (-p.sw_split_screw, p.sw_split_screw):
-        f.cyl(part, p.sw_split_screw, sz, p.m2_clear, (p.sw_y_tire_face - 1.0, p.sw_y_out_b + 1.0), op="cut")
-    f.cyl(part, 0.0, 0.0, p.sw_cup_dia, (p.sw_y_out_b - p.sw_cup_depth, p.sw_y_out_b + 1.0), op="cut")
-    return part
-
-
-def hatch(p):
-    r_disc = (p.sw_hatch_open - 2 * p.clr_slide) / 2
-    r_flange = p.sw_hatch_flange / 2
-    r_cb = (p.sw_tube_od + p.clr_slide) / 2
-    z_cone = p.sw_hatch_depth
-    top = z_cone + p.sw_hatch_flange_t
-    part = Part("swingarm_hatch", "disc down, counterbore up", "PETG-CF")
-    part.revolve("XZ", [(0.0, 0.0), (r_disc, 0.0), (r_disc, z_cone), (r_flange, z_cone + p.sw_hatch_cone_h),
-                        (r_flange, top), (r_cb, top), (r_cb, top - p.sw_cbore_depth), (0.0, top - p.sw_cbore_depth)])
-    for k in range(4):
-        a = math.radians(45 + 90 * k)
-        part.cyl((p.sw_screw_r * math.cos(a), p.sw_screw_r * math.sin(a), z_cone - 1.0),
-                 p.m2_clear, p.sw_hatch_flange_t + 2.0, op="cut")
-        part.cyl((p.sw_vent_r * math.cos(a - math.pi / 4), p.sw_vent_r * math.sin(a - math.pi / 4), -1.0),
-                 p.sw_vent_dia, top + 2.0, op="cut")
-    part.box_c((0.0, p.sw_shim_y, top / 2), (p.sw_shim_w, p.sw_shim_slot_t, top + 2.0), op="cut")
+    ax, az = L["A"]
+    f.cyl(part, ax, az, p.rear_axle_dia + p.clr_slide, (p.sw_y_tire_face - 1.0, p.sw_y_out_b + 1.0), op="cut")
+    f.cyl(part, ax, az, p.rear_bearing_od + p.clr_press, (p.sw_y_out_b - p.rear_bearing_w, p.sw_y_out_b + 1.0), op="cut")
+    f.cyl(part, lug[0], lug[1], p.pin_dia + p.clr_slide, (p.sw_y_tire_face - 1.0, p.sw_y_out_b + 1.0), op="cut")
     return part
 
 
 def build(p):
-    return [half_a(p), half_b(p), gearbox(p), hatch(p)]
+    return [arm(p)]

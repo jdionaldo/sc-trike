@@ -92,15 +92,15 @@ def validate_part(name, walls=True, supports=False):
 OVERLAP_DECLARED = [("rear_hub", "REAR_TIRE_WHEEL"), ("rear_hub", "AXLE_REAR"),
                     ("hub_left", "FRONT_TIRE_WHEEL_LEFT"), ("hub_right", "FRONT_TIRE_WHEEL_RIGHT")]
 SEATED = OVERLAP_DECLARED + [
-    ("POWER_UNIT", "swingarm_a"), ("POWER_UNIT", "swingarm_b"), ("POWER_UNIT", "swingarm_gearbox"),
-    ("GEAR_PINION_1", "swingarm_gearbox"), ("GEAR_1", "swingarm_gearbox"), ("GEAR_PINION_2", "swingarm_gearbox"),
-    ("GEAR_2", "swingarm_gearbox"), ("SHAFT_INTERMEDIATE", "swingarm_gearbox"), ("AXLE_REAR", "swingarm_a"),
-    ("AXLE_REAR", "swingarm_gearbox"), ("LIPO_2S", "battery_mount"), ("RECEIVER", "rx_mount"),
+    ("POWER_UNIT", "chassis_cradle_left"), ("POWER_UNIT", "chassis_cradle_right"), ("POWER_UNIT", "motor_flange"),
+    ("POWER_UNIT_SHAFT", "motor_flange"), ("POWER_UNIT_SHAFT", "chassis_cradle_left"),
+    ("GEAR_PINION_1", "swingarm_arm"), ("GEAR_1", "swingarm_arm"), ("GEAR_PINION_2", "swingarm_arm"),
+    ("GEAR_2", "swingarm_arm"), ("SHAFT_INTERMEDIATE", "swingarm_arm"), ("AXLE_REAR", "swingarm_arm"),
+    ("LIPO_2S", "battery_mount"), ("RECEIVER", "rx_mount"),
     ("SERVO_9G", "chassis_tub_right"), ("SERVO_9G", "chassis_tub_left"), ("SERVO_HORN", "chassis_tub_right"),
     ("SERVO_HORN", "chassis_tub_left"),
     ("DOWEL_2x18_L", "body_bumper_cage"), ("DOWEL_2x18_R", "body_bumper_cage"),
-    ("DOWEL_2x18_L", "front_yoke"), ("DOWEL_2x18_R", "front_yoke"), ("SERVO_HORN", "rod_drive"),
-    ("LEAD_RUN", "battery_mount")]
+    ("DOWEL_2x18_L", "front_yoke"), ("DOWEL_2x18_R", "front_yoke"), ("SERVO_HORN", "rod_drive")]
 
 
 def _declared(pairs, a, b):

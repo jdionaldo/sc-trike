@@ -118,31 +118,28 @@ def cradle(p, side):
     _body_keys(p, f, part, p.ch_body_keys_rear, y_in, y_out)
     mx, mz = p.pivot_xz
     if side > 0:
-        tip = p.sw_y_out_b - p.sw_cup_depth + 0.3
-        f.cyl(part, mx, mz, p.ch_boss_dia, (tip, y_in + 0.4))
-    else:
-        f.cyl(part, mx, mz, p.ch_ring_od, (y_in - p.ch_ring_t, y_in + 0.4))
-        f.cyl(part, mx, mz, p.ch_access_dia, (y_in - p.ch_ring_t - 1.0, y_out + 1.0), op="cut")
+        # the 2830 motor sits against the inside of this wall; shaft and four M2.5 screws pass through to the flange
+        f.cyl(part, mx, mz, p.motor_bore_dia + 2.0, (y_in - 1.0, y_out + 1.0), op="cut")
         for k in range(4):
             a = math.radians(45 + 90 * k)
-            f.cyl(part, mx + p.ch_ring_screw_r * math.cos(a), mz + p.ch_ring_screw_r * math.sin(a), p.m2_insert_hole,
-                  (y_in - p.ch_ring_t - 1.0, y_out + 1.0), op="cut")
-        ly0, ly1, lz0, lz1 = p.ch_lead_window
-        f.box(part, (bx0 - 1.0, bx1 + 1.0), (ly0 - 1.0, ly1), (lz0, lz1), op="cut")
+            f.cyl(part, mx + p.pu_mount_m25_pcd / 2 * math.cos(a), mz + p.pu_mount_m25_pcd / 2 * math.sin(a),
+                  p.m25_clear, (y_in - 1.0, y_out + 1.0), op="cut")
     return part
 
 
-def pivot_plate(p):
-    """Outside plate over the right access hole; its boss is the right swing pivot and enters the hatch counterbore."""
-    part = Part("pivot_plate", "plate on bed, boss up", "PETG")
-    part.cyl((0.0, 0.0, 0.0), p.ch_ring_od, p.pp_t)
-    part.cyl((0.0, 0.0, p.pp_t - 0.4), p.sw_tube_od, p.pivot_tube_len + 0.4)
+def motor_flange(p):
+    """Outside the cradle's left wall: clamps the motor with its four screws and carries the swingarm's pivot boss."""
+    part = Part("motor_flange", "flange down, boss up", "PETG")
+    part.cyl((0.0, 0.0, 0.0), p.motor_pad_dia, p.motor_flange_t)
+    part.cyl((0.0, 0.0, p.motor_flange_t - 0.4), p.ch_boss_dia, p.motor_boss_len + 0.4)
+    part.cyl((0.0, 0.0, -1.0), p.motor_bore_dia, p.motor_flange_t + p.motor_boss_len + 2.0, op="cut")
     for k in range(4):
         a = math.radians(45 + 90 * k)
-        part.cyl((p.ch_ring_screw_r * math.cos(a), p.ch_ring_screw_r * math.sin(a), -1.0), p.m2_clear,
-                 p.pp_t + 2.0, op="cut")
+        x, y = p.pu_mount_m25_pcd / 2 * math.cos(a), p.pu_mount_m25_pcd / 2 * math.sin(a)
+        part.cyl((x, y, -1.0), p.m25_clear, p.motor_flange_t + 2.0, op="cut")
+        part.cyl((x, y, p.motor_flange_t - 1.2), p.m25_head, 2.0, op="cut")
     return part
 
 
 def build(p):
-    return [tub(p, +1), tub(p, -1), front_yoke(p), cradle(p, +1), cradle(p, -1), pivot_plate(p)]
+    return [tub(p, +1), tub(p, -1), front_yoke(p), cradle(p, +1), cradle(p, -1), motor_flange(p)]
