@@ -31,3 +31,9 @@ Stages
 - Lean limit set to 30 deg (35 deg needs a 55 deg arm swing). Arm length 100 mm: arm swing +-42.7 deg, wheel moves back 26.5 mm at full lean, wheel travel +-68 mm.
 - Lean horn: lug 24 mm from the pivot at 20 deg above the arm, horn 28 mm at -40 deg rest, rod 24 mm, shaft at (-77.4, -17.0): horn range +-19 to 24 deg over the full lean range.
 - Steer: tie rod parallel to the arm (inner point = pivot + steering arm vector), so lean never changes its length.
+
+## S2 parts (parts/w3_front.py, w3_scene.py, w3_check.py)
+- Printed and print-checked (left and right): arm (belt housing + inverted-V peak), arm cover, upper link, carrier (post + kingpin tabs), knuckle (block + steering arm column), tie rod, lean rod.
+- Lean horn re-solved for the real lug height: horn 28 mm, shaft (-71.4, -18.8), rest -40 deg, rod 30 mm, worst horn angle 29 deg.
+- Steering arm 28 mm behind the kingpin, 22 mm inboard. Zero interference at lean -30 to +30 deg in 5 deg steps (steer follows lean, 17 deg at 30).
+- Not yet checked: 1 mm clearance to bought parts, steer-only poses, belts/pulleys/dogbone as solids, arm cover vs shell.

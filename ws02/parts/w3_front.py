@@ -1,0 +1,142 @@
+"""WS-03 front end parts: swing arm with belt housing, cover, upper link, carrier, knuckle.
+
+Frame (assembly): x forward, y left, z up, z = 0 at the front axle height, front axle at x = 0, arm pivot (front diff axis) at
+x = -ARM_L. Each part is built in its own print frame (u, v, w): u = x, w = |y| - Y0 (outer faces up), v = -z (left) / z (right), a proper rotation.
+"""
+import math
+
+import numpy as np
+
+from cad import Part
+
+ARM_L = 100.0
+ZU = 40.0                  # upper link pin height above the lower pin
+ARM_Y = (58.0, 67.5)       # arm body |y| (floor 58-63.5, belt cavity 63.5-67.5)
+COVER_Y = (67.5, 69.0)
+UP_Y = (58.0, 61.5)
+KP_Y = 105.0               # kingpin / dogbone joint |y|
+CAR_Y = (84.0, 92.0)
+KN_Y = (100.0, 112.0)
+ARM_A = (-28.0, -22.0, -16.0)   # steering arm point from the kingpin axis: dx, dy (inboard negative), dz from axle
+LUG = (22.6, 12.0)               # lean link pin on the arm, from the pivot (x, z)
+
+
+class PF:
+    """Print-frame helper for one side: chassis (x, |y|, z) to print (u, v, w)."""
+
+    def __init__(self, part, side, y0):
+        self.p, self.s, self.y0 = part, side, y0
+
+    def v(self, z0, z1):
+        return (-z1, -z0) if self.s > 0 else (z0, z1)
+
+    def box(self, x, y, z, op="join"):
+        v0, v1 = self.v(*z)
+        self.p.box((x[0], v0, y[0] - self.y0), (x[1] - x[0], v1 - v0, y[1] - y[0]), op=op)
+
+    def cyl_y(self, x, z, y, d, op="join"):
+        v = -z if self.s > 0 else z
+        self.p.cyl((x, v, y[0] - self.y0), d, y[1] - y[0], op=op)
+
+    def cyl_z(self, x, yy, z, d, op="cut"):
+        v0, v1 = self.v(*z)
+        self.p.cyl((x, v0, yy - self.y0), d, v1 - v0, axis="Y", op=op)
+
+
+def mats(side, y0):
+    """Print frame to assembly frame, 4x4."""
+    m = np.eye(4)
+    if side > 0:
+        m[:3, :3] = [[1, 0, 0], [0, 0, 1], [0, -1, 0]]
+        m[1, 3] = y0
+    else:
+        m[:3, :3] = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]
+        m[1, 3] = -y0
+    return m
+
+
+def arm(p, side):
+    name = "w3_arm_left" if side > 0 else "w3_arm_right"
+    part = Part(name, "inner face on the bed, belt cavity up", "PETG")
+    f = PF(part, side, ARM_Y[0])
+    xp = -ARM_L
+    f.box((xp - 14, 14), ARM_Y, (-9.5, 9.5))                                  # belt housing
+    f.box((xp + 10, xp + 34), ARM_Y, (9.5, 16.0))                             # peak (inverted V) carries the lean link
+    f.box((xp + 16, xp + 28), ARM_Y, (16.0, 22.0))
+    f.box((xp - 7.5, 7.5), (63.5, ARM_Y[1] + 0.1), (-7.5, 7.5), op="cut")     # belt cavity
+    for x in (xp, 0.0):                                                       # bearing seats on the inner face, shaft bores through
+        f.cyl_y(x, 0.0, (ARM_Y[0] - 0.1, ARM_Y[0] + 4.0), 11.15 if x == xp else 8.15, op="cut")
+        f.cyl_y(x, 0.0, (ARM_Y[0] - 0.1, ARM_Y[1] + 0.1), 5.4 if x == xp else 4.4, op="cut")
+    f.cyl_y(xp + LUG[0], LUG[1], (ARM_Y[0] - 0.1, ARM_Y[1] + 0.1), p.m2_clear, op="cut")
+    for x in (xp - 11.0, 11.0):                                               # cover screws
+        f.cyl_y(x, 0.0, (ARM_Y[1] - 5.0, ARM_Y[1] + 0.1), p.m2_insert_hole, op="cut")
+    return part
+
+
+def cover(p, side):
+    name = "w3_arm_cover_left" if side > 0 else "w3_arm_cover_right"
+    part = Part(name, "flat", "PETG")
+    f = PF(part, side, COVER_Y[0])
+    xp = -ARM_L
+    f.box((xp - 14, 14), COVER_Y, (-9.5, 9.5))
+    for x in (xp - 11.0, 11.0):
+        f.cyl_y(x, 0.0, (COVER_Y[0] - 0.1, COVER_Y[1] + 0.1), p.m2_clear, op="cut")
+    return part
+
+
+def uplink(p, side):
+    name = "w3_uplink_left" if side > 0 else "w3_uplink_right"
+    part = Part(name, "flat", "PETG")
+    f = PF(part, side, UP_Y[0])
+    xp = -ARM_L
+    f.box((xp - 7, 7), UP_Y, (ZU - 5, ZU + 5))
+    for x in (xp, 0.0):
+        f.cyl_y(x, ZU, (UP_Y[0] - 0.1, UP_Y[1] + 0.1), p.pin_dia + p.clr_slide, op="cut")
+    return part
+
+
+def carrier(p, side):
+    name = "w3_carrier_left" if side > 0 else "w3_carrier_right"
+    part = Part(name, "inner face on the bed", "PETG")
+    f = PF(part, side, CAR_Y[0])
+    f.box((-10, 10), CAR_Y, (-22, ZU + 5))                                    # post
+    f.box((-6, 6), (CAR_Y[1], KN_Y[1] + 4), (-22, -12))                     # lower kingpin tab
+    f.box((-6, 6), (CAR_Y[1], KN_Y[1] + 4), (14, 24))                       # upper kingpin tab (post covers 14-24 below it)
+    f.cyl_y(0.0, 0.0, (CAR_Y[0] - 0.1, CAR_Y[1] + 0.1), 8.15, op="cut")      # shaft bearing
+    f.cyl_y(0.0, ZU, (CAR_Y[0] - 0.1, CAR_Y[1] + 0.1), p.pin_dia + p.clr_slide, op="cut")
+    for z in ((-22.5, -11.5), (13.5, 24.5)):
+        f.cyl_z(0.0, KP_Y, z, p.pin_dia + p.clr_press, op="cut")
+    return part
+
+
+def knuckle(p, side):
+    """Outer face on the bed (KN_Y[1]); the steering arm beam is a column that rises from the web. w = KN_Y[1] - |y|."""
+    name = "w3_knuckle_left" if side > 0 else "w3_knuckle_right"
+    part = Part(name, "outer face on the bed, steering arm up", "PETG")
+    y_in = KP_Y + ARM_A[1]
+    ytop = KN_Y[1]
+    vv = (lambda z0, z1: (z0, z1)) if side > 0 else (lambda z0, z1: (-z1, -z0))
+
+    def box(x, y, z, op="join"):
+        v0, v1 = vv(*z)
+        part.box((x[0], v0, ytop - y[1]), (x[1] - x[0], v1 - v0, y[1] - y[0]), op=op)
+
+    def cyl_y(x, z, y, d):
+        v = z if side > 0 else -z
+        part.cyl((x, v, ytop - y[1]), d, y[1] - y[0], op="cut")
+
+    box((-12, 10), (KN_Y[0] + 0.5, ytop), (-11.5, 13.5))                       # knuckle block between the carrier tabs
+    box((ARM_A[0] - 5, -10), (KN_Y[0] + 0.5, ytop), (ARM_A[2] - 3, 0))         # steering arm web, flush on the bed
+    box((ARM_A[0] - 3, ARM_A[0] + 9), (y_in - 3.0, ytop), (ARM_A[2] - 3, ARM_A[2] + 3))  # steering arm beam, a column rising from the web
+    cyl_y(0.0, 0.0, (KN_Y[0], ytop + 0.1), p.axle_dia + p.clr_slide + 0.2)
+    v0, v1 = vv(-12.0, 14.0)
+    part.cyl((0.0, v0, ytop - KP_Y), p.pin_dia + p.clr_slide, v1 - v0, axis="Y", op="cut")
+    cyl_y(ARM_A[0], ARM_A[2], (y_in - 3.1, y_in + 3.0), p.ball_stud_dia + p.clr_press * 2)
+    return part
+
+
+def build(p):
+    out = []
+    for s in (1, -1):
+        out += [arm(p, s), cover(p, s), uplink(p, s), carrier(p, s), knuckle(p, s)]
+    return out
