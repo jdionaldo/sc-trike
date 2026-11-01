@@ -74,3 +74,6 @@ Stages
 - Added: glass canopy recess on the roof, 1.2 mm raised roof spine from tail to nose, honeycomb grilles over the motor, tail light slot, smaller diagonal flank panel, vent shifted to clear it, paint/decal guide (WS03_PAINT.md).
 - Tried and dropped: panel gap grooves (they made the shell non-manifold at the panel corners) and a rear tire fender (no room for a fixing between the body tail and the tire; needs a longer tail piece).
 - Still plain compared with the references: the body is a prismatic wedge (flat roof planes and straight flanks); no compound curves, side pods or nose fascia.
+
+## S6 snub nose
+- The pointed nose is now a blunt, angular snub nose (front face 70 wide, 26 tall, chamfered corners) with four horizontal cooling slots (52 x 3 mm) through the face into the battery bay. The body stays angular (no curved surfaces). Skid plate narrowed to 72 mm to match.

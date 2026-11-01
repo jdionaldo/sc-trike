@@ -17,10 +17,10 @@ KX, KY, DZ, XOFF = 1.19, 1.17, 20.7, -14.4        # old frame -> new frame: x' =
 WALL = 2.4
 
 # base.stl silhouettes, cleaned (old chassis frame, mm)
-SIDE = [(-240, -30), (-210, -25), (-165, -36.5), (-72, -40), (0, -41), (8, -38), (27, -28), (27, -20), (17, 5), (-35, 19.5),
+SIDE = [(-240, -30), (-210, -25), (-165, -36.5), (-72, -40), (0, -41), (8, -38), (27, -28), (27, -2), (21, 3), (5, 10), (-35, 19.5),
         (-55, 22.5), (-108, 45.5), (-145, 49.2), (-165, 48.7), (-200, 33), (-240, 33)]
 HALF = [(-240, 36), (-218, 37), (-215, 44), (-200, 44), (-195, 42), (-165, 57.5), (-100, 57), (-80, 55), (-47, 52), (-25, 47),
-        (0, 36), (27, 18)]
+        (0, 43), (18, 41), (27, 31)]
 SECTION = [(-58, -60), (58, -60), (58, -30), (38, 55), (-38, 55), (-58, -30)]           # (y, z): flanks lean in 11 deg toward the roof
 
 
@@ -142,7 +142,8 @@ def details(body):
     for hx, hz in heads:
         circ = [(hx + 2.2 * np.cos(a), hz + 2.2 * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 13)[:-1]]
         body = body - flank_cut(circ, 0.6)
-    body = body - Manifold.cube((3.0, 60.0, 5.0), center=True).translate((17.0, 0.0, 12.0))     # light bar pocket across the nose
+    for zc in (-3.0, 2.5, 8.0, 13.5):                                      # snub nose: cooling slots across the front face
+        body = body - Manifold.cube((9.0, 52.0, 3.0), center=True).translate((16.0, 0.0, zc))
     canopy = [(-225, -24), (-205, -30), (-150, -30), (-128, -22), (-128, 22), (-150, 30), (-205, 30), (-225, 24)]   # glass canopy, recessed 0.8 for dark paint
     body = body - (MB.prism_xy(canopy, -100.0, 200.0) - solid(0.8))
     # roof spine: a 1.2 mm raised strip along the centre line from the nose to the tail

@@ -62,7 +62,7 @@ def assembly(phi_deg=0.0, steer=None):
         items.append((f"w3_body_post_{s_}", _t(f"{STL}/w3_body_post.stl", shift=(-18.0, s_ * 24.0, -23.0)), "printed"))
     mp = M([[0, 0, -1], [1, 0, 0], [0, -1, 0]], (-236.0, 0, 0))
     items.append(("w3_motor_plate", _t(f"{STL}/w3_motor_plate.stl", mp), "printed"))
-    items.append(("w3_skid", _t(f"{STL}/w3_skid.stl", shift=(-31.0, -40.0, -29.0)), "printed"))
+    items.append(("w3_skid", _t(f"{STL}/w3_skid.stl", shift=(-31.0, -36.0, -29.0)), "printed"))
     rows, t0, L = rear_arm_mats()
     items.append(("w3_rear_arm", _t(f"{STL}/w3_rear_arm.stl", M(rows, t0)), "printed"))
     cov = M(rows, (t0[0], 58.0, t0[2]))
