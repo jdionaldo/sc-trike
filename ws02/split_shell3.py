@@ -8,7 +8,7 @@ def main():
     for side, sg in (("left", 1), ("right", -1)):
         box = Manifold.cube((2000.0, 1000.0, 2000.0), center=True).translate((0, sg * 500.0 + sg * 0.013, 0))
         MB.to_trimesh(body ^ box).export(f"out/mono3/body3_{side}.stl")
-    XS = -150.0
+    XS = -165.0
     for side in ("left", "right"):
         h = MB.man(trimesh.load(f"out/mono3/body3_{side}.stl"))
         for part, sgn in (("front", 1), ("rear", -1)):

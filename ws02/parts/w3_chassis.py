@@ -120,8 +120,8 @@ def wing(p, side):
 def skid(p):
     """Nose skid plate with the slot pattern from the reference: flat 3 mm plate under the nose, x -31..16, y +-40. Screws into the deck nose."""
     part = Part("w3_skid", "flat", "PETG")
-    part.box((0.0, 0.0, 0.0), (47.0, 72.0, 3.0))
-    for y in (10.0, 22.0, 34.0, 46.0, 58.0):
+    part.box((0.0, 0.0, 0.0), (47.0, 80.0, 3.0))
+    for y in (10.0, 22.0, 34.0, 46.0, 58.0, 70.0):
         part.box((8.0, y - 1.7, -1.0), (30.0, 3.4, 5.0), op="cut")
     for x, y in ((25.0, 26.0), (25.0, 46.0), (43.0, 26.0), (43.0, 46.0)):
         part.cyl((x, y, -1.0), p.m2_clear, 5.0, op="cut")

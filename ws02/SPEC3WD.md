@@ -86,3 +86,9 @@ Stages
 - Side profile redrawn from the sketch over the RT-1 sheet: truncated nose with a slanted front face (four cooling slots), roof rising steadily toward the rear, tall rear hood with a rearward scoop that overhangs the front of the rear tire (to x -340, z 88), rear face and tail light slot. Plan: narrow nose, widest mid body (148 mm at x -189), tapering to a narrower tail.
 - The flank window now starts at |y| 30 (it was 46) so the servos hang in the open "wheel opening"; the roof stays as a narrow canopy over the front mechanism. Posts moved in to y +-16, hatch narrowed to 48 wide.
 - Not taken from the sketch: the solid pillar between the wheel opening and the side window (the arms sweep there) and the open tail underside (the gearbox is enclosed instead).
+
+## S8 markup pass
+- From the marked-up renders: rear scoop raised and lengthened (tip x -378, z 105, flat top), tail left open under a hood (rear bulkhead at x -243 with a shaft tunnel, hood underside at z 50) so the gearbox and rear arm show; nose widened to 88 mm; 3 mm rocker panel armor band along the lower flank (x -240..-122, z -24..-12); rear body piece split at x -165 so it stays under the 220 mm bed (213 mm).
+- Motor plate now bolts to the rear bulkhead (two screws from behind); the rear deck passes under the bulkhead through a notch.
+- Fixed a generator bug: the open-belly sweep also carved the rear bulkhead away.
+- Not done from the markup: the front frame/cowl around the front wheel opening (the arms sweep through it).

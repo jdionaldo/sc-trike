@@ -18,9 +18,8 @@ WALL = 2.4
 
 # profile from the owner's sketch over the RT-1 sheet (assembly frame, mm): truncated nose, roof rising toward the rear, high rear hood
 # with a scoop, open tail underside above the gearbox; wide mid body, narrow tail
-SIDE = [(17.7, 30), (-1.6, -15.2), (-98, -26), (-300, -26), (-300, 64), (-340, 88),
-        (-233, 77.7), (-175, 70), (-98, 56), (-59, 44)]
-HALF = [(17.7, 18), (-20, 30), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-300, 44), (-340, 32)]
+SIDE = [(17.7, 30), (-1.6, -15.2), (-98, -26), (-243, -26), (-243, 50), (-300, 50), (-378, 105), (-259, 97), (-175, 80), (-98, 57), (-59, 44)]
+HALF = [(17.7, 38), (10, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-300, 44), (-340, 40), (-378, 34)]
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
 
 
@@ -52,8 +51,9 @@ def solid(inset=0.0, belly=False):
     s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0) ^ prism_yz(list(sec.exterior.coords)[:-1], -400.0, 100.0)
     if belly:                                        # open belly: sweep the cavity down in 5 mm steps so thin sections stay connected
         acc = s
+        front = s ^ Manifold.cube((500.0, 400.0, 400.0), center=False).translate((-240.6, -200.0, -200.0))   # sweep only ahead of the rear bulkhead
         for k in range(1, 14):
-            acc = acc + s.translate((0, 0, -5.0 * k))
+            acc = acc + front.translate((0, 0, -5.0 * k))
         s = acc
     return s
 
@@ -141,19 +141,22 @@ def details(body):
         body = body - flank_cut(circ, 0.6)
     for zc in (-8.0, -1.0, 6.0, 13.0):                                     # truncated nose: cooling slots across the slanted front face
         body = body - Manifold.cube((30.0, 28.0, 3.0), center=True).translate((8.0, 0.0, zc))
+    # rocker panel armor: a 3 mm proud band along the lower flank between the rear bulkhead and the front window
+    slab = Manifold.cube((118.0, 300.0, 12.0), center=False).translate((-240.0, -150.0, -24.0))
+    sides = Manifold.cube((300.0, 110.0, 40.0), center=False).translate((-300.0, 40.0, -40.0)) + Manifold.cube((300.0, 110.0, 40.0), center=False).translate((-300.0, -150.0, -40.0))
+    body = body + (((solid(-3.0) - solid(0.5)) ^ slab) ^ sides)
     canopy = [(-225, -24), (-205, -30), (-150, -30), (-128, -22), (-128, 22), (-150, 30), (-205, 30), (-225, 24)]   # glass canopy, recessed 0.8 for dark paint
     body = body - (MB.prism_xy(canopy, -100.0, 200.0) - solid(0.8))
     # roof spine: a 1.2 mm raised strip along the centre line from the nose to the tail
     spine = [(-258, -4.5), (-232, -6), (-120, -6), (-30, -4), (-8, -2), (-8, 2), (-30, 4), (-120, 6), (-232, 6), (-258, 4.5)]
     grown = solid(-1.2) - solid(0.0)
     if not os.environ.get("NO_SPINE"):
-        body = body + (MB.prism_xy(spine, -100.0, 200.0) ^ grown)
+        body = body + ((MB.prism_xy(spine, -100.0, 200.0) ^ grown) ^ Manifold.cube((600.0, 100.0, 300.0), center=False).translate((-400.0, -50.0, 20.0)))
     # roof grilles over the motor (honeycomb through the roof), mirrored left and right
     for s_ in (1, -1):
         rect = [(-232, s_ * 8), (-210, s_ * 8), (-210, s_ * 34), (-232, s_ * 34)]
         for hexp in honeycomb(rect):
             body = body - MB.prism_xy(hexp, -100.0, 200.0)
-    body = body - Manifold.cube((2.4, 52.0, 3.0), center=True).translate((-300.2, 0.0, 40.0))   # tail light slot, 1.2 mm deep
     return body
 
 
@@ -210,6 +213,10 @@ def main():
         body = body - flank_cut(poly, 0.8)
     for poly in VENTS[:2]:
         body = body - flank_cut(poly)
+    body = body - Manifold.cube((16.0, 30.0, 22.0), center=True).translate((-241.8, 21.0, 0.0))     # drive shaft tunnel through the rear bulkhead
+    body = body - Manifold.cube((6.0, 300.0, 6.0), center=True).translate((-241.8, 0.0, -25.0))      # the rear deck passes under the bulkhead
+    for y_ in (2.0, 35.0):
+        body = body - cyl_m((-241.8, y_, 27.0), 1.35, 6.0, 'x')                                       # screws that hold the motor plate
     body = details(body)
     # roof hatch: a snug lid cut from the roof (0.25 mm gap all round)
     hx0, hx1, hy = HATCH
