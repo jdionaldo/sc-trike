@@ -32,8 +32,9 @@ Stages
 - Lean horn: lug 24 mm from the pivot at 20 deg above the arm, horn 28 mm at -40 deg rest, rod 24 mm, shaft at (-77.4, -17.0): horn range +-19 to 24 deg over the full lean range.
 - Steer: tie rod parallel to the arm (inner point = pivot + steering arm vector), so lean never changes its length.
 
-## S2 parts (parts/w3_front.py, w3_scene.py, w3_check.py)
-- Printed and print-checked (left and right): arm (belt housing + inverted-V peak), arm cover, upper link, carrier (post + kingpin tabs), knuckle (block + steering arm column), tie rod, lean rod.
-- Lean horn re-solved for the real lug height: horn 28 mm, shaft (-71.4, -18.8), rest -40 deg, rod 30 mm, worst horn angle 29 deg.
-- Steering arm 28 mm behind the kingpin, 22 mm inboard. Zero interference at lean -30 to +30 deg in 5 deg steps (steer follows lean, 17 deg at 30).
-- Not yet checked: 1 mm clearance to bought parts, steer-only poses, belts/pulleys/dogbone as solids, arm cover vs shell.
+## S2 parts (parts/w3_front.py, w3_scene.py, w3_check.py) - done
+- Printed and print-checked (left and right): arm (belt housing + inverted-V peak), arm cover, upper link, carrier (post + upper kingpin tab; the kingpin hangs from it), knuckle (block + web + steering arm column), tie rod, lean rod.
+- Lean horn 28 mm, shaft (-71.4, -18.8), rest -40 deg, rod 30 mm (worst horn angle 29 deg). Steer horn 12 mm above the rod inner point, rod inner point 26 mm below the arm pivot axis, steering lever 16 mm inboard of the kingpin; the rod stays clear of the arm at any swing because its offset is mostly vertical.
+- Zero interference over lean -30..+30 deg in 5 deg steps, each with steer 0, +17 and -17 (39 poses), both tie rods solved in all of them.
+- Both wheels steer the same way (rotation about +z for both).
+- Not yet checked: 1 mm clearance to bought parts, belts/pulleys/dogbone as solids, cantilevered kingpin strength, arm cover vs shell, ground clearance of the knuckle web (z -29 vs ground -41.5).

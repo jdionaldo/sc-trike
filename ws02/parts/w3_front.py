@@ -17,7 +17,7 @@ UP_Y = (58.0, 61.5)
 KP_Y = 105.0               # kingpin / dogbone joint |y|
 CAR_Y = (84.0, 92.0)
 KN_Y = (100.0, 112.0)
-ARM_A = (-28.0, -22.0, -16.0)   # steering arm point from the kingpin axis: dx, dy (inboard negative), dz from axle
+ARM_A = (0.0, -16.0, -26.0)   # steering arm point from the kingpin axis: dx, dy (inboard negative), dz from axle
 LUG = (22.6, 12.0)               # lean link pin on the arm, from the pivot (x, z)
 
 
@@ -99,13 +99,11 @@ def carrier(p, side):
     name = "w3_carrier_left" if side > 0 else "w3_carrier_right"
     part = Part(name, "inner face on the bed", "PETG")
     f = PF(part, side, CAR_Y[0])
-    f.box((-10, 10), CAR_Y, (-22, ZU + 5))                                    # post
-    f.box((-6, 6), (CAR_Y[1], KN_Y[1] + 4), (-22, -12))                     # lower kingpin tab
+    f.box((-10, 10), CAR_Y, (-7.0, ZU + 5))                                    # post
     f.box((-6, 6), (CAR_Y[1], KN_Y[1] + 4), (14, 24))                       # upper kingpin tab (post covers 14-24 below it)
     f.cyl_y(0.0, 0.0, (CAR_Y[0] - 0.1, CAR_Y[1] + 0.1), 8.15, op="cut")      # shaft bearing
     f.cyl_y(0.0, ZU, (CAR_Y[0] - 0.1, CAR_Y[1] + 0.1), p.pin_dia + p.clr_slide, op="cut")
-    for z in ((-22.5, -11.5), (13.5, 24.5)):
-        f.cyl_z(0.0, KP_Y, z, p.pin_dia + p.clr_press, op="cut")
+    f.cyl_z(0.0, KP_Y, (13.5, 24.5), p.pin_dia + p.clr_press, op="cut")        # kingpin hangs from the upper tab
     return part
 
 
@@ -125,9 +123,9 @@ def knuckle(p, side):
         v = z if side > 0 else -z
         part.cyl((x, v, ytop - y[1]), d, y[1] - y[0], op="cut")
 
-    box((-12, 10), (KN_Y[0] + 0.5, ytop), (-11.5, 13.5))                       # knuckle block between the carrier tabs
-    box((ARM_A[0] - 5, -10), (KN_Y[0] + 0.5, ytop), (ARM_A[2] - 3, 0))         # steering arm web, flush on the bed
-    box((ARM_A[0] - 3, ARM_A[0] + 9), (y_in - 3.0, ytop), (ARM_A[2] - 3, ARM_A[2] + 3))  # steering arm beam, a column rising from the web
+    box((-12, 10), (KN_Y[0] + 0.5, ytop), (-11.5, 13.5))                       # knuckle block under the carrier tab
+    box((-6, 6), (KN_Y[0] + 0.5, ytop), (ARM_A[2] - 3, -11.0))                 # web down to the steering arm, flush on the bed
+    box((-6, 6), (y_in - 3.0, ytop), (ARM_A[2] - 3, ARM_A[2] + 3))             # steering arm beam, a column rising from the web
     cyl_y(0.0, 0.0, (KN_Y[0], ytop + 0.1), p.axle_dia + p.clr_slide + 0.2)
     v0, v1 = vv(-12.0, 14.0)
     part.cyl((0.0, v0, ytop - KP_Y), p.pin_dia + p.clr_slide, v1 - v0, axis="Y", op="cut")

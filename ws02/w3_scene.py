@@ -20,9 +20,10 @@ STEER_MAX = 17.0
 LEAN_MAX = 30.0
 SH_LEAN = np.array([-71.4, -18.8])     # lean horn shaft (x, z), from the horn scan (worst horn angle 29 deg)
 LR = 30.0
-R_S = 20.0
+R_S = 12.0
 I0 = np.array([F.P[0] + W.ARM_A[0], W.ARM_A[2]])                     # steer rod inner point at rest (x, z)
-SH_STEER = np.array([I0[0], I0[1] + R_S])
+SIGN = -1.0                                   # +1: steer horn shaft below the rod inner point, -1: above
+SH_STEER = np.array([I0[0], I0[1] - SIGN * R_S])
 HORN_Y = (54.7, 57.0)
 SERVO_Y = (28.7, 48.0)
 
@@ -30,7 +31,7 @@ SERVO_Y = (28.7, 48.0)
 def solve_psi(f):
     g = np.linspace(-1.6, 1.6, 321)
     v = [f(x) for x in g]
-    roots = [brentq(f, g[i], g[i + 1]) for i in range(len(g) - 1) if v[i] * v[i + 1] < 0]
+    roots = [g[i] for i in range(len(g)) if abs(v[i]) < 1e-9] + [brentq(f, g[i], g[i + 1]) for i in range(len(g) - 1) if v[i] * v[i + 1] < 0]
     if not roots:
         raise ValueError("no horn solution")
     return min(roots, key=abs)
@@ -124,11 +125,11 @@ def scene(phi_deg, steer=None):
             km[:3, :3] = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]; km[1, 3] = W.KN_Y[1]
         else:
             km[:3, :3] = [[1, 0, 0], [0, 0, 1], [0, -1, 0]]; km[1, 3] = -W.KN_Y[1]
-        kn = T(kx, 0, kz) @ Rz(s * delta, (0.0, s * W.KP_Y)) @ km
+        kn = T(kx, 0, kz) @ Rz(delta, (0.0, s * W.KP_Y)) @ km
         items.append((f"knuckle_{s}", load(f"w3_knuckle_{'left' if s > 0 else 'right'}", kn), "printed"))
         # wheel (bought), steered with the knuckle
         wheel = LY.cyl((0, s * (F.T), 0), F.R, F.W, "y")
-        wheel.apply_transform(T(kx, 0, kz) @ Rz(s * delta, (0.0, s * W.KP_Y)))
+        wheel.apply_transform(T(kx, 0, kz) @ Rz(delta, (0.0, s * W.KP_Y)))
         items.append((f"tire_{s}", wheel, "bought"))
         # lean servo, horn and rod (horn angle solved for this arm angle)
         a = math.atan2(W.LUG[1], W.LUG[0]); rho = math.hypot(*W.LUG)
@@ -141,18 +142,16 @@ def scene(phi_deg, steer=None):
         items.append((f"lean_servo_{s}", flat_box(((SH_LEAN[0] + 11.4), s * (SERVO_Y[0] + SERVO_Y[1]) / 2, SH_LEAN[1]),
                                                   (40.0, SERVO_Y[1] - SERVO_Y[0], 20.0)), "bought"))
         # steer: tie rod from the knuckle arm point to the steer horn tip
-        a_pt = np.array([kx, 0, kz]) + np.array([0.0, s * W.KP_Y, 0.0]) + Rz(s * delta, (0, 0))[:3, :3] @ np.array([W.ARM_A[0], s * W.ARM_A[1], W.ARM_A[2]])
-        a_pt[1] = s * (W.KP_Y + W.ARM_A[1]) if delta == 0 else a_pt[1]
-        a0 = np.array([0.0, W.KP_Y + W.ARM_A[1], W.ARM_A[2]])
+        kp = np.array([kx, s * W.KP_Y, kz])
+        a_pt = kp + Rz(delta, (0, 0))[:3, :3] @ np.array([W.ARM_A[0], s * W.ARM_A[1], W.ARM_A[2]])
         tip_y = 56.0
         L_t = float(np.linalg.norm(np.array([W.ARM_A[0], W.KP_Y + W.ARM_A[1], W.ARM_A[2]]) - np.array([I0[0], tip_y, I0[1]])))
-        g = lambda ps: np.linalg.norm(np.array([SH_STEER[0] + R_S * math.sin(ps), tip_y, SH_STEER[1] - R_S * math.cos(ps)])
-                                      - np.array([abs(a_pt[0]), abs(a_pt[1]), a_pt[2]])) - L_t
+        g = lambda ps: np.linalg.norm(np.array([SH_STEER[0] + R_S * math.sin(ps), s * tip_y, SH_STEER[1] + SIGN * R_S * math.cos(ps)]) - a_pt) - L_t
         try:
             ps = solve_psi(g)
         except ValueError:
             ps = float("nan")
-        ts = np.array([SH_STEER[0] + R_S * math.sin(ps), SH_STEER[1] - R_S * math.cos(ps)])
+        ts = np.array([SH_STEER[0] + R_S * math.sin(ps), SH_STEER[1] + SIGN * R_S * math.cos(ps)])
         items.append((f"steer_horn_{s}", horn_mesh(SH_STEER, ts, tuple(sorted((s * HORN_Y[0], s * HORN_Y[1])))), "bought"))
         items.append((f"steer_servo_{s}", flat_box((SH_STEER[0] - 11.4, s * (SERVO_Y[0] + SERVO_Y[1]) / 2, SH_STEER[1]),
                                                    (40.0, SERVO_Y[1] - SERVO_Y[0], 20.0)), "bought"))
