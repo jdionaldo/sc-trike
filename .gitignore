@@ -5,3 +5,5 @@ __pycache__/
 *.sc
 *.bak
 ws02/refs/
+ws02/out/
+ws02/base/

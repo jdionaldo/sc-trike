@@ -443,8 +443,10 @@ _LEN = [f.name for f in dataclasses.fields(Params) if f.type in (float, tuple) a
 _FORCE = ["kingpin_gap", "sw_y_out_a", "sw_y_cavity_out", "sw_hatch_cone_h", "sw_vent_r", "sw_plate_r_axle", "sw_cup_dia",
           "ch_access_dia", "br_arm", "body_arch_r", "steer_arm_xyz", "link_anchor_bar_xyz"]
 _over = {n: _k(getattr(Params(), n)) for n in _LEN + _FORCE}
-_over.update(ch_in_rear=31.0, sw_y_cavity_out=49.5, sw_y_tire_face=36.4, rear_axle_dia=8.0, rear_bearing_od=16.0, rear_bearing_w=5.0, ch_boss_dia=11.0,
-             mass_total_g=1123.5, cg_height=61.1, sw_hatch_open=33.0, sw_hatch_cone_h=9.0, sw_hatch_flange=48.6, sw_screw_r=20.3, sw_hatch_flange_t=13.4, sw_hatch_depth=6.0, sw_vent_r=9.0, sw_shim_y=4.0, rear_tire_od=92.0, rear_tire_w=59.0, front_tire_od=77.0, front_tire_w=24.0, rear_hex=12.0)
+_over.update(front_tire_od=83.0, front_tire_w=24.0, rear_tire_od=85.0, rear_tire_w=50.0, ch_in=42.0, rx_beside_y=26.0,
+             ch_join_bolts=((12.0, 14.8), (26.0, 14.8), (12.0, 35.5), (26.0, 35.5)),
+             ch_in_rear=31.0, sw_y_cavity_out=49.5, sw_y_tire_face=36.4, rear_axle_dia=8.0, rear_bearing_od=16.0, rear_bearing_w=5.0, ch_boss_dia=11.0,
+             mass_total_g=1123.5, cg_height=61.1, sw_hatch_open=33.0, sw_hatch_cone_h=9.0, sw_hatch_flange=48.6, sw_screw_r=20.3, sw_hatch_flange_t=13.4, sw_hatch_depth=6.0, sw_vent_r=9.0, sw_shim_y=4.0, rear_hex=12.0)
 _over.update(steer_arm_xyz=(-7.4, -19.79, -32.56), link_anchor_bar_xyz=(-50.11, 86.982, 9.844),
              coupling_link_len=61.172, shock_stroke=9.932,
              spring_rate_n_per_mm=1.339, shock_motion_ratio=0.7456,
