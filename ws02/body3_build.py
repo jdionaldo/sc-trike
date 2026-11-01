@@ -1,6 +1,7 @@
 """WS-03 body: a faceted wedge built from clean plan, side and section shapes taken from the base.stl silhouettes (old chassis
 frame numbers), mapped to the 3WD frame, hollowed to a 2.4 mm wall with an open belly, windows cut where the front arms
 swing. Output: out/mono3/body3.stl (and halves/pieces via split_body3)."""
+import os
 import sys
 from pathlib import Path
 
@@ -132,7 +133,7 @@ def details(body):
         body = body + cyl_m((x, 0.0, z), 4.0, 14.0, "y") + Manifold.cube((8.0, 14.0, 6.0), center=True).translate((x, 0.0, z + 3.0))
     ztop = top_z(-255.0)                                                   # antenna post on the tail, standing proud of the roof
     body = body + cyl_m((-255.0, 0.0, ztop + 4.0), 4.0, 20.0) - cyl_m((-255.0, 0.0, ztop + 8.0), 1.6, 24.0)
-    for tri in [[(-238, 22), (-206, 22), (-222, 44)]]:                     # honeycomb in the triangular vent, both flanks
+    for tri in [[(-241, 22), (-209, 22), (-225, 44)]]:                     # honeycomb in the triangular vent, both flanks
         for hexp in honeycomb(tri):
             for s in (1, -1):
                 y0, y1 = (20.0, 120.0) if s > 0 else (-120.0, -20.0)
@@ -142,6 +143,19 @@ def details(body):
         circ = [(hx + 2.2 * np.cos(a), hz + 2.2 * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 13)[:-1]]
         body = body - flank_cut(circ, 0.6)
     body = body - Manifold.cube((3.0, 60.0, 5.0), center=True).translate((17.0, 0.0, 12.0))     # light bar pocket across the nose
+    canopy = [(-225, -24), (-205, -30), (-150, -30), (-128, -22), (-128, 22), (-150, 30), (-205, 30), (-225, 24)]   # glass canopy, recessed 0.8 for dark paint
+    body = body - (MB.prism_xy(canopy, -100.0, 200.0) - solid(0.8))
+    # roof spine: a 1.2 mm raised strip along the centre line from the nose to the tail
+    spine = [(-258, -4.5), (-232, -6), (-120, -6), (-30, -4), (-8, -2), (-8, 2), (-30, 4), (-120, 6), (-232, 6), (-258, 4.5)]
+    grown = solid(-1.2) - solid(0.0)
+    if not os.environ.get("NO_SPINE"):
+        body = body + (MB.prism_xy(spine, -100.0, 200.0) ^ grown)
+    # roof grilles over the motor (honeycomb through the roof), mirrored left and right
+    for s_ in (1, -1):
+        rect = [(-232, s_ * 8), (-210, s_ * 8), (-210, s_ * 34), (-232, s_ * 34)]
+        for hexp in honeycomb(rect):
+            body = body - MB.prism_xy(hexp, -100.0, 200.0)
+    body = body - Manifold.cube((2.4, 52.0, 3.0), center=True).translate((-300.2, 0.0, 40.0))   # tail light slot, 1.2 mm deep
     return body
 
 
@@ -161,11 +175,11 @@ def front_window():
 # styling in the new frame (x, z): recessed painted panels (0.8 mm) and through vents on both flanks, as in the references
 PANELS = [  # recessed
     [(-292, -8), (-212, -8), (-176, 14), (-292, 14)],                          # low rear sill panel
-    [(-205, 4), (-150, 4), (-122, 24), (-150, 52), (-205, 38)],               # big diagonal panel behind the arm window
+    [(-205, 6), (-152, 6), (-130, 24), (-152, 46), (-205, 38)],               # big diagonal panel behind the arm window
 ]
 VENTS = [  # through the skin
     [(-282, 40), (-252, 40), (-257, 47), (-282, 47)], [(-282, 49), (-252, 49), (-257, 56), (-282, 56)],      # louvre slots
-    [(-238, 22), (-206, 22), (-222, 44)],                                       # triangular vent
+    [(-241, 22), (-209, 22), (-225, 44)],                                       # triangular vent
 ]
 HATCH = (-96.0, -28.0, 30.0)        # roof access hatch over the battery and ESC: x0, x1, half width
 

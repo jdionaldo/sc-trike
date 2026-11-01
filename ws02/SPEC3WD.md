@@ -69,3 +69,8 @@ Stages
 - ESC moved over the battery in the nose bay with the roof hatch above it; wing fender plates on the knuckle carriers; nose skid plate.
 - Body details from the references: honeycomb triangular vent, louvres, recessed panels, screw heads, nose light-bar pocket, antenna post.
 - tests/test_w3.py (44 tests) and w3_assembly.check_global pass over lean -25..25 and steer 0/+-17.
+
+## S5 body finish
+- Added: glass canopy recess on the roof, 1.2 mm raised roof spine from tail to nose, honeycomb grilles over the motor, tail light slot, smaller diagonal flank panel, vent shifted to clear it, paint/decal guide (WS03_PAINT.md).
+- Tried and dropped: panel gap grooves (they made the shell non-manifold at the panel corners) and a rear tire fender (no room for a fixing between the body tail and the tire; needs a longer tail piece).
+- Still plain compared with the references: the body is a prismatic wedge (flat roof planes and straight flanks); no compound curves, side pods or nose fascia.

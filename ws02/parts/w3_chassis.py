@@ -128,5 +128,18 @@ def skid(p):
     return part
 
 
+def rear_fender(p):
+    """Arch over the rear tire (r 56): half ring r 59.5..61.9, 76 wide, centre (x -362.2, z -10.7), bolts to bosses on the tail.
+    Print frame: u = x + 362.2, v = -(z + 10.7), w = y + 38; the arch is the v <= 0 half, printed lying so the arc extrudes straight up."""
+    part = Part("w3_rear_fender", "arch lying on its side", "PETG")
+    part.cyl((0.0, 0.0, 0.0), 123.8, 76.0)
+    part.cyl((0.0, 0.0, -1.0), 119.0, 78.0, op="cut")
+    part.box((-70.0, 0.0, -1.0), (140.0, 70.0, 78.0), op="cut")                 # keep the upper half only
+    for w0 in (0.0, 71.0):
+        part.box((52.0, 0.0, w0), (10.5, 8.0, 5.0))                           # mounting tabs below the arch front end
+        part.cyl((50.0, 4.0, w0 + 2.5), 2.7, 14.0, axis="X", op="cut")
+    return part
+
+
 def build(p):
     return [body_post(p), wing(p, 1), wing(p, -1), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True), wall(p, 1), wall(p, -1)]
