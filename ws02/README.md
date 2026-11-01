@@ -1,3 +1,16 @@
+# WS-03: 3WD lean-steer reverse trike (current design)
+
+The 233 mm single-servo design below is the earlier WS-02 build and is kept for reference. The current build is WS-03: three-wheel drive
+(centre diff, bevel front diff, bevel rear), swing-arm lean and steer with four servos, a 269 mm front track (stable in sharp turns),
+a 4 degree nose-down rake, a procedural faceted body from the base.stl silhouettes, slotted decks and a servo wall.
+
+- `SPEC3WD.md` design decisions and status, `WS03_REPORT.md` printed parts and numbers, `WS03_BOM.md` bought parts.
+- Build and check: `PYTHONPATH=. python body3_build.py && python split_shell3.py && pytest tests/test_w3.py`.
+- Modules: `front3wd.py` (arm kinematics), `parts/w3_front.py`, `parts/w3_drive.py`, `parts/w3_chassis.py`, `w3_scene.py` and `w3_assembly.py`
+  (placement and interference), `layout3wd.py` (block layout), `body3_build.py`.
+
+---
+
 # WS-02 lean-steer reverse trike (370 mm) with a base.stl shell
 
 Single source of truth: `params.py`. Mechanism parts are SolidCraft command scripts (`parts/`), built by `build.py` and checked by

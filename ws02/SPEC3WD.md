@@ -62,3 +62,10 @@ Stages
 - Cut-outs: one angular window per flank (hull of the swept front mechanism + 4 mm), rear-arm notch, through louvres and a triangular vent, two 0.8 mm recessed paint panels per flank, roof access hatch (separate snug lid, 0.25 mm gap).
 - Four watertight pieces (left/right x front/rear) fit the 220 x 220 bed; nothing inside pokes through the skin; the front mechanism clears the body at every lean/steer pose.
 - Still to do: deck and internal mounts (slotted deck, servo pockets, tub walls), belt covers/fenders, nose skid plate, shell-to-chassis fixings, tests/report/BOM, tail detail.
+
+## S4c (final pass) - done
+- Front track widened to 269 mm (wheel centres), lean limit 25 deg, same 100 mm arms; arm/servo/wall stack shifted out 6.5 mm to clear the front diff case.
+- Servo wall plates hang from ears on the front diff case; slotted decks follow the body plan; rear deck screws into pads on the body skirt, front body hangs on two posts and roof bosses; halves join with seam screws.
+- ESC moved over the battery in the nose bay with the roof hatch above it; wing fender plates on the knuckle carriers; nose skid plate.
+- Body details from the references: honeycomb triangular vent, louvres, recessed panels, screw heads, nose light-bar pocket, antenna post.
+- tests/test_w3.py (44 tests) and w3_assembly.check_global pass over lean -25..25 and steer 0/+-17.
