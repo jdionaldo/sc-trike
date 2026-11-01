@@ -1,0 +1,28 @@
+# WS-03: 3WD lean-steer reverse trike (form and function)
+
+Decisions (from the user's direction; scale is free, 1/18 is no longer a limit):
+
+1. Front suspension and lean: per-wheel swing arm in the side (x-z) plane. Arm is a plate shaped like an inverted V
+   (peak carries the lean drive link), rear end pinned on a sideways (y) axis, front end carries the knuckle carrier.
+   A hidden upper link of equal length keeps the carrier upright (parallelogram) so caster stays constant.
+   Left arm down / right arm up leans the body; wheels lean with the body.
+2. Steering: knuckle (C-hub) on a caster kingpin; tie rod parallel to the arm so it does not change length as the arm
+   swings; one steer servo per wheel.
+3. Servos: inside the tub, long axis along the body, shaft along y (horn sticks out the side, swings in the x-z plane).
+   Two per side (lean, steer). Lean horn is short and the link lands near the arm pivot for leverage.
+4. Drive (3WD, bevel gears): motor, spur stage, centre diff (axis along x), front shaft to a bevel pinion on the
+   front diff ring (lateral axis), rear shaft to a bevel pair that feeds the rear swingarm pivot shaft, then belt to the
+   rear axle. The front diff outputs are coaxial with the two front arm pivots, so the arms swing about the drive axis.
+   Each front arm carries a belt (or gear train) from the pivot to the carrier, then a lateral shaft and a dogbone with
+   a universal joint on the kingpin axis to the wheel axle. Belts and gears run inside printed covers.
+5. Shell: stays the base.stl-derived monocoque; stretch or widen it as the layout needs, cut windows where the arms
+   leave the body, belt/gear covers and wing fenders styled to match the shell. Reference photos: arms exit under the
+   red shell, skid plate in front, wing plates on the arms.
+6. Bought parts (verify sizes before buying): 1/10 or 1/18 4WD diff and bevel sets, CVD dogbones, GT2 belts, 12 kg short
+   servos (40 x 20 x 19.3), 2830 motor; motorcycle RC donors (for example the 1/4 Losi Promoto-MX) for swingarm, shock and tire.
+
+Stages
+- S1 layout study with overlap check, shown in the live window (ws02/layout3wd.py).
+- S2 front arms, carrier, drive parts, servo mounts; kinematics and interference in all poses.
+- S3 drivetrain parts (centre diff, shafts, bevel housings) and rear swingarm change.
+- S4 shell stretch, windows, covers; tests, report, BOM, push.

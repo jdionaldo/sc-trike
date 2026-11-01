@@ -1,0 +1,121 @@
+"""WS-03 layout study: every major block of the 3WD lean-steer trike as simple solids, checked for overlaps.
+
+Frame: x forward, y left, z up, z = 0 at the front wheel axle height, front axle at x = 0. Default pose (arms level).
+"""
+import itertools
+import sys
+
+import numpy as np
+import trimesh
+
+L = dict(
+    track=233.0, tire_od=83.0, tire_w=24.0, rear_od=85.0, rear_w=50.0,
+    la=100.0,                      # arm length, pivot to knuckle carrier
+    wheelbase=330.0,
+    tub_in=48.0, tub_wall=2.0,     # widened tub (inner face, wall)
+    arm_y=(50.5, 56.5), horn_y=(57.0, 59.5), servo_y=(28.7, 48.0),
+    zu=40.0,                       # upper link height above the lower pin
+)
+
+
+def box(x, y, z):
+    (x0, x1), (y0, y1), (z0, z1) = x, y, z
+    m = trimesh.creation.box(extents=(x1 - x0, y1 - y0, z1 - z0))
+    m.apply_translation(((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2))
+    return m
+
+
+def cyl(c, r, length, axis):
+    m = trimesh.creation.cylinder(radius=r, height=length, sections=32)
+    if axis == "x":
+        m.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2, [0, 1, 0]))
+    elif axis == "y":
+        m.apply_transform(trimesh.transformations.rotation_matrix(np.pi / 2, [1, 0, 0]))
+    m.apply_translation(c)
+    return m
+
+
+def blocks():
+    b = {}
+    xp = -L["la"]
+    ay0, ay1 = L["arm_y"]
+    for tag, s in (("L", 1), ("R", -1)):
+        ys = lambda a, c: tuple(sorted((s * a, s * c)))
+        b[f"arm_{tag}"] = box((xp - 6, 6), ys(ay0, ay1), (-9, 9))
+        b[f"uplink_{tag}"] = box((xp - 6, 6), ys(ay0, ay1), (L["zu"] - 5, L["zu"] + 5))
+        b[f"pulley_pivot_{tag}"] = cyl((xp, s * (ay0 + ay1) / 2, 0), 8, ay1 - ay0, "y")
+        b[f"pulley_tip_{tag}"] = cyl((0, s * (ay0 + ay1) / 2, 0), 8, ay1 - ay0, "y")
+        b[f"diff_out_{tag}"] = cyl((xp, s * 26.0, 0), 2.5, 52.0, "y")
+        b[f"tip_shaft_{tag}"] = cyl((0, s * 79.0, 0), 2.0, 46.0, "y")
+        b[f"carrier_{tag}"] = box((-10, 10), ys(92, 104), (-20, L["zu"] + 5))
+        b[f"tire_{tag}"] = cyl((0, s * (L["track"] / 2), 0), L["tire_od"] / 2, L["tire_w"], "y")
+        b[f"lean_servo_{tag}"] = box((-86.6, -46.6), ys(*L["servo_y"]), (-10, 10))
+        b[f"steer_servo_{tag}"] = box((-149.4, -109.4), ys(*L["servo_y"]), (-26, -6))
+        b[f"lean_horn_{tag}"] = box((-90, -66), ys(*L["horn_y"]), (-3, 12))
+        b[f"steer_horn_{tag}"] = box((-128, -108), ys(*L["horn_y"]), (-24, -8))
+        b[f"tub_wall_{tag}"] = box((-190, -20), ys(L["tub_in"], L["tub_in"] + L["tub_wall"]), (-44, 34))
+    b["front_diff"] = cyl((xp, 0, 0), 19, 38, "y")
+    b["front_pinion_shaft"] = cyl((-130, 12, -23), 3, 60, "x")
+    b["center_diff"] = cyl((-172, 0, -23), 20, 30, "x")
+    b["rear_shaft"] = cyl((-211, 0, -23), 3, 48, "x")
+    b["motor"] = cyl((-207, 0, 7), 14, 30, "x")
+    b["motor_shaft"] = cyl((-180, 0, 7), 2, 24, "x")
+    b["battery"] = box((-81, -19), (-10, 10), (-20, -6))
+    b["esc"] = box((-165, -119), (-19, 19), (-3, 30))
+    rear_x = -L["wheelbase"]
+    rz = -L["tire_od"] / 2 + L["rear_od"] / 2
+    b["rear_bevel"] = cyl((-240, 6, -6), 17, 12, "y")
+    b["rear_out"] = cyl((-240, 30, -6), 2.5, 48, "y")
+    b["rear_arm"] = box((rear_x - 6, -234), (46, 56), (-10, 14))
+    b["rear_tire"] = cyl((rear_x, 0, rz), L["rear_od"] / 2, L["rear_w"], "y")
+    return b
+
+
+# pairs that are meant to touch or share a bore, not real clashes
+OK = [("diff_out_", "pulley_pivot_"), ("diff_out_", "front_diff"), ("diff_out_", "tub_wall_"), ("diff_out_", "arm_"),
+      ("tip_shaft_", "pulley_tip_"), ("tip_shaft_", "carrier_"), ("tip_shaft_", "tire_"), ("arm_", "pulley_"),
+      ("rear_out", "rear_bevel"), ("rear_out", "rear_arm"), ("motor_shaft", "motor"), ("motor_shaft", "center_diff"),
+      ("rear_shaft", "center_diff"), ("front_pinion_shaft", "center_diff"), ("rear_shaft", "rear_bevel"),
+      ("front_pinion_shaft", "front_diff")]
+
+
+def declared(a, b):
+    return any((p in a and q in b) or (q in a and p in b) for p, q in OK)
+
+
+def check(b):
+    import manifold3d as m
+
+    def man(t):
+        return m.Manifold(m.Mesh(vert_properties=np.asarray(t.vertices, np.float32), tri_verts=np.asarray(t.faces, np.uint32)))
+
+    mans = {k: man(v) for k, v in b.items()}
+    bad = []
+    for (a, ma), (c, mc) in itertools.combinations(mans.items(), 2):
+        if declared(a, c):
+            continue
+        va, vb = b[a].bounds, b[c].bounds
+        if np.any(va[1] < vb[0]) or np.any(vb[1] < va[0]):
+            continue
+        v = (ma ^ mc).volume()
+        if v > 1.0:
+            bad.append((a, c, round(v, 1)))
+    return bad
+
+
+if __name__ == "__main__":
+    bl = blocks()
+    for a, c, v in check(bl):
+        print("overlap", a, c, v)
+    if len(sys.argv) > 1:
+        sc = trimesh.Scene()
+        for k, m in bl.items():
+            m = m.copy()
+            m.visual.face_colors = [200, 60, 50, 255] if "arm" in k or "uplink" in k else [70, 75, 85, 255]
+            if "tire" in k:
+                m.visual.face_colors = [30, 30, 30, 255]
+            if "servo" in k or "horn" in k:
+                m.visual.face_colors = [60, 120, 220, 255]
+            sc.add_geometry(m, node_name=k, geom_name=k)
+        sc.export(sys.argv[1])
+        print("wrote", sys.argv[1])
