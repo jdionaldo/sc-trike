@@ -18,8 +18,8 @@ WALL = 2.4
 # base.stl silhouettes, cleaned (old chassis frame, mm)
 SIDE = [(-240, -30), (-210, -25), (-165, -36.5), (-72, -40), (0, -41), (8, -38), (27, -28), (27, -20), (17, 5), (-35, 19.5),
         (-55, 22.5), (-108, 45.5), (-145, 49.2), (-165, 48.7), (-200, 33), (-240, 33)]
-HALF = [(-240, 36), (-218, 37), (-215, 44), (-200, 44), (-195, 42), (-165, 57.5), (-100, 56), (-80, 52), (-47, 46), (-25, 34),
-        (0, 30), (27, 18)]
+HALF = [(-240, 36), (-218, 37), (-215, 44), (-200, 44), (-195, 42), (-165, 57.5), (-100, 57), (-80, 55), (-47, 52), (-25, 47),
+        (0, 36), (27, 18)]
 SECTION = [(-58, -60), (58, -60), (58, -30), (38, 55), (-38, 55), (-58, -30)]           # (y, z): flanks lean in 11 deg toward the roof
 
 
@@ -65,7 +65,7 @@ def front_window():
         for n, m, k in S.scene(float(ph)):
             if n.startswith(("arm_", "cover_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
                 pts += [(float(x), float(z)) for x, y, z in m.vertices[::7]]
-    hull = MultiPoint(pts).convex_hull.buffer(4.0, join_style=2).simplify(2.0)
+    hull = MultiPoint(pts).convex_hull.buffer(5.5, join_style=2).simplify(2.0)
     return hull
 
 
