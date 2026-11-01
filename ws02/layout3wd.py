@@ -11,7 +11,7 @@ import trimesh
 L = dict(
     track=233.0, tire_od=83.0, tire_w=24.0, rear_od=112.0, rear_w=62.0,
     la=100.0,                      # arm length, pivot to knuckle carrier
-    wheelbase=330.0, rake_deg=4.0,
+    wheelbase=360.0, rake_deg=4.0,
     tub_in=48.0, tub_wall=2.0,     # widened tub (inner face, wall)
     arm_y=(50.5, 56.5), horn_y=(57.0, 59.5), servo_y=(28.7, 48.0),
     zu=40.0,                       # upper link height above the lower pin
@@ -56,20 +56,20 @@ def blocks():
         b[f"tub_wall_{tag}"] = box((-190, -20), ys(L["tub_in"], L["tub_in"] + L["tub_wall"]), (-44, 34))
     # drivetrain: shafts at axle height; bevel pinion shaft level with the diff axis, engaging the ring on the diff's +y end
     b["front_diff"] = cyl((xp, 0, 0), 17, 34, "y")
-    b["front_ring"] = cyl((xp, 20.0, 0), 16, 6, "y")
-    b["front_pinion_shaft"] = cyl((-135.0, 18.5, 0), 3, 40, "x")             # x -155..-115, pinion at its front end
-    b["center_diff"] = cyl((-180.0, 18.5, 0), 19, 30, "x")
-    b["rear_shaft"] = cyl((-222.5, 18.5, 0), 3, 55, "x")
-    b["motor"] = cyl((-216.0, 18.5, 24.0), 14, 30, "x")
-    b["motor_shaft"] = cyl((-194.0, 18.5, 24.0), 2, 14, "x")
+    b["front_ring"] = cyl((xp, 21.0, 0), 16, 6, "y")
+    b["front_pinion_shaft"] = cyl((-135.0, 21.0, 0), 2.5, 40, "x")             # x -155..-115, pinion at its front end
+    b["center_diff"] = cyl((-180.0, 21.0, 0), 19, 30, "x")
+    b["rear_shaft"] = cyl((-231.0, 21.0, 0), 2.5, 52, "x")
+    b["motor"] = cyl((-221.0, 21.0, 24.0), 14, 30, "x")
+    b["motor_shaft"] = cyl((-198.0, 21.0, 24.0), 2, 16, "x")
     b["battery"] = box((-81, -19), (-10, 10), (-20, -6))
     b["esc"] = box((-165, -119), (-19, 19), (4, 37))
     rear_x = -L["wheelbase"]
     rz = L["rear_od"] / 2 - L["tire_od"] / 2 - L["wheelbase"] * np.tan(np.radians(L["rake_deg"]))   # chassis raked nose-down: rear axle lower in the chassis frame
-    b["rear_ring"] = cyl((-250.0, 18.5, 0), 15, 6, "y")
-    b["rear_bevel"] = cyl((-250.0, 28.0, 0), 13, 14, "y")
-    b["rear_out"] = cyl((-250.0, 40.0, 0), 2.5, 40, "y")
-    b["rear_arm"] = box((rear_x - 8, -242), (46, 60), (-9, rz + 9))
+    b["rear_ring"] = cyl((-272.0, 21.0, 0), 15, 6, "y")
+    b["rear_bevel"] = cyl((-257.0, 21.0, 0), 6, 8, "x")
+    b["rear_out"] = cyl((-272.0, 40.0, 0), 2.5, 40, "y")
+    b["rear_arm"] = box((rear_x - 8, -264), (46, 60), (min(-9, rz - 9), 9))
     b["rear_tire"] = cyl((rear_x, 0, rz), L["rear_od"] / 2, L["rear_w"], "y")
     return b
 

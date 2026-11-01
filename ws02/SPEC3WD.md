@@ -44,3 +44,10 @@ Stages
 - Rake: chassis pitched nose-down 4 deg, so the platform rises toward the rear middle. In the chassis frame the rear axle sits 8.6 mm below the swingarm pivot (arm points down 6 deg) and the drivetrain axes stay level at the front axle height.
 - Gearing: motor 15T to centre diff ring 45T (module 0.8, centre distance 24 mm), 3:1. One bevel set for both ends, module 1.0, 12T pinion / 30T ring, 2.5:1. Front belt 22T to 18T (0.82), rear belt 20T to 22T (1.1). Target 8.2:1 rear, 6.1:1 front (front tire is smaller). Top speed about 34 km/h at 3S.
 - Layout: front diff axis (arm pivots) at x -100, ring on its +y end; bevel pinion shaft level with the diff axis, y +18.5, running back to the centre diff (axis along x, y +18.5). Motor above the centre diff (z +24), 15T pinion meshing its ring. Rear shaft continues back to the rear bevel set at x -250, whose lateral output is the rear swingarm pivot. ESC above the shaft, battery in the nose bay.
+
+## S3 parts (parts/w3_drive.py, w3_check_drive.py, w3_drive_scene.py) - done
+- Wheelbase stretched to 360 mm so the rear bevel case clears the 112 x 62 rear tire; rear arm pivot (bevel apex) at x -272, rear axle (-360, -10.7) at the 4 deg rake. Shaft line at y +21 (front pinion shaft, centre diff axis, rear shaft).
+- Split housings (shafts lie in the z = 0 split plane, both halves print split-face up, cavities open upward): front diff + bevel case, centre diff case (window on top for the motor pinion), rear bevel case. 5 x 11 x 4 bearing seats on every shaft, M2.5 bolts.
+- Slotted motor plate (vertical 8 mm slots for the 16 mm motor pattern: mesh adjustment), battery tray and ESC tray with fore/aft slots, rear swingarm housing with belt cavity (8 x 16 x 5 axle bearing, 5 x 11 x 4 pivot bearing; printed with supports because of the bearing-seat ledge) and cover.
+- Housing cavities clear every gear and shaft block; layout overlap check clean.
+- Not yet checked: rear arm and belts placed in the assembly, 1 mm clearance to bought parts, shell around the new drivetrain, bolting of the motor plate and trays to the tub (S4), tests and report.
