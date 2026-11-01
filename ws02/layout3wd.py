@@ -62,8 +62,8 @@ def blocks():
     b["rear_shaft"] = cyl((-231.0, 21.0, 0), 2.5, 52, "x")
     b["motor"] = cyl((-221.0, 21.0, 24.0), 14, 30, "x")
     b["motor_shaft"] = cyl((-198.0, 21.0, 24.0), 2, 16, "x")
-    b["battery"] = box((-81, -19), (-10, 10), (-20, -6))
-    b["esc"] = box((-165, -119), (-19, 19), (4, 37))
+    b["battery"] = box((-79, -17), (-10, 10), (-20, -6))
+    b["esc"] = box((-80, -34), (-19, 19), (-2, 31))
     rear_x = -L["wheelbase"]
     rz = L["rear_od"] / 2 - L["tire_od"] / 2 - L["wheelbase"] * np.tan(np.radians(L["rake_deg"]))   # chassis raked nose-down: rear axle lower in the chassis frame
     b["rear_ring"] = cyl((-272.0, 21.0, 0), 15, 6, "y")

@@ -67,21 +67,23 @@ def _halves(name, box, build):
 
 
 def front_diff_case(p):
-    box = ((-162.0, -80.0), (-26.0, 34.0), (-22.0, 22.0))
+    box = ((-158.0, -80.0), (-26.0, 34.0), (-22.0, 22.0))
 
     def build(h):
+        if not h.upper:                                                    # ears that hold the servo wall: blocks beside the servos
+            for xa, xb in ((-156.6, -140.2), (-90.0, -82.0)):
+                h.box((xa, xb), (30.0, 54.5), (-22.0, 0.0))
         h.cyl_y(XD, (-17.0, 25.0), 0.0, 35.6)                              # carrier and ring cavity
         h.cyl_x((-150.0, XD + 1.0), SY, 0.0, 15.0)                         # pinion tunnel
         for yy in ((-26.1, -22.0), (30.0, 34.1)):                          # output bearing seats
             h.cyl_y(XD, yy, 0.0, SEAT)
         h.cyl_y(XD, (-26.1, 34.1), 0.0, BORE)
-        h.cyl_x((-162.1, -158.0), SY, 0.0, SEAT)                           # pinion shaft bearing
-        h.cyl_x((-162.1, -146.0), SY, 0.0, BORE)
+        h.cyl_x((-158.1, -154.0), SY, 0.0, SEAT)                           # pinion shaft bearing
+        h.cyl_x((-158.1, -146.0), SY, 0.0, BORE)
         for x, y in ((-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0)):
             h.hole_z(x, y, BOLT)
-        if not h.upper:                                                    # ears that hold the servo wall: blocks beside the servos
-            for xa, xb in ((-160.0, -140.0), (-90.0, -82.0)):
-                h.box((xa, xb), (31.6, 54.5), (-22.0, 0.0))
+        if not h.upper:
+            for xa, xb in ((-156.6, -140.2), (-90.0, -82.0)):
                 h.cyl_y(0.5 * (xa + xb), (42.0, 54.6), -10.0, 2.2)           # M2.5 pilot into the wall
     return _halves("w3_fdc", box, build)
 
@@ -118,18 +120,17 @@ def rear_bevel_case(p):
 
 
 def motor_plate(p):
-    """Vertical plate behind the motor with vertical slots (mesh adjustment) and a slotted foot."""
+    """Vertical plate behind the motor with vertical slots (mesh adjustment) and a slotted foot.
+    Print frame: u = y, v = -z, w = -x - 232 (plate thickness up); a proper rotation to the assembly frame."""
     part = Part("w3_motor_plate", "plate on its back", "PETG")
-    # print frame: u = y, v = z, w = -x (plate thickness up)
     t = 4.0
-    part.box((-4.0, 8.0, 0.0), (45.0, 38.0, t))                              # plate, y -4..41, z 8..46 (clear of the shaft line)
-    part.box((-4.0, 8.0, 0.0), (45.0, 4.0, 22.0))                            # foot along the bottom, 22 deep
+    part.box((-4.0, -46.0, 0.0), (45.0, 38.0, t))                            # plate, y -4..41, z 8..46 (clear of the shaft line)
+    part.box((-4.0, -12.0, 0.0), (45.0, 4.0, 8.0))                           # foot along the bottom, 8 deep (stops at the rear bevel case)
     for dy in (-8.0, 8.0):
         for z in (16.0, 32.0):
-            part.box((SY + dy - 1.7, z - 4.0, -1.0), (3.4, 8.0, t + 2.0), op="cut")   # motor screw slots, 8 long
+            part.box((SY + dy - 1.7, -z - 4.0, -1.0), (3.4, 8.0, t + 2.0), op="cut")   # motor screw slots, 8 long
     for y in (2.0, 35.0):
-        part.cyl((y, 7.0, 10.0), 3.4, 6.0, axis="Y", op="cut")
-        part.cyl((y, 7.0, 18.0), 3.4, 6.0, axis="Y", op="cut")
+        part.cyl((y, -13.0, 4.0), 3.4, 6.0, axis="Y", op="cut")
     return part
 
 

@@ -10,8 +10,8 @@ from parts.w3_front import YS
 
 DECK_Z = (-26.0, -23.0)
 HALF_W = 33.0
-FRONT_X = (-150.0, 8.0)
-REAR_X = (-296.0, -150.0)
+FRONT_X = (-153.0, 16.0)
+REAR_X = (-296.0, -153.0)
 HOUSING_BOLTS = [(-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0),
                  (-201.5, -2.5), (-201.5, 44.5), (-161.5, -2.5), (-161.5, 44.5),
                  (-294.0, 8.5), (-294.0, 33.5), (-247.5, 8.5), (-247.5, 33.5)]
@@ -23,21 +23,31 @@ def _slot(part, x0, x1, y):
     part.box((x0, y - SLOT_W / 2, -1.0), (x1 - x0, SLOT_W, 5.0), op="cut")
 
 
-def deck(p, name, xr, hw):
+def deck(p, name, xr, limit, perimeter):
+    """Staircase outline that follows the body's inner plan (3 mm inside the wall), capped at +-limit."""
+    from body3_build import hw_in, PAD_X, POST_XY
     part = Part(name, "flat", "PETG")
     x0, x1 = xr
-    part.box((x0, -hw, 0.0), (x1 - x0, 2 * hw, 3.0))
-    for x, y in HOUSING_BOLTS:
-        if x0 < x < x1:
-            _slot(part, x - 5.0, x + 5.0, y)
+    x = x0
+    while x < x1 - 1e-6:
+        xe = min(x + 4.0, x1)
+        w = min(limit if x < -156.0 else min(limit, 52.0), hw_in(0.5 * (x + xe)) - 3.0)
+        part.box((x, -w, 0.0), (xe - x, 2 * w, 3.0))
+        x = xe
+    for bx, by in HOUSING_BOLTS:
+        if x0 < bx < x1:
+            _slot(part, bx - 5.0, bx + 5.0, by)
     for a, b, y in RAILS:
         if x0 < (a + b) / 2 < x1:
             _slot(part, max(a, x0 + 4.0), min(b, x1 - 4.0), y)
-    n = max(2, int((x1 - x0) // 40))                                          # perimeter screws into the pads on the body skirt
-    for i in range(n + 1):
-        x = x0 + 8.0 + (x1 - x0 - 16.0) * i / n
-        for y in (-hw + 4.0, hw - 4.0):
-            part.cyl((x, y, -1.0), p.m2_clear, 5.0, op="cut")
+    if perimeter:                                                         # screws up into the pads on the body skirt
+        for px in PAD_X:
+            if x0 < px < x1:
+                for sgn in (1, -1):
+                    part.cyl((px, sgn * (hw_in(px) - 7.0), -1.0), p.m2_clear, 5.0, op="cut")
+    elif x0 < POST_XY[0] < x1:                                            # body posts
+        for sgn in (1, -1):
+            part.cyl((POST_XY[0], sgn * POST_XY[1], -1.0), 2.7, 5.0, op="cut")
     return part
 
 
@@ -57,7 +67,8 @@ def wall(p, side):
         v = z if side > 0 else -z
         part.cyl((x, v, w0), d, h, op=op)
 
-    box((xa, xb), (zl, zh), (0.0, 3.0))                                       # plate
+    box((xa, -110.0), (zl, 14.0), (0.0, 3.0))                                  # plate, low where the body skin is close (x < -110)
+    box((-110.0, xb), (zl, zh), (0.0, 3.0))                                    # plate, full height inside the arm window
     boss_z = 40.0
     cyl(-100.0, boss_z, 3.0 - 0.1, 7.1, 8.0, op="join")                       # upper-link pivot boss (the link sits 7 mm off the wall)
     cyl(-100.0, boss_z, -0.1, 10.2, 3.4)                                      # pivot pin
@@ -75,5 +86,47 @@ def wall(p, side):
     return part
 
 
+def body_post(p):
+    """Standoff from the deck to the roof boss: M2.5 screw from below through the deck and this tube."""
+    part = Part("w3_body_post", "standing", "PETG")
+    part.cyl((0.0, 0.0, 0.0), 7.6, 50.0)
+    part.cyl((0.0, 0.0, -0.1), 2.8, 50.2, op="cut")
+    return part
+
+
+def wing(p, side):
+    """Wing fender plate bolted to the inboard face of the knuckle carrier (moves with the wheel). Flat; print frame u = x, v = z."""
+    name = "w3_wing_left" if side > 0 else "w3_wing_right"
+    part = Part(name, "flat", "PETG")
+    pts = [(-50.0, -4.0), (-8.0, 40.0), (34.0, 40.0), (40.0, 10.0), (30.0, -4.0)]
+    from shapely.geometry import Polygon
+    import numpy as np
+    poly = Polygon(pts)
+    # stack of 1 mm slabs so the outline stays crisp without a sketch: use a staircase of 2 mm columns
+    xs = np.arange(-50.0, 40.0, 2.0)
+    for x in xs:
+        from shapely.geometry import LineString
+        g = LineString([(x + 1.0, -50), (x + 1.0, 80)]).intersection(poly)
+        if g.is_empty:
+            continue
+        z0, z1 = g.bounds[1], g.bounds[3]
+        part.box((x, z0 + 4.0, 0.0), (2.0, z1 - z0, 3.0))
+    part.cyl((0.0, 4.0, -0.1), 6.4, 3.2, op="cut")                        # lateral shaft passes through
+    for x in (-6.0, 6.0):
+        part.cyl((x, 4.0 + 16.0, -0.1), p.m2_clear, 3.2, op="cut")
+    return part
+
+
+def skid(p):
+    """Nose skid plate with the slot pattern from the reference: flat 3 mm plate under the nose, x -31..16, y +-40. Screws into the deck nose."""
+    part = Part("w3_skid", "flat", "PETG")
+    part.box((0.0, 0.0, 0.0), (47.0, 80.0, 3.0))
+    for y in (10.0, 22.0, 34.0, 46.0, 58.0, 70.0):
+        part.box((8.0, y - 1.7, -1.0), (30.0, 3.4, 5.0), op="cut")
+    for x, y in ((25.0, 30.0), (25.0, 50.0), (43.0, 30.0), (43.0, 50.0)):
+        part.cyl((x, y, -1.0), p.m2_clear, 5.0, op="cut")
+    return part
+
+
 def build(p):
-    return [deck(p, "w3_deck_front", FRONT_X, 33.0), deck(p, "w3_deck_rear", REAR_X, 48.0), wall(p, 1), wall(p, -1)]
+    return [body_post(p), wing(p, 1), wing(p, -1), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True), wall(p, 1), wall(p, -1)]
