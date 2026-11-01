@@ -9,7 +9,7 @@ import numpy as np
 import trimesh
 
 L = dict(
-    track=233.0, tire_od=83.0, tire_w=24.0, rear_od=112.0, rear_w=62.0,
+    track=269.1, tire_od=83.0, tire_w=24.0, rear_od=112.0, rear_w=62.0,
     la=100.0,                      # arm length, pivot to knuckle carrier
     wheelbase=360.0, rake_deg=4.0,
     tub_in=48.0, tub_wall=2.0,     # widened tub (inner face, wall)

@@ -11,12 +11,13 @@ from cad import Part
 
 ARM_L = 100.0
 ZU = 40.0                  # upper link pin height above the lower pin
-ARM_Y = (58.0, 67.5)       # arm body |y| (floor 58-63.5, belt cavity 63.5-67.5)
-COVER_Y = (67.5, 69.0)
-UP_Y = (58.0, 61.5)
-KP_Y = 105.0               # kingpin / dogbone joint |y|
-CAR_Y = (84.0, 92.0)
-KN_Y = (100.0, 112.0)
+YS = 6.5                   # outward shift of the arm / servo / wall stack (clears the front diff case)
+ARM_Y = (58.0 + YS, 67.5 + YS)       # arm body |y| (floor 58-63.5, belt cavity 63.5-67.5)
+COVER_Y = (67.5 + YS, 69.0 + YS)
+UP_Y = (58.0 + YS, 61.5 + YS)
+KP_Y = 123.0               # kingpin / dogbone joint |y|
+CAR_Y = (102.0, 110.0)
+KN_Y = (118.0, 130.0)
 ARM_A = (0.0, -16.0, -26.0)   # steering arm point from the kingpin axis: dx, dy (inboard negative), dz from axle
 LUG = (22.6, 12.0)               # lean link pin on the arm, from the pivot (x, z)
 
@@ -63,7 +64,7 @@ def arm(p, side):
     f.box((xp - 14, 14), ARM_Y, (-9.5, 9.5))                                  # belt housing
     f.box((xp + 10, xp + 34), ARM_Y, (9.5, 16.0))                             # peak (inverted V) carries the lean link
     f.box((xp + 16, xp + 28), ARM_Y, (16.0, 22.0))
-    f.box((xp - 7.5, 7.5), (63.5, ARM_Y[1] + 0.1), (-7.5, 7.5), op="cut")     # belt cavity
+    f.box((xp - 7.5, 7.5), (63.5 + YS, ARM_Y[1] + 0.1), (-7.5, 7.5), op="cut")     # belt cavity
     for x in (xp, 0.0):                                                       # bearing seats on the inner face, shaft bores through
         f.cyl_y(x, 0.0, (ARM_Y[0] - 0.1, ARM_Y[0] + 4.0), 11.15 if x == xp else 8.15, op="cut")
         f.cyl_y(x, 0.0, (ARM_Y[0] - 0.1, ARM_Y[1] + 0.1), 5.4 if x == xp else 4.4, op="cut")

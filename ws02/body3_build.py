@@ -61,7 +61,7 @@ def front_window():
     """Hull of the front mechanism over the lean range, projected to (x, z), grown by 4 mm: a clean polygon cut through the flanks."""
     import w3_scene as S
     pts = []
-    for ph in range(-30, 31, 6):
+    for ph in range(-25, 26, 5):
         for n, m, k in S.scene(float(ph)):
             if n.startswith(("arm_", "cover_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
                 pts += [(float(x), float(z)) for x, y, z in m.vertices[::7]]

@@ -17,15 +17,15 @@ from params import P as _P
 RODT = _P.rod_t
 R_H, LR_LEAN = 28.0, None                      # lean horn length
 STEER_MAX = 17.0
-LEAN_MAX = 30.0
+LEAN_MAX = 25.0
 SH_LEAN = np.array([-71.4, -18.8])     # lean horn shaft (x, z), from the horn scan (worst horn angle 29 deg)
 LR = 30.0
 R_S = 12.0
 I0 = np.array([F.P[0] + W.ARM_A[0], W.ARM_A[2]])                     # steer rod inner point at rest (x, z)
 SIGN = -1.0                                   # +1: steer horn shaft below the rod inner point, -1: above
 SH_STEER = np.array([I0[0], I0[1] - SIGN * R_S])
-HORN_Y = (54.7, 57.0)
-SERVO_Y = (28.7, 48.0)
+HORN_Y = (54.7 + W.YS, 57.0 + W.YS)
+SERVO_Y = (28.7 + W.YS, 48.0 + W.YS)
 
 
 def solve_psi(f):
@@ -144,7 +144,7 @@ def scene(phi_deg, steer=None):
         # steer: tie rod from the knuckle arm point to the steer horn tip
         kp = np.array([kx, s * W.KP_Y, kz])
         a_pt = kp + Rz(delta, (0, 0))[:3, :3] @ np.array([W.ARM_A[0], s * W.ARM_A[1], W.ARM_A[2]])
-        tip_y = 56.0
+        tip_y = 56.0 + W.YS
         L_t = float(np.linalg.norm(np.array([W.ARM_A[0], W.KP_Y + W.ARM_A[1], W.ARM_A[2]]) - np.array([I0[0], tip_y, I0[1]])))
         g = lambda ps: np.linalg.norm(np.array([SH_STEER[0] + R_S * math.sin(ps), s * tip_y, SH_STEER[1] + SIGN * R_S * math.cos(ps)]) - a_pt) - L_t
         try:
@@ -155,12 +155,12 @@ def scene(phi_deg, steer=None):
         items.append((f"steer_horn_{s}", horn_mesh(SH_STEER, ts, tuple(sorted((s * HORN_Y[0], s * HORN_Y[1])))), "bought"))
         items.append((f"steer_servo_{s}", flat_box((SH_STEER[0] - 11.4, s * (SERVO_Y[0] + SERVO_Y[1]) / 2, SH_STEER[1]),
                                                    (40.0, SERVO_Y[1] - SERVO_Y[0], 20.0)), "bought"))
-        items.append((f"tub_wall_{s}", flat_box((-105, s * 49.0, -5), (170.0, 2.0, 78.0)), "bought"))
-        items.append((f"diff_out_{s}", LY.cyl((F.P[0], s * 33.0, 0), 2.5, 66.0, "y"), "bought"))
-        items.append((f"tip_shaft_{s}", LY.cyl((kx, s * 77.0, kz), 2.0, 56.0, "y"), "bought"))
+        items.append((f"tub_wall_{s}", flat_box((-105, s * (49.0 + W.YS), -5), (170.0, 2.0, 78.0)), "bought"))
+        items.append((f"diff_out_{s}", LY.cyl((F.P[0], s * (33.0 + W.YS / 2), 0), 2.5, 66.0 + W.YS, "y"), "bought"))
+        items.append((f"tip_shaft_{s}", LY.cyl((kx, s * (86.0 + W.YS / 2), kz), 2.0, 74.0 - W.YS, "y"), "bought"))
         if not math.isnan(ps):
             items.append((f"tie_rod_{s}", rod_mesh("w3_tie_rod", [ts[0], s * tip_y, ts[1]], [a_pt[0], a_pt[1], a_pt[2]], (0, 0, 1)), "printed"))
-        items.append((f"lean_rod_{s}", rod_mesh("w3_lean_rod", [tip[0], s * 55.0, tip[1]], [lug[0], s * 55.0, lug[1]], (0, 1, 0)), "printed"))
+        items.append((f"lean_rod_{s}", rod_mesh("w3_lean_rod", [tip[0], s * (55.0 + W.YS), tip[1]], [lug[0], s * (55.0 + W.YS), lug[1]], (0, 1, 0)), "printed"))
     items.append(("front_diff", LY.cyl((F.P[0], 0, 0), 19, 38, "y"), "bought"))
     return items
 

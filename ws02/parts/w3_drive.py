@@ -79,6 +79,10 @@ def front_diff_case(p):
         h.cyl_x((-162.1, -146.0), SY, 0.0, BORE)
         for x, y in ((-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0)):
             h.hole_z(x, y, BOLT)
+        if not h.upper:                                                    # ears that hold the servo wall: blocks beside the servos
+            for xa, xb in ((-160.0, -140.0), (-90.0, -82.0)):
+                h.box((xa, xb), (31.6, 54.5), (-22.0, 0.0))
+                h.cyl_y(0.5 * (xa + xb), (42.0, 54.6), -10.0, 2.2)           # M2.5 pilot into the wall
     return _halves("w3_fdc", box, build)
 
 
