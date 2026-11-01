@@ -51,3 +51,8 @@ Stages
 - Slotted motor plate (vertical 8 mm slots for the 16 mm motor pattern: mesh adjustment), battery tray and ESC tray with fore/aft slots, rear swingarm housing with belt cavity (8 x 16 x 5 axle bearing, 5 x 11 x 4 pivot bearing; printed with supports because of the bearing-seat ledge) and cover.
 - Housing cavities clear every gear and shaft block; layout overlap check clean.
 - Not yet checked: rear arm and belts placed in the assembly, 1 mm clearance to bought parts, shell around the new drivetrain, bolting of the motor plate and trays to the tub (S4), tests and report.
+
+## S4a shell (mono3_build.py, split_shell3.py, w3_interior_check.py) - first pass, NOT good enough visually
+- The extracted base.stl skin is stretched (x 1.9, y 1.17) and hollowed at 0.5 mm voxel pitch (decimated to 400k faces), windows cut automatically from the swept front mechanism (lean -30..30), rear arm notch; split into 4 watertight pieces that fit the 220 x 220 bed.
+- Interior fit: everything sits inside the shell except the lower diff housing (belly is open).
+- Visual quality is poor: the extracted skin has no nose and ragged flanks after the windows. Next: build the body procedurally (plan, side and roof facets from the base silhouettes, panel recesses) instead of stretching the extract.

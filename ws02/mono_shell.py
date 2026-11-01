@@ -13,13 +13,13 @@ def build(skin_path="out/base_split/ext_final.stl", out="out/mono/shell_watertig
     vox = trimesh.voxel.creation.voxelize(skin, pitch=PITCH, method="subdivide")
     occ = np.pad(vox.matrix.astype(bool), 12)
     origin = vox.transform[:3, 3] - 12 * PITCH
-    shell = ndimage.binary_dilation(occ, structure=ndimage.generate_binary_structure(3, 2), iterations=1)   # skin thickened to 3 voxels = 2.4 mm
+    shell = ndimage.binary_dilation(occ, structure=ndimage.generate_binary_structure(3, 2), iterations=max(1, round((WALL / PITCH - 1) / 2)))   # skin thickened to about WALL
     shell = ndimage.binary_closing(shell, iterations=1)
     lab, n = ndimage.label(shell)
     if n > 1:
         sizes = ndimage.sum(shell, lab, range(1, n + 1))
         shell = np.isin(lab, 1 + np.where(sizes > 0.02 * sizes.max())[0])
-    field = ndimage.gaussian_filter(np.pad(shell, 1).astype(np.float32), sigma=0.9)          # smooths the voxel terraces
+    field = ndimage.gaussian_filter(np.pad(shell, 1).astype(np.float32), sigma=0.72 / PITCH)          # smooths the voxel terraces
     verts, faces, _, _ = measure.marching_cubes(field, 0.42, spacing=(PITCH,) * 3)
     verts = verts + origin - PITCH
     m = trimesh.Trimesh(verts, faces[:, ::-1])
