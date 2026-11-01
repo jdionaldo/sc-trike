@@ -98,3 +98,7 @@ Stages
 - Nose: flat vertical front face (x 17.7, z -2..30, 76 mm wide) with four cooling slots; the bottom is angled back (z -2 at the face down to z -26 at x -35, about 25 degrees).
 - Upper-link pivot: the wall boss pointed inboard; replaced by a printed standoff (w3_uplink_standoff) between the wall and the link.
 - Clash sweep (lean 0, +-12, +-25 with steer 0/+-17): 0 clashes.
+
+## S10 mass, strength
+- w3_mass.py: about 1.6 kg total (printed about 510 g with 1.2 mm walls and infill, bought about 990 g, 110 g misc), 61% of the weight on the front axle, CG 45 mm above the ground, static roll-over 71 deg, rolls over at 5.4 m/s on a 1 m radius if it did not lean (it leans, so the real figure is higher).
+- w3_strength.py: kingpin raised to 4 mm steel (factor of safety 2.3 to 5.5); the printed tie rod would buckle at 29 N, so the tie rods are 3 mm steel turnbuckles (printed part kept as an envelope); every other checked part has a factor of safety above 6.

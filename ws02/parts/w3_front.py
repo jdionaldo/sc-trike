@@ -15,6 +15,7 @@ YS = 6.5                   # outward shift of the arm / servo / wall stack (clea
 ARM_Y = (58.0 + YS, 67.5 + YS)       # arm body |y| (floor 58-63.5, belt cavity 63.5-67.5)
 COVER_Y = (67.5 + YS, 69.0 + YS)
 UP_Y = (58.0 + YS, 61.5 + YS)
+KP_D = 4.0                 # kingpin diameter (steel, hangs from the carrier tab; 3 mm gave a factor of safety of only 2.3)
 KP_Y = 123.0               # kingpin / dogbone joint |y|
 CAR_Y = (102.0, 110.0)
 KN_Y = (118.0, 130.0)
@@ -104,7 +105,7 @@ def carrier(p, side):
     f.box((-6, 6), (CAR_Y[1], KN_Y[1] + 4), (14, 24))                       # upper kingpin tab (post covers 14-24 below it)
     f.cyl_y(0.0, 0.0, (CAR_Y[0] - 0.1, CAR_Y[1] + 0.1), 8.15, op="cut")      # shaft bearing
     f.cyl_y(0.0, ZU, (CAR_Y[0] - 0.1, CAR_Y[1] + 0.1), p.pin_dia + p.clr_slide, op="cut")
-    f.cyl_z(0.0, KP_Y, (13.5, 24.5), p.pin_dia + p.clr_press, op="cut")        # kingpin hangs from the upper tab
+    f.cyl_z(0.0, KP_Y, (13.5, 24.5), KP_D + p.clr_press, op="cut")        # kingpin hangs from the upper tab
     return part
 
 
@@ -127,9 +128,9 @@ def knuckle(p, side):
     box((-12, 10), (KN_Y[0] + 0.5, ytop), (-11.5, 13.5))                       # knuckle block under the carrier tab
     box((-6, 6), (KN_Y[0] + 0.5, ytop), (ARM_A[2] - 3, -11.0))                 # web down to the steering arm, flush on the bed
     box((-6, 6), (y_in - 3.0, ytop), (ARM_A[2] - 3, ARM_A[2] + 3))             # steering arm beam, a column rising from the web
-    cyl_y(0.0, 0.0, (KN_Y[0], ytop + 0.1), p.axle_dia + p.clr_slide + 0.2)
+    cyl_y(0.0, 0.0, (KN_Y[0], ytop + 0.1), p.axle_dia + p.clr_slide + 0.6)
     v0, v1 = vv(-12.0, 14.0)
-    part.cyl((0.0, v0, ytop - KP_Y), p.pin_dia + p.clr_slide, v1 - v0, axis="Y", op="cut")
+    part.cyl((0.0, v0, ytop - KP_Y), KP_D + p.clr_slide, v1 - v0, axis="Y", op="cut")
     cyl_y(ARM_A[0], ARM_A[2], (y_in - 3.1, y_in + 3.0), p.ball_stud_dia + p.clr_press * 2)
     return part
 

@@ -76,3 +76,20 @@ def test_interior_inside_body(body_built):
 def test_mass_plausible(body_built):
     g = A.mass_g(A.assembly(0.0))
     assert 600.0 < g < 1400.0, g
+
+
+def test_strength_factors():
+    import w3_strength
+    for name, sf in w3_strength.rows:
+        if "printed 3 x 10" in name or "3 mm steel, cantilever" in name.replace("Kingpin 3 mm", "3 mm steel,").replace("3 mm steel, cantilever from", "3 mm steel, cantilever from") and name.startswith("Kingpin 3"):
+            continue                      # superseded by the 4 mm kingpin / steel turnbuckle
+        assert sf >= 2.0, (name, sf)
+
+
+def test_mass_and_cg():
+    import w3_mass
+    rows, total, cg = w3_mass.run()
+    assert 1000.0 < total < 2200.0, total
+    front = (cg[0] + 360.0) / 360.0
+    assert 0.45 < front < 0.70, front
+    assert cg[2] + 41.5 < 80.0, cg

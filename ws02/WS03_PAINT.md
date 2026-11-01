@@ -14,3 +14,6 @@ Recessed areas (0.8 mm deep) are meant for a contrasting paint; print the body i
 | Screw head circles | black dots | 12 per body half |
 
 Decal positions: "REVERSE TRIKE" on the upper flank between the louvres and the front window edge (x -200 to -130), model mark on the tail slot.
+
+## Rendered scheme
+`python w3_paint.py [lean] [steer]` writes `out/WS03_painted.glb` with per-face colours (body red; canopy, flank panels and roof hatch black; rocker band grey; wings and skid white; gold gears and pulleys; blue electronics), and `blender -b --python blender/render_glb.py -- out/WS03_painted.glb out/renders/ws03` renders iso, side, top and front PNGs.

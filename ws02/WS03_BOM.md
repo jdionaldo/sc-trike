@@ -25,6 +25,8 @@ All sizes below are assumptions from the 1/10 and 1/18 RC parts we planned aroun
 | Axle 8 mm (rear), 4 mm (front, tip shafts) | 1 + 4 | |
 | Pins 3 mm steel (kingpins, link pivots) | 8 | |
 | Ball studs / rod ends M2 | 8 | tie rods and lean rods |
+| Steel turnbuckles 3 mm with ball ends, about 105 mm | 2 | steer tie rods (the printed tie rod is only an envelope; printed it buckles at 29 N against a 98 N servo stall) |
+| Kingpins 4 mm steel, about 30 mm | 2 | hang from the carrier tabs |
 | Screws M2, M2.5 and heat-set inserts | assorted | pads, ears, deck, housings |
 | Antenna tube | 1 | tail post |
 
