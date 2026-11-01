@@ -56,3 +56,9 @@ Stages
 - The extracted base.stl skin is stretched (x 1.9, y 1.17) and hollowed at 0.5 mm voxel pitch (decimated to 400k faces), windows cut automatically from the swept front mechanism (lean -30..30), rear arm notch; split into 4 watertight pieces that fit the 220 x 220 bed.
 - Interior fit: everything sits inside the shell except the lower diff housing (belly is open).
 - Visual quality is poor: the extracted skin has no nose and ragged flanks after the windows. Next: build the body procedurally (plan, side and roof facets from the base silhouettes, panel recesses) instead of stretching the extract.
+
+## S4b body rebuild (body3_build.py, split_shell3.py, w3_interior_check.py) - done
+- Procedural faceted wedge from the base.stl silhouettes (plan, side, section with 11 deg tumblehome), mapped to the 3WD frame (x 1.19, y 1.17), 2.4 mm wall, fully open belly. 318 mm long, 135 wide, roof 90 above the belly; the nose is low and the roof peaks over the rear middle.
+- Cut-outs: one angular window per flank (hull of the swept front mechanism + 4 mm), rear-arm notch, through louvres and a triangular vent, two 0.8 mm recessed paint panels per flank, roof access hatch (separate snug lid, 0.25 mm gap).
+- Four watertight pieces (left/right x front/rear) fit the 220 x 220 bed; nothing inside pokes through the skin; the front mechanism clears the body at every lean/steer pose.
+- Still to do: deck and internal mounts (slotted deck, servo pockets, tub walls), belt covers/fenders, nose skid plate, shell-to-chassis fixings, tests/report/BOM, tail detail.
