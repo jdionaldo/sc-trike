@@ -105,6 +105,7 @@ def print_to_local(name):
         "chassis_cradle_left": left(y_cra),
         "chassis_cradle_right": right(y_cra),
         "motor_flange": M4([[1, 0, 0], [0, 0, 1], [0, -1, 0]], (P.pivot_xz[0], y_cra, P.pivot_xz[1])),
+        "swingarm_cover": M4([[1, 0, 0], [0, 0, -1], [0, 1, 0]], (0, P.sw_y_out_b + 8.0, 0)),
         "swingarm_arm": M4([[1, 0, 0], [0, 0, -1], [0, 1, 0]], (0, P.sw_y_out_b, 0)),
         "rear_hub": M4([[-1, 0, 0], [0, 0, 1], [0, 1, 0]], (0, -P.hub_len / 2, 0)),
     }
@@ -158,8 +159,10 @@ def scene(lean_deg=0.0, travel=0.0, lead=True, body=False):
     def add(name, mesh, kind="printed", group="chassis"):
         items.append(Item(name, mesh, kind, group))
 
-    for n in ("chassis_tub_left", "chassis_tub_right", "front_yoke", "chassis_cradle_left", "chassis_cradle_right"):
-        add(n, place(n, print_to_local(n)))
+    add("front_yoke", place("front_yoke", print_to_local("front_yoke")))
+    for n in ("mono_left", "mono_right"):               # body shell fused with the tub and cradle (mono_build.py)
+        add(n, trimesh.load(Path("out/mono") / f"{n}.stl"))
+    add("canopy_lid", trimesh.load(Path("out/mono") / "canopy_lid.stl"), "printed", "body")
 
     fe = front_end(phi)
     add("lean_bar_lower", place("lean_bar_lower", R_axis([1, 0, 0], phi) @ print_to_local("lean_bar_lower")), group="front")
@@ -210,6 +213,7 @@ def scene(lean_deg=0.0, travel=0.0, lead=True, body=False):
         add(name, mesh.apply_transform(g), kind, "swingarm")
 
     sw("swingarm_arm", place("swingarm_arm", print_to_local("swingarm_arm")))
+    sw("swingarm_cover", place("swingarm_cover", print_to_local("swingarm_cover")))
     add("motor_flange", place("motor_flange", print_to_local("motor_flange")), "printed", "chassis")
     y_face = P.ch_in_rear
     add("POWER_UNIT", cyl_y((mx, 0, mz), P.pu_dia / 2, y_face - P.pu_len, y_face), "bought", "chassis")
@@ -231,12 +235,7 @@ def scene(lean_deg=0.0, travel=0.0, lead=True, body=False):
 
 
 def body_items():
-    """RT-1 shell halves (out/rt1_body/*.stl, authored in the chassis frame by blender/sculpt_rt1_shell.py)."""
-    items = []
-    for name in ("body_left", "body_right"):
-        mesh = trimesh.load(Path("out/rt1_body") / f"{name}.stl")
-        items.append(Item(name, mesh, "printed", "body"))
-    return items
+    return []                                           # the body is part of the monocoque halves now
 
 
 def lead_points():

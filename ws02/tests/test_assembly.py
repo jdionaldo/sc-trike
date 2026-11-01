@@ -19,8 +19,8 @@ def test_clearance_to_bought_parts(pose):
 
 def test_battery_and_receiver_lift_out():
     items = assembly.scene()
-    assert validate.removal_collisions(items, "LIPO_2S", (0, 0, 1), 80.0, ignore=("battery_mount",)) is None
-    assert validate.removal_collisions(items, "RECEIVER", (0, 0, 1), 80.0, ignore=("rx_mount",)) is None
+    assert validate.removal_collisions(items, "LIPO_2S", (0, 0, 1), 80.0, ignore=("battery_mount", "canopy_lid")) is None
+    assert validate.removal_collisions(items, "RECEIVER", (0, 0, 1), 80.0, ignore=("rx_mount", "canopy_lid")) is None
 
 
 def test_servo_torque_margin():

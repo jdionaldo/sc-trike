@@ -64,8 +64,35 @@ def arm(p):
     f.cyl(part, ax, az, p.rear_axle_dia + p.clr_slide, (p.sw_y_tire_face - 1.0, p.sw_y_out_b + 1.0), op="cut")
     f.cyl(part, ax, az, p.rear_bearing_od + p.clr_press, (p.sw_y_out_b - p.rear_bearing_w, p.sw_y_out_b + 1.0), op="cut")
     f.cyl(part, lug[0], lug[1], p.pin_dia + p.clr_slide, (p.sw_y_tire_face - 1.0, p.sw_y_out_b + 1.0), op="cut")
+    for x, z in cover_screws(p):
+        f.cyl(part, x, z, p.m2_insert_hole, (p.sw_y_out_b - 4.5, p.sw_y_out_b + 1.0), op="cut")
+    return part
+
+
+COVER_DEPTH = 8.0
+
+
+def cover_screws(p):
+    L = layout(p)
+    return [(L["I"][0], L["I"][1] + 17.0), (L["A"][0] + 18.0, L["A"][1] + 2.0), (L["M"][0] + 2.0, L["M"][1] - 17.0)]
+
+
+def cover_outline(p, grow=0.0):
+    L = layout(p)
+    return hull_xy([(L["M"], 24.0 + grow), (L["I"], 20.0 + grow), (L["A"], 24.0 + grow)])
+
+
+def cover(p):
+    """Small shroud over the arm's outboard face (gears and belt side): a hollow faceted cap on three M2 screws."""
+    f = Frame(+1, p.sw_y_out_b + COVER_DEPTH)
+    part = Part("swingarm_cover", "outer face on the bed, open side up", "PETG")
+    y0, y1 = p.sw_y_out_b, p.sw_y_out_b + COVER_DEPTH
+    f.poly(part, cover_outline(p), (y0, y1))
+    f.poly(part, cover_outline(p, -2.6), (y0 - 1.0, y1 - 2.4), op="cut")  # hollow, open toward the arm
+    for x, z in cover_screws(p):
+        f.cyl(part, x, z, p.m2_clear, (y0 - 1.0, y1 + 1.0), op="cut")
     return part
 
 
 def build(p):
-    return [arm(p)]
+    return [arm(p), cover(p)]

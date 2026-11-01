@@ -29,6 +29,14 @@ def print_rows():
         rows.append({"name": part.name, "qty": QTY.get(part.name, 1), "material": part.material,
                      "orientation": part.orientation, "infill": infill, "mass_g": mass, "hours": hours,
                      "extent": (m.bounds[1] - m.bounds[0]).round(1).tolist()})
+    for name in ("mono_left", "mono_right", "canopy_lid"):          # built by mono_build.py, not from command scripts
+        m = trimesh.load(OUT / "stl" / f"{name}.stl", force="mesh")
+        shell = min(m.volume, m.area * P.perimeters * P.nozzle)
+        printed_mm3 = shell + P.infill_structural * (m.volume - shell)
+        rows.append({"name": name, "qty": 1, "material": "PETG", "orientation": "chassis frame, supports, turned on the bed",
+                     "infill": P.infill_structural, "mass_g": printed_mm3 * DENSITY["PETG"] / 1000.0,
+                     "hours": printed_mm3 / P.flow_mm3_s * P.time_overhead / 3600.0,
+                     "extent": (m.bounds[1] - m.bounds[0]).round(1).tolist()})
     return rows
 
 

@@ -1,3 +1,4 @@
+import math
 """Print checks on exported STL files. Parts are exported in their print frame (Z up, bed at z = 0)."""
 import sys
 from pathlib import Path
@@ -18,8 +19,17 @@ def load(name):
 
 def check_bed(m, tol=Z_EPS):
     ext = m.bounds[1] - m.bounds[0]
-    ok = ext[0] <= P.bed_x and ext[1] <= P.bed_y and ext[2] <= P.bed_z and abs(m.bounds[0][2]) < tol
-    return ok, f"extent {ext.round(1).tolist()} zmin {m.bounds[0][2]:.2f}"
+    fits = ext[0] <= P.bed_x and ext[1] <= P.bed_y
+    if not fits:                                     # a long part may print turned on the bed
+        hull = m.vertices[trimesh.convex.hull_points(m.vertices[:, :2]) if False else __import__("scipy.spatial", fromlist=["ConvexHull"]).ConvexHull(m.vertices[:, :2]).vertices][:, :2]
+        for th in np.radians(np.arange(0, 90.1, 2.0)):
+            r = hull @ np.array([[math.cos(th), -math.sin(th)], [math.sin(th), math.cos(th)]])
+            e2 = r.max(0) - r.min(0)
+            if e2[0] <= P.bed_x and e2[1] <= P.bed_y:
+                fits = True
+                break
+    ok = fits and ext[2] <= P.bed_z and abs(m.bounds[0][2]) < tol
+    return ok, f"extent {ext.round(1).tolist()} zmin {m.bounds[0][2]:.2f}" + ("" if ext[0] <= P.bed_x and ext[1] <= P.bed_y else " (turned on the bed)")
 
 
 def check_watertight(m):
@@ -89,16 +99,16 @@ def validate_part(name, walls=True, supports=False):
 
 
 # ---- assembled-pose checks ----
-OVERLAP_DECLARED = [("rear_hub", "REAR_TIRE_WHEEL"), ("rear_hub", "AXLE_REAR"),
+OVERLAP_DECLARED = [("mono_left", "mono_right"), ("rear_hub", "REAR_TIRE_WHEEL"), ("rear_hub", "AXLE_REAR"),
                     ("hub_left", "FRONT_TIRE_WHEEL_LEFT"), ("hub_right", "FRONT_TIRE_WHEEL_RIGHT")]
 SEATED = OVERLAP_DECLARED + [
-    ("POWER_UNIT", "chassis_cradle_left"), ("POWER_UNIT", "chassis_cradle_right"), ("POWER_UNIT", "motor_flange"),
-    ("POWER_UNIT_SHAFT", "motor_flange"), ("POWER_UNIT_SHAFT", "chassis_cradle_left"),
+    ("POWER_UNIT", "mono_left"), ("POWER_UNIT", "mono_right"), ("POWER_UNIT", "motor_flange"),
+    ("POWER_UNIT_SHAFT", "motor_flange"), ("POWER_UNIT_SHAFT", "mono_left"),
     ("GEAR_PINION_1", "swingarm_arm"), ("GEAR_1", "swingarm_arm"), ("GEAR_PINION_2", "swingarm_arm"),
     ("GEAR_2", "swingarm_arm"), ("SHAFT_INTERMEDIATE", "swingarm_arm"), ("AXLE_REAR", "swingarm_arm"),
     ("LIPO_2S", "battery_mount"), ("RECEIVER", "rx_mount"),
-    ("SERVO_9G", "chassis_tub_right"), ("SERVO_9G", "chassis_tub_left"), ("SERVO_HORN", "chassis_tub_right"),
-    ("SERVO_HORN", "chassis_tub_left"),
+    ("SERVO_9G", "mono_right"), ("SERVO_9G", "mono_left"), ("SERVO_HORN", "mono_right"),
+    ("SERVO_HORN", "mono_left"),
     ("DOWEL_2x18_L", "body_bumper_cage"), ("DOWEL_2x18_R", "body_bumper_cage"),
     ("DOWEL_2x18_L", "front_yoke"), ("DOWEL_2x18_R", "front_yoke"), ("SERVO_HORN", "rod_drive")]
 

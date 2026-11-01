@@ -1,19 +1,24 @@
-# WS-02 lean-steer reverse trike (370 mm), shell from base.stl
+# WS-02 lean-steer reverse trike (370 mm) with a base.stl shell
 
-Single source of truth: `params.py`. Parts are SolidCraft command scripts (`parts/`), built by `build.py`, validated by
-`validate.py` and `tests/`. The body skin is extracted from `base/base.stl` (not in the repo).
+Single source of truth: `params.py`. Mechanism parts are SolidCraft command scripts (`parts/`), built by `build.py` and checked by
+`validate.py` and `tests/` (65 pass). The body is the exterior skin of `base/base.stl` (not in the repo) turned into a watertight
+shell by `shell_from_base.py` and `mono_shell.py`, fused with the tub and cradle by `mono_build.py`.
 
-## Status
-- **Mechanism (done, 41 tests pass, no interference in the 9 lean/travel poses):** lean-steer front end on a 233 mm
-  track with 83 x 24 mm tires, narrow tub (84 mm), single-sided swingarm with a fixed 2830 motor, 15T/60T spur and a
-  15T/30T belt to a cantilevered 8 mm axle, 85 x 50 mm rear tire, ESC above the battery, receiver tray.
-- **Body (not finished):** `shell_from_base.py` pulls the exterior skin from the base model (scaled to 370 mm, chassis
-  frame) and `blender/solidify_shell.py` gives it a 2.4 mm wall; `blender/split_shell.py` splits it into left and right
-  halves (`out/rt1_body/body_left.stl`, `body_right.stl`, each about 184 x 58 x 88 mm, bed-legal). The skin is not
-  watertight (the base model is a surface with internal frames), so the halves need a manual repair pass in a mesh tool
-  before slicing. Not built: nose fairing, tail wing, body-to-chassis fixings, interference checks against the repaired shell.
-- **Not done:** mass/CG and tip-over report (needs the repaired shell), print plan and BOM refresh, shock tower, ESC tray.
+## What it is
+- Lean-steer front end on a 233 mm track (83 x 24 mm tires), one servo drives lean and steer through the coupling links.
+- Fixed 2830 motor in a narrow cradle, 15T/60T spur and a 15T/30T GT2 belt in a single-sided swingarm, cantilevered 8 mm axle,
+  85 x 50 mm rear tire, small bolt-on `swingarm_cover`. ESC above the battery, receiver tray, placeholder envelopes for all bought parts.
+- Body: `mono_left` and `mono_right` (shell + tub + cradle fused, watertight, 226 x 62 x 115 mm, supports, print turned on the bed),
+  `canopy_lid` over the battery/ESC/receiver bay, tail hood over the cradle so nothing protrudes at the rear.
+- No interference in the 9 lean and travel poses; mass about 865 g, CG about 60 mm above ground, tip-over margin about 0.75 g.
 
-## Layout
-params.py, kinematics.py, cad.py, parts/*.py, build.py, validate.py, assembly.py, renders.py, report.py, sc_scene.py,
-shell_from_base.py, blender/*.py, tests/.
+## Not done
+- A more compact lean-steer mechanism (cantilever style). A 175 mm track version of the current linkage collides; it needs a
+  new linkage, not a rescale. The front end, yoke and ear still stand ahead of the shell (no nose fairing yet).
+- Nose fairing, body fixings (pins/screws between the lid and shell), shock tower, ESC tray, motor-side cooling vents, wiring layout.
+- The shell is a voxel-smoothed copy of the base skin: facets are slightly rounded.
+
+## Build
+`uv venv --python 3.12 .venv`; install numpy scipy trimesh manifold3d shapely networkx scikit-image matplotlib pytest rtree;
+`PYTHONPATH=. python build.py` then `python mono_build.py` (needs `out/base_split/ext_final.stl` from `shell_from_base.py`, Blender for
+`blender/solidify_shell.py`), `python -m pytest tests`, `python report.py`.
