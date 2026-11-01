@@ -5,7 +5,7 @@ Single source of truth: `params.py`. Mechanism parts are SolidCraft command scri
 shell by `shell_from_base.py` and `mono_shell.py`, fused with the tub and cradle by `mono_build.py`.
 
 ## What it is
-- Lean-steer front end on a 233 mm track (83 x 24 mm tires), one servo drives lean and steer through the coupling links.
+- Lean-steer front end on a 233 mm track (83 x 24 mm tires), one servo drives lean; a steer servo per front wheel sits on the lower lean bar and drives the knuckle through a short tie rod (radio mixes lean into steer, so three servo channels).
 - Fixed 2830 motor in a narrow cradle, 15T/60T spur and a 15T/30T GT2 belt in a single-sided swingarm, cantilevered 8 mm axle,
   85 x 50 mm rear tire, small bolt-on `swingarm_cover`. ESC above the battery, receiver tray, placeholder envelopes for all bought parts.
 - Body: `mono_left` and `mono_right` (shell + tub + cradle fused, watertight, 226 x 62 x 115 mm, supports, print turned on the bed),

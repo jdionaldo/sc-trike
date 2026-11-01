@@ -62,8 +62,8 @@ def mass_points(items, rows):
     for it in items:
         if it.kind == "printed":
             key = it.name
-            if key.startswith("link_steer"):
-                key = "link_steer"
+            if key.startswith("tie_rod"):
+                key = "tie_rod"
             elif key.startswith("upright"):
                 key = "upright"
             r = by_name[key]

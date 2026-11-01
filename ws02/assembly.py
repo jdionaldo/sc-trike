@@ -97,8 +97,8 @@ def print_to_local(name):
         "upright": M4([[0, 0, 1], [1, 0, 0], [0, 1, 0]], (P.up_x0, 0, 0)),
         "lean_bar_upper": bar,
         "lean_bar_lower": bar,
-        "link_bracket_left": M4([[1, 0, 0], [0, -1, 0], [0, 0, -1]], (0, 0, P.br_t + P.br_standoff + P.bar_h / 2)),
-        "link_bracket_right": M4([[1, 0, 0], [0, -1, 0], [0, 0, -1]], (0, 0, P.br_t + P.br_standoff + P.bar_h / 2)),
+        "servo_mount_left": M4([[0, 0, 1], [1, 0, 0], [0, 1, 0]], (P.ssv_mount_x0, 0, 0)),
+        "servo_mount_right": M4([[0, 0, 1], [-1, 0, 0], [0, -1, 0]], (P.ssv_mount_x0, 0, 0)),
         "front_yoke": M4([[0, 0, -1], [-1, 0, 0], [0, 1, 0]], (P.yoke_leg[1], 0, 0)),
         "chassis_tub_left": left(y_tub),
         "chassis_tub_right": right(y_tub),
@@ -112,20 +112,19 @@ def print_to_local(name):
     return table[name]
 
 
-def front_end(phi):
+def front_end(phi, steer=None):
     """Per side: bar end, steer angle, hub transform, and the two end points of the steering link."""
     out = {}
     arm = np.array(P.steer_arm_xyz)
     for side in (1, -1):
-        d = K.steer_angle(phi, arm, P.link_anchor_bar_xyz, P.coupling_link_len, 0.0, side)
-        if math.isnan(d):
-            d = K.steer_angle(phi, arm, P.link_anchor_bar_xyz, P.coupling_link_len, math.copysign(0.3, phi), side)
+        d = max(-K.STEER_TARGET_DEG, min(K.STEER_TARGET_DEG, phi / D2R * K.STEER_TARGET_DEG / P.lean_target_deg)) * D2R if steer is None else steer * D2R     # radio mix: steer follows lean
+        th, a_end, tip = K.ssv_state(phi, d, side)
         k0 = K.bar_end(0.0, side)
         k = K.bar_end(phi, side)
         hub = T(*(k - k0)) @ R_axis(K.KP_AXIS, d, k0)
         out[side] = {"k": k, "k0": k0, "delta": d, "hub": hub,
                      "s_end": k + K.rot_axis(K.KP_AXIS, d) @ (arm * np.array([1, side, 1])),
-                     "a_end": K.anchor_pos(phi, P.link_anchor_bar_xyz, side)}
+                     "a_end": tip, "horn": th}
     return out
 
 
@@ -175,9 +174,27 @@ def scene(lean_deg=0.0, travel=0.0, lead=True, body=False):
         wheel = cyl_y((0, side * (P.front_track / 2), -P.axle_drop), P.front_tire_od / 2,
                       side * (P.front_track / 2) - P.front_tire_w / 2, side * (P.front_track / 2) + P.front_tire_w / 2)
         add(f"FRONT_TIRE_WHEEL_{tag.upper()}", wheel.apply_transform(e["hub"]), "bought", "front")
-        add(f"link_steer_{tag}", place("link_steer", rod_matrix(e["a_end"], e["s_end"], R_axis([1, 0, 0], phi)[:3, :3] @ np.array([0.0, 0.0, 1.0]))), group="front")
-        add(f"link_bracket_{tag}", place(f"link_bracket_{tag}", R_axis([1, 0, 0], phi) @ print_to_local(f"link_bracket_{tag}")),
+        add(f"tie_rod_{tag}", place("tie_rod", rod_matrix(e["a_end"], e["s_end"], (0.0, 0.0, 1.0))), group="front")
+        add(f"servo_mount_{tag}", place(f"servo_mount_{tag}", R_axis([1, 0, 0], phi) @ print_to_local(f"servo_mount_{tag}")),
             group="front")
+        zb = P.ssv_z_bottom
+        sv = box((P.ssv_x, side * P.ssv_center_y, zb + P.servo_h / 2), (P.servo_w, P.servo_l, P.servo_h))
+        sv.apply_transform(R_axis([1, 0, 0], phi))
+        add(f"SERVO_STEER_{tag.upper()}", sv, "bought", "front")
+        zh = zb - P.ssv_collar                          # horn plane
+        zr = P.steer_arm_xyz[2]                         # rod plane
+        sh = np.array([P.ssv_x, side * P.ssv_shaft_y])
+        tp = (np.linalg.inv(R_axis([1, 0, 0], phi))[:3, :3] @ e["a_end"])[:2]
+        hv = tp - sh
+        horn = box((0, 0, 0), (np.linalg.norm(hv) + 6.0, 6.0, P.horn_t))
+        horn.apply_translation((np.linalg.norm(hv) / 2, 0, 0))
+        horn.apply_transform(R_axis([0, 0, 1], math.atan2(hv[1], hv[0])))
+        stud = trimesh.creation.cylinder(radius=1.5, height=zh - zr, sections=12)
+        stud.apply_translation((np.linalg.norm(hv), 0.0, -(zh - zr) / 2))
+        horn = trimesh.util.concatenate([horn, stud])
+        horn.apply_translation((sh[0], sh[1], zh))
+        horn.apply_transform(R_axis([1, 0, 0], phi))
+        add(f"HORN_STEER_{tag.upper()}", horn, "bought", "front")
 
     a, sv, lug = horn_angle(phi)
     rod_x = sum(P.drive_rod_x) / 2

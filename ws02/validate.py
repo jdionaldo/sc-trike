@@ -100,7 +100,9 @@ def validate_part(name, walls=True, supports=False):
 
 # ---- assembled-pose checks ----
 OVERLAP_DECLARED = [("mono_left", "mono_right"), ("rear_hub", "REAR_TIRE_WHEEL"), ("rear_hub", "AXLE_REAR"),
-                    ("hub_left", "FRONT_TIRE_WHEEL_LEFT"), ("hub_right", "FRONT_TIRE_WHEEL_RIGHT")]
+                    ("hub_left", "FRONT_TIRE_WHEEL_LEFT"), ("hub_right", "FRONT_TIRE_WHEEL_RIGHT"),
+                    ("tie_rod_left", "HORN_STEER_LEFT"), ("tie_rod_right", "HORN_STEER_RIGHT"),
+                    ("SERVO_STEER_LEFT", "servo_mount_left"), ("SERVO_STEER_RIGHT", "servo_mount_right")]
 SEATED = OVERLAP_DECLARED + [
     ("POWER_UNIT", "mono_left"), ("POWER_UNIT", "mono_right"), ("POWER_UNIT", "motor_flange"),
     ("POWER_UNIT_SHAFT", "motor_flange"), ("POWER_UNIT_SHAFT", "mono_left"),

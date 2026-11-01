@@ -27,31 +27,36 @@ def bar(p, name, drive_lug, bracket_pilots=False):
         part.cyl((u, 0.0, -1.0), _bore(p), p.bar_w + 2.0, op="cut")
     if drive_lug:
         part.cyl((0.0, -p.lug_drop, -1.0), p.m2_clear, p.lug_t + 2.0, op="cut")
-    if bracket_pilots:
+    if bracket_pilots:                       # steer-servo mount screws into the front face of the lower bar
         for sign in (-1, 1):
-            for x, y in p.br_screws:
-                part.cyl((sign * y, p.bar_h / 2 - p.br_pilot_depth, x + p.bar_w / 2), p.m2_insert_hole,
-                         p.br_pilot_depth + 1.0, axis="Y", op="cut")
+            for y in (53.0, 64.0):
+                part.cyl((sign * y, 0.0, p.bar_w - p.br_pilot_depth), p.m2_insert_hole, p.br_pilot_depth + 1.0, op="cut")
     return part
 
 
-def bracket(p, side):
-    """Carries the steering link eye below its plate; bolts to the top face of the lower bar. Flat on the bed, plate
-    face up. Print frame: x = u, y = -v, z = br_t + br_standoff + 4 - w (a proper rotation)."""
-    name = "link_bracket_left" if side > 0 else "link_bracket_right"
-    part = Part(name, "plate on bed, standoffs up", "PETG")
-    bx0, bx1, by0, by1 = p.br_base
-    ax0, ax1, ay0, ay1 = p.br_arm
-    sx0, sx1, sy0, sy1 = p.br_strip
-    part.box((bx0, min(-side * by0, -side * by1), 0.0), (bx1 - bx0, by1 - by0, p.br_t))
-    part.box((ax0, min(-side * ay0, -side * ay1), 0.0), (ax1 - ax0, ay1 - ay0, p.br_t))
-    part.box((sx0, min(-side * sy0, -side * sy1), 0.0), (sx1 - sx0, sy1 - sy0, p.br_t))
-    for x, y in p.br_screws:
-        part.cyl((x, -side * y, p.br_t - 0.4), p.br_boss_dia, p.br_standoff + 0.4)
-    for x, y in p.br_screws:
-        part.cyl((x, -side * y, -1.0), p.m2_clear, p.br_t + p.br_standoff + 2.0, op="cut")
-    ex, ey, _ = p.link_anchor_bar_xyz
-    part.cyl((ex, -side * ey, -1.0), p.m2_clear, p.br_t + 2.0, op="cut")
+def servo_mount(p, side):
+    """Steer-servo mount: a wall that screws to the front face of the lower bar and a plate that clamps the servo ears.
+    Print frame: u = side * y, v = side * z, w = x - ssv_mount_x0 (a proper rotation); the wall lies on the bed."""
+    name = "servo_mount_left" if side > 0 else "servo_mount_right"
+    part = Part(name, "wall flat on the bed, plate standing up", "PETG")
+    part.supports = True                    # the relief notches in the plate leave short overhangs
+    t = p.ssv_mount_t
+    ztop = p.ssv_z_bottom + p.servo_h
+    xc = p.ssv_x - p.ssv_mount_x0
+    yc = p.ssv_center_y
+    w_end = xc + p.servo_w / 2 + 1.0
+    u0, u1 = p.ssv_mount_y
+    part.box((u0, ztop, 0.0), (u1 - u0, t, w_end))                           # plate over the servo top
+    v0 = -p.bar_h / 2 - 8.0 - 0.0
+    wu0, wu1 = p.ssv_wall_y
+    part.box((wu0, v0, 0.0), (wu1 - wu0, ztop + t - v0, t))                  # wall against the bar
+    for u in (53.0, 64.0):
+        part.cyl((u, -p.bar_h / 2 + 2.0, -1.0), p.m2_clear, t + 2.0, op="cut")
+    for du in (-p.ssv_hole_dy, p.ssv_hole_dy):
+        for dw in (-5.0, 5.0):
+            part.cyl((yc + du, ztop - 1.0, xc + dw), p.m2_clear, t + 2.0, axis="Y", op="cut")
+    part.box((u0 - 1.0, ztop - 1.0, -1.0), (wu0 - u0 + 1.0, t + 2.0, 18.0 - p.ssv_mount_x0), op="cut")                    # clear the yoke leg
+    part.box((wu1, ztop - 1.0, -1.0), (u1 - wu1 + 1.0, t + 2.0, 18.5 - p.ssv_mount_x0 + 1.0), op="cut")   # clear the upright post
     return part
 
 
@@ -82,5 +87,5 @@ def rod(p, name, length, boss):
 
 def build(p):
     return [bar(p, "lean_bar_upper", False), bar(p, "lean_bar_lower", True, True), upright(p),
-            rod(p, "rod_drive", p.servo_rod_len, p.rod_drive_boss), rod(p, "link_steer", p.coupling_link_len, p.rod_boss),
-            bracket(p, +1), bracket(p, -1)]
+            rod(p, "rod_drive", p.servo_rod_len, p.rod_drive_boss), rod(p, "tie_rod", p.ssv_rod_len, p.rod_boss),
+            servo_mount(p, +1), servo_mount(p, -1)]

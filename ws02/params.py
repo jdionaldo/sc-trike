@@ -75,7 +75,7 @@ class Params:
     mass_front_fraction: float = 0.5
     cg_height: float = 44.0              # above ground, measured from the model by report.py
     load_friction_factor: float = 1.25
-    servo_travel_deg: float = 90.0
+    servo_travel_deg: float = 120.0
 
     # ---- electronics (UNVERIFIED) ----
     rx_l: float = 22.0
@@ -119,7 +119,7 @@ class Params:
     steer_arm_xyz: tuple = (-5.0, -12.75, -22.0)          # left wheel, from the kingpin point; the right wheel mirrors it
     link_anchor_bar_xyz: tuple = (-34.0, 58.895, 6.422)  # bracket on the lower lean bar, in the bar frame
     coupling_link_len: float = 41.19
-    steer_at_target_lean_deg: float = 16.63
+    steer_at_target_lean_deg: float = 17.0
     servo_horn_r: float = 8.0
     servo_rod_len: float = 10.0
     lug_drop: float = 6.0
@@ -256,6 +256,19 @@ class Params:
     br_screws: tuple = ((-2.0, 47.5), (2.0, 47.5))  # x, y of the two M2 screws into the bar
     br_boss_dia: float = 5.6
     br_pilot_depth: float = 6.0
+    # ---- steer servos: one per front wheel, on the lower lean bar ahead of it, shaft down, horn below the bar ----
+    ssv_x: float = 29.5                  # servo body centre (x, chassis frame at zero lean)
+    ssv_shaft_y: float = 52.0            # output shaft |y|; the body extends outboard of it
+    ssv_horn_r: float = 24.0
+    ssv_horn_rest_deg: float = -28.0     # horn rest direction from +y toward -x (square to the tie rod)
+    ssv_rod_len: float = 48.176            # tie rod eye to eye (kinematics.py)
+    ssv_collar: float = 9.0              # shaft end beyond the body face to the horn plane
+    ssv_lift: float = 10.0               # servo raised above the rod plane (a stud drops from the horn tip to the rod)
+    ssv_mount_x0: float = 7.45           # mount wall face against the lower bar
+    ssv_mount_t: float = 3.0
+    ssv_mount_y: tuple = (37.0, 88.6)    # plate span |y|
+    ssv_wall_y: tuple = (48.0, 68.0)     # wall span |y|
+    ssv_hole_dy: float = 24.0            # ear screw spacing from the body centre
 
     # ---- pivot plate, mounts, rear hub ----
     pp_t: float = 2.5
@@ -369,6 +382,14 @@ class Params:
         return self.ch_in_rear + self.ch_wall - (floor + 0.4)
 
     @property
+    def ssv_z_bottom(self) -> float:
+        return self.steer_arm_xyz[2] + self.ssv_collar + self.ssv_lift
+
+    @property
+    def ssv_center_y(self) -> float:
+        return self.ssv_shaft_y + self.servo_shaft_offset
+
+    @property
     def servo_shaft_z(self) -> float:
         return -(self.lug_drop + self.servo_horn_r)
 
@@ -422,7 +443,7 @@ _KEEP = {"scale", "bed_x", "bed_y", "bed_z", "overhang_max_deg", "overhang_fail_
          "ch_key_socket", "ch_key_socket_depth", "ch_pin_dia", "servo_tab_pilot", "servo_ear_insert_depth",
          "sw_cup_depth", "sw_cbore_depth", "sw_vent_dia", "sw_shim_slot_t", "sw_gear_clr", "sw_motor_clr",
          "gear_module", "front_axle_dia", "ch_ear_socket_depth", "pu_dia", "pu_len", "pu_shaft_dia", "pu_shaft_len",
-         "esc_l", "esc_w", "esc_h", "esc_x", "esc_z", "motor_pad_dia", "motor_flange_t", "motor_boss_len", "motor_bore_dia", "m25_clear", "m25_head", "pu_mount_m25_pcd", "pu_mount_m3_pcd", "pu_mount_screw_depth", "pu_lead_bend_radius", "pu_lead_dia", "servo_l", "servo_w", "servo_h", "servo_ear_span", "servo_shaft_offset", "br_pilot_depth"}
+         "esc_l", "esc_w", "esc_h", "esc_x", "esc_z", "motor_pad_dia", "motor_flange_t", "motor_boss_len", "motor_bore_dia", "m25_clear", "m25_head", "pu_mount_m25_pcd", "pu_mount_m3_pcd", "pu_mount_screw_depth", "pu_lead_bend_radius", "pu_lead_dia", "servo_l", "servo_w", "servo_h", "servo_ear_span", "servo_shaft_offset", "br_pilot_depth", "ssv_x", "ssv_shaft_y", "ssv_horn_r", "ssv_horn_rest_deg", "ssv_rod_len", "ssv_collar", "ssv_lift", "ssv_mount_x0", "ssv_mount_t", "ssv_mount_y", "ssv_wall_y", "ssv_hole_dy"}
 
 
 def _k(v):
@@ -447,7 +468,7 @@ _over.update(front_tire_od=83.0, front_tire_w=24.0, rear_tire_od=85.0, rear_tire
              ch_join_bolts=((12.0, 14.8), (26.0, 14.8), (12.0, 35.5), (26.0, 35.5)),
              ch_in_rear=31.0, sw_y_cavity_out=49.5, sw_y_tire_face=36.4, rear_axle_dia=8.0, rear_bearing_od=16.0, rear_bearing_w=5.0, ch_boss_dia=11.0,
              mass_total_g=803.1, cg_height=60.0, sw_hatch_open=33.0, sw_hatch_cone_h=9.0, sw_hatch_flange=48.6, sw_screw_r=20.3, sw_hatch_flange_t=13.4, sw_hatch_depth=6.0, sw_vent_r=9.0, sw_shim_y=4.0, rear_hex=12.0)
-_over.update(steer_arm_xyz=(-7.4, -19.79, -32.56), link_anchor_bar_xyz=(-50.11, 86.982, 9.844),
+_over.update(steer_arm_xyz=(-7.4, -21.7, -32.56), link_anchor_bar_xyz=(-50.11, 86.982, 9.844),
              coupling_link_len=61.172, shock_stroke=9.932,
              spring_rate_n_per_mm=0.957, shock_motion_ratio=0.7456,
              shock_len_ride=50.32)

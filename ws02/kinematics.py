@@ -153,39 +153,63 @@ def rear_swingarm():
             "shock_len_ride": float(shock[len(shock) // 2])}
 
 
+def ssv_state(phi, delta, side=1):
+    """Steer servo on the lower bar: horn angle (rad, positive swings the tip rearward) that holds the tie rod length, the
+    tie rod end on the knuckle arm, and the horn tip (both in the chassis frame)."""
+    arm = np.asarray(P.steer_arm_xyz, float) * np.array([1, side, 1])
+    a = bar_end(phi, side) + rot_axis(KP_AXIS, delta) @ arm
+    rx = np.array([[1, 0, 0], [0, math.cos(phi), -math.sin(phi)], [0, math.sin(phi), math.cos(phi)]])
+    a_bar = rx.T @ a
+    s = np.array([P.ssv_x, side * P.ssv_shaft_y])
+    zh = P.steer_arm_xyz[2]                       # rod plane
+
+    def tip(th):
+        q = th + P.ssv_horn_rest_deg * D2R
+        return s + P.ssv_horn_r * np.array([-math.sin(q), side * math.cos(q)])
+
+    def f(th):
+        t = tip(th)
+        return math.sqrt((t[0] - a_bar[0]) ** 2 + (t[1] - a_bar[1]) ** 2 + (zh - a_bar[2]) ** 2) - P.ssv_rod_len
+
+    th = brentq(f, -1.3, 1.3) if f(-1.3) * f(1.3) < 0 else float("nan")
+    t2 = tip(th)
+    return th, a, rx @ np.array([t2[0], t2[1], zh])
+
+
+def ssv_rod_len():
+    arm = np.asarray(P.steer_arm_xyz, float)
+    a = bar_end(0.0) + arm
+    q = P.ssv_horn_rest_deg * D2R
+    t = np.array([P.ssv_x - P.ssv_horn_r * math.sin(q), P.ssv_shaft_y + P.ssv_horn_r * math.cos(q), P.steer_arm_xyz[2]])
+    return float(np.linalg.norm(t - a))
+
+
 def main():
     OUT.joinpath("renders").mkdir(parents=True, exist_ok=True)
-    arm, anchor, link_len = solve_coupling()
+    arm = np.asarray(P.steer_arm_xyz, float)
+    link_len = ssv_rod_len()
     sweep = np.linspace(-P.lean_max_deg, P.lean_max_deg, 71)
-    steer, d = [], 0.0
-    for p in sorted(sweep[sweep >= 0]):
-        d = steer_angle(p * D2R, arm, anchor, link_len, d)
-        steer.append((p, d / D2R))
-    d = 0.0
-    for p in sorted(sweep[sweep < 0], reverse=True):
-        d = steer_angle(p * D2R, arm, anchor, link_len, d)
-        steer.append((p, d / D2R))
-    steer.sort()
-    lean = np.array([s[0] for s in steer])
-    delta = np.array([s[1] for s in steer])
+    gain = STEER_TARGET_DEG / P.lean_target_deg
+    lean = sweep
+    delta = lean * gain                                   # commanded by the radio mix (lean to steer)
     servo = np.array([servo_angle(p * D2R) / D2R for p in lean])
     geo = [wheel_geometry(p * D2R) for p in lean]
+    horn = []
+    for p in np.linspace(-P.lean_max_deg, P.lean_max_deg, 15):
+        for dd in ((max(-STEER_TARGET_DEG, min(STEER_TARGET_DEG, p * gain)),) + ((-STEER_TARGET_DEG, 0.0, STEER_TARGET_DEG) if abs(p) <= P.lean_target_deg else ())):
+            for side in (1, -1):
+                horn.append(ssv_state(p * D2R, dd * D2R, side)[0] / D2R)
     rear = rear_swingarm()
 
     at30 = float(np.interp(P.lean_target_deg, lean, delta))
-    asym = float(np.max(np.abs(delta + delta[::-1])))
-    right = []
-    d = 0.0
-    for p in sorted(sweep[sweep >= 0]):
-        d = steer_angle(p * D2R, arm, anchor, link_len, d, -1)
-        right.append(d / D2R)
-    right_gap = float(np.max(np.abs(np.array(right) - delta[len(delta) // 2:])))
+    asym = 0.0
+    right_gap = 0.0
     res = {
         "bar_half": BAR_HALF, "upright_len": P.upright_len, "hub_out": HUB_OUT,
         "caster_deg": CASTER_DEG,
         "trail_mm": (AXLE_DROP + P.front_tire_od / 2) * math.tan(CASTER_DEG * D2R),
-        "steer_arm_xyz": arm.tolist(), "coupling_anchor_bar_xyz": anchor.tolist(),
-        "coupling_link_len": link_len, 
+        "steer_arm_xyz": arm.tolist(), "ssv_rod_len": link_len,
+        "ssv_horn_deg_max": float(np.nanmax(np.abs(horn))), "ssv_horn_nan": int(np.isnan(horn).sum()),
         "steer_at_target_lean_deg": at30, "steer_odd_asymmetry_deg": asym,
         "servo_horn_r": P.servo_horn_r, "servo_rod_len": P.servo_rod_len, "lug_drop": P.lug_drop,
         "servo_deg_at_target_lean": float(np.interp(P.lean_target_deg, lean, servo)),
@@ -195,7 +219,8 @@ def main():
     }
     OUT.joinpath("kinematics.json").write_text(json.dumps(res, indent=2))
 
-    assert not np.isnan(delta).any() and not np.isnan(servo).any(), "solver left its bracket"
+    assert not np.isnan(servo).any() and not np.isnan(horn).any(), "solver left its bracket"
+    assert res["ssv_horn_deg_max"] <= P.servo_travel_deg / 2 - 4.0, res["ssv_horn_deg_max"]
     assert P.lean_min_deg <= P.lean_target_deg <= P.lean_max_deg
     assert at30 >= P.steer_at_full_lean_min_deg, at30
     assert asym <= 3.0, asym

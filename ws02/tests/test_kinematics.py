@@ -9,7 +9,7 @@ def test_params_match_solver():
     kinematics.main()
     r = json.loads(open("out/kinematics.json").read())
     assert math.isclose(P.bar_half, r["bar_half"], abs_tol=0.01)
-    assert math.isclose(P.coupling_link_len, r["coupling_link_len"], abs_tol=0.05)
+    assert math.isclose(P.ssv_rod_len, r["ssv_rod_len"], abs_tol=0.05)
     assert math.isclose(P.steer_at_target_lean_deg, r["steer_at_target_lean_deg"], abs_tol=0.05)
     assert math.isclose(P.servo_deg_at_max_lean, r["servo_deg_at_max_lean"], abs_tol=0.05)
     assert math.isclose(P.swingarm_len, r["rear"]["swingarm_len"], abs_tol=0.01)
