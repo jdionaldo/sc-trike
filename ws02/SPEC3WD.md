@@ -26,3 +26,8 @@ Stages
 - S2 front arms, carrier, drive parts, servo mounts; kinematics and interference in all poses.
 - S3 drivetrain parts (centre diff, shafts, bevel housings) and rear swingarm change.
 - S4 shell stretch, windows, covers; tests, report, BOM, push.
+
+## S2 kinematics result (front3wd.py)
+- Lean limit set to 30 deg (35 deg needs a 55 deg arm swing). Arm length 100 mm: arm swing +-42.7 deg, wheel moves back 26.5 mm at full lean, wheel travel +-68 mm.
+- Lean horn: lug 24 mm from the pivot at 20 deg above the arm, horn 28 mm at -40 deg rest, rod 24 mm, shaft at (-77.4, -17.0): horn range +-19 to 24 deg over the full lean range.
+- Steer: tie rod parallel to the arm (inner point = pivot + steering arm vector), so lean never changes its length.
