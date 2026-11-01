@@ -61,7 +61,7 @@ def assembly(phi_deg=0.0, steer=None):
             mm[:3, :3] = [[1, 0, 0], [0, 0, 1], [0, -1, 0]]; mm[1, 3] = -(51.0 + W.YS)
         items.append((n, _t(f"{STL}/{n}.stl", mm), "printed"))
     for s_ in (1, -1):
-        items.append((f"w3_body_post_{s_}", _t(f"{STL}/w3_body_post.stl", shift=(-18.0, s_ * 24.0, -23.0)), "printed"))
+        items.append((f"w3_body_post_{s_}", _t(f"{STL}/w3_body_post.stl", shift=(-18.0, s_ * 16.0, -23.0)), "printed"))
     mp = M([[0, 0, -1], [1, 0, 0], [0, -1, 0]], (-236.0, 0, 0))
     items.append(("w3_motor_plate", _t(f"{STL}/w3_motor_plate.stl", mp), "printed"))
     items.append(("w3_skid", _t(f"{STL}/w3_skid.stl", shift=(-31.0, -36.0, -29.0)), "printed"))

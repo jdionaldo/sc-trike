@@ -81,3 +81,8 @@ Stages
 ## Mock drivetrain (w3_mock.py)
 - Every bought drivetrain part is placed as a simple solid and checked in the assembly: centre diff carrier, ring gear and 15T motor pinion; front diff carrier and bevel pinions; front pulleys (20T pivot, 16T tip) and GT2 belts inside the arm cavities (they ride on the arms through the lean range); dogbone joints on the kingpins; front wheels (tire ring, rim barrel, outer disc, hub, axle) steering with the knuckles; rear tire ring and rim, 8 mm axle, rear pulleys (20T/22T) and belt; receiver. Front belt is 20T to 16T (0.8) so the pulleys fit the 7.5 mm cavity.
 - Zero clashes over lean +-25 with steer 0 and +-17.
+
+## S7 profile from the owner's sketch
+- Side profile redrawn from the sketch over the RT-1 sheet: truncated nose with a slanted front face (four cooling slots), roof rising steadily toward the rear, tall rear hood with a rearward scoop that overhangs the front of the rear tire (to x -340, z 88), rear face and tail light slot. Plan: narrow nose, widest mid body (148 mm at x -189), tapering to a narrower tail.
+- The flank window now starts at |y| 30 (it was 46) so the servos hang in the open "wheel opening"; the roof stays as a narrow canopy over the front mechanism. Posts moved in to y +-16, hatch narrowed to 48 wide.
+- Not taken from the sketch: the solid pillar between the wheel opening and the side window (the arms sweep there) and the open tail underside (the gearbox is enclosed instead).

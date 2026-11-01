@@ -13,18 +13,15 @@ from shapely.geometry import MultiPoint, Polygon
 import mono_build as MB
 
 OUT = Path("out/mono3")
-KX, KY, DZ, XOFF = 1.19, 1.17, 20.7, -14.4        # old frame -> new frame: x' = KX x + XOFF, y' = KY y, z' = z + DZ
+KX, KY, DZ, XOFF = 1.0, 1.0, 0.0, 0.0           # the profile below is already in the assembly frame
 WALL = 2.4
 
-# base.stl silhouettes, cleaned (old chassis frame, mm)
-SIDE = [(-240, -30), (-210, -25), (-165, -36.5), (-72, -40), (0, -41), (8, -38), (27, -28), (27, -2), (21, 3), (5, 10), (-35, 19.5),
-        (-55, 22.5), (-108, 45.5), (-145, 49.2), (-165, 48.7), (-200, 33), (-240, 33)]
-HALF = [(-240, 36), (-218, 37), (-215, 44), (-200, 44), (-195, 42), (-165, 57.5), (-100, 57), (-80, 55), (-47, 52), (-25, 47),
-        (0, 43), (18, 41), (27, 31)]
-SECTION = [(-58, -60), (58, -60), (58, -30), (38, 55), (-38, 55), (-58, -30)]           # (y, z): flanks lean in 11 deg toward the roof
-
-
-SIDE = [(a, b - 5.7 if b < -20 else b) for a, b in SIDE]      # walls reach down to the deck plane (z -26)
+# profile from the owner's sketch over the RT-1 sheet (assembly frame, mm): truncated nose, roof rising toward the rear, high rear hood
+# with a scoop, open tail underside above the gearbox; wide mid body, narrow tail
+SIDE = [(17.7, 30), (-1.6, -15.2), (-98, -26), (-300, -26), (-300, 64), (-340, 88),
+        (-233, 77.7), (-175, 70), (-98, 56), (-59, 44)]
+HALF = [(17.7, 18), (-20, 30), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-300, 44), (-340, 32)]
+SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
 
 
 def to_new(pts, kind):
@@ -91,8 +88,8 @@ def cyl_m(c, r, h, axis="z"):
     return m.translate(c)
 
 
-PAD_X = (-288.0, -244.7, -201.3, -168.0)            # rear deck screw stations (match parts/w3_chassis.py)
-POST_XY = (-18.0, 24.0)                               # front body posts: deck to roof bosses
+PAD_X = (-228.0, -200.0, -168.0)            # rear deck screw stations (match parts/w3_chassis.py)
+POST_XY = (-18.0, 16.0)                               # front body posts: deck to roof bosses
 SEAM_X = (-270.0, -215.0, -100.0, -20.0)             # seam screws joining the left and right halves
 HEX = lambda cx, cz, r: [(cx + r * np.cos(a), cz + r * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 7)[:-1]]
 
@@ -138,12 +135,12 @@ def details(body):
             for s in (1, -1):
                 y0, y1 = (20.0, 120.0) if s > 0 else (-120.0, -20.0)
                 body = body - MB.prism_xz(hexp, y0, y1)
-    heads = [(-290, -3), (-215, -3), (-292, 12), (-176, 12), (-205, 2), (-150, 2), (-206, 40), (-150, 52)]       # screw heads
+    heads = [(-230, 0), (-200, -10), (-150, -10), (-130, 10), (-205, 2), (-150, 2), (-292, 34), (-292, 58)]       # screw heads
     for hx, hz in heads:
         circ = [(hx + 2.2 * np.cos(a), hz + 2.2 * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 13)[:-1]]
         body = body - flank_cut(circ, 0.6)
-    for zc in (-3.0, 2.5, 8.0, 13.5):                                      # snub nose: cooling slots across the front face
-        body = body - Manifold.cube((9.0, 52.0, 3.0), center=True).translate((16.0, 0.0, zc))
+    for zc in (-8.0, -1.0, 6.0, 13.0):                                     # truncated nose: cooling slots across the slanted front face
+        body = body - Manifold.cube((30.0, 28.0, 3.0), center=True).translate((8.0, 0.0, zc))
     canopy = [(-225, -24), (-205, -30), (-150, -30), (-128, -22), (-128, 22), (-150, 30), (-205, 30), (-225, 24)]   # glass canopy, recessed 0.8 for dark paint
     body = body - (MB.prism_xy(canopy, -100.0, 200.0) - solid(0.8))
     # roof spine: a 1.2 mm raised strip along the centre line from the nose to the tail
@@ -175,14 +172,14 @@ def front_window():
 
 # styling in the new frame (x, z): recessed painted panels (0.8 mm) and through vents on both flanks, as in the references
 PANELS = [  # recessed
-    [(-292, -8), (-212, -8), (-176, 14), (-292, 14)],                          # low rear sill panel
+    [(-232, -15), (-132, -18), (-124, -6), (-232, 2)],                          # low sill panel
     [(-205, 6), (-152, 6), (-130, 24), (-152, 46), (-205, 38)],               # big diagonal panel behind the arm window
 ]
 VENTS = [  # through the skin
-    [(-282, 40), (-252, 40), (-257, 47), (-282, 47)], [(-282, 49), (-252, 49), (-257, 56), (-282, 56)],      # louvre slots
+    [(-296, 34), (-262, 34), (-266, 40), (-296, 40)], [(-296, 44), (-262, 44), (-266, 50), (-296, 50)],      # louvre slots on the hood
     [(-241, 22), (-209, 22), (-225, 44)],                                       # triangular vent
 ]
-HATCH = (-96.0, -28.0, 30.0)        # roof access hatch over the battery and ESC: x0, x1, half width
+HATCH = (-96.0, -40.0, 24.0)        # roof access hatch over the battery and ESC: x0, x1, half width
 
 
 def flank_cut(poly, depth=None):
@@ -205,7 +202,7 @@ def main():
     win = front_window()
     wpts = list(win.exterior.coords)[:-1]
     for s in (1, -1):
-        y0, y1 = (46.0, 100.0) if s > 0 else (-100.0, -46.0)
+        y0, y1 = (30.0, 100.0) if s > 0 else (-100.0, -30.0)
         body = body - MB.prism_xz(wpts, y0, y1)
     body = body - Manifold.cube((46.0, 46.0, 90.0), center=True).translate((-278.0, 59.0, 0.0))    # rear arm leaves the body, left
     body = body - Manifold.cube((46.0, 46.0, 90.0), center=True).translate((-278.0, -59.0, 0.0))   # mirrored
