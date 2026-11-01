@@ -129,7 +129,7 @@ def tip_over(lean_deg):
 def write_print_plan(rows):
     lines = ["# Print plan", "",
              f"Slicer defaults: {P.nozzle} mm nozzle, {P.layer} mm layers, {P.perimeters} perimeters "
-             f"({P.perimeters * P.nozzle:.1f} mm walls), no supports, no brim unless a part lifts. Structural parts "
+             f"({P.perimeters * P.nozzle:.1f} mm walls), no supports except the three monocoque parts (supports on, shell halves turned about 40 degrees on the bed), no brim unless a part lifts. Structural parts "
              f"{P.infill_structural:.0%} gyroid, body panels {P.infill_cosmetic:.0%}. Times and masses are estimates "
              f"from part volume ({P.flow_mm3_s:.0f} mm3/s, x{P.time_overhead} overhead).", "",
              "| Part | Qty | Material | Orientation | Extent mm | Infill | Mass g (each) | Est. time h (each) |",

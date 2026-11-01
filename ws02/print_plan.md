@@ -1,6 +1,6 @@
 # Print plan
 
-Slicer defaults: 0.4 mm nozzle, 0.2 mm layers, 3 perimeters (1.2 mm walls), no supports, no brim unless a part lifts. Structural parts 30% gyroid, body panels 15%. Times and masses are estimates from part volume (9 mm3/s, x1.35 overhead).
+Slicer defaults: 0.4 mm nozzle, 0.2 mm layers, 3 perimeters (1.2 mm walls), no supports except the three monocoque parts (supports on, shell halves turned about 40 degrees on the bed), no brim unless a part lifts. Structural parts 30% gyroid, body panels 15%. Times and masses are estimates from part volume (9 mm3/s, x1.35 overhead).
 
 | Part | Qty | Material | Orientation | Extent mm | Infill | Mass g (each) | Est. time h (each) |
 |---|---|---|---|---|---|---|---|
