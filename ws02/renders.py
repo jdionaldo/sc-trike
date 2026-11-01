@@ -21,8 +21,8 @@ LIGHT /= np.linalg.norm(LIGHT)
 
 def colour(item, body_colors):
     n = item.name
-    if n in body_colors:
-        return YELLOW if body_colors[n] == "yellow" else BLACK
+    if n.startswith("body_"):
+        return "#b9b9c0"
     if "TIRE" in n:
         return "#202020"
     if n.startswith(("POWER", "GEAR", "AXLE", "SHAFT", "DOWEL")):

@@ -231,14 +231,11 @@ def scene(lean_deg=0.0, travel=0.0, lead=True, body=False):
 
 
 def body_items():
-    items = [Item(name, place(name, m), "printed", "body") for name, m in body_parts.placements(P).items()]
-    px = P.cage_x[0] - 3.0
-    ex = P.yoke_leg[1] - P.ch_ear_socket_depth
-    for s in (1, -1):
-        dowel = trimesh.creation.cylinder(radius=P.body_pin_dia / 2, height=px - ex, sections=24)
-        dowel.apply_transform(trimesh.geometry.align_vectors([0, 0, 1], [1, 0, 0]))
-        dowel.apply_translation(((px + ex) / 2, s * P.cage_pins[0], P.cage_pins[1]))
-        items.append(Item(f"DOWEL_2x18_{'L' if s > 0 else 'R'}", dowel, "bought", "body"))
+    """RT-1 shell halves (out/rt1_body/*.stl, authored in the chassis frame by blender/sculpt_rt1_shell.py)."""
+    items = []
+    for name in ("body_left", "body_right"):
+        mesh = trimesh.load(Path("out/rt1_body") / f"{name}.stl")
+        items.append(Item(name, mesh, "printed", "body"))
     return items
 
 
