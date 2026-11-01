@@ -173,7 +173,7 @@ def scene(phi_deg, steer=None):
     return items
 
 
-OK_PAIRS = [("wing", "tip_shaft"), ("wing", "carrier"), ("tip_shaft", "carrier"), ("tip_shaft", "knuckle"), ("tip_shaft", "tire"), ("tip_shaft", "arm"), ("tip_shaft", "cover"),
+OK_PAIRS = [("mock_axle", "knuckle"), ("mock_joint", "knuckle"), ("mock_joint", "carrier"), ("mock_hub", "knuckle"), ("mock_rimdisc", "knuckle"), ("mock_tire", "knuckle"), ("mock_rim", "knuckle"), ("wing", "tip_shaft"), ("wing", "carrier"), ("tip_shaft", "carrier"), ("tip_shaft", "knuckle"), ("tip_shaft", "tire"), ("tip_shaft", "arm"), ("tip_shaft", "cover"),
             ("diff_out", "arm"), ("diff_out", "tub_wall"), ("diff_out", "front_diff"), ("diff_out", "cover"),
             ("tire", "knuckle"), ("lean_rod", "lean_horn"), ("tie_rod", "steer_horn"), ("lean_rod", "arm"),
             ("tie_rod", "knuckle"), ("tire", "carrier")]

@@ -77,3 +77,7 @@ Stages
 
 ## S6 snub nose
 - The pointed nose is now a blunt, angular snub nose (front face 70 wide, 26 tall, chamfered corners) with four horizontal cooling slots (52 x 3 mm) through the face into the battery bay. The body stays angular (no curved surfaces). Skid plate narrowed to 72 mm to match.
+
+## Mock drivetrain (w3_mock.py)
+- Every bought drivetrain part is placed as a simple solid and checked in the assembly: centre diff carrier, ring gear and 15T motor pinion; front diff carrier and bevel pinions; front pulleys (20T pivot, 16T tip) and GT2 belts inside the arm cavities (they ride on the arms through the lean range); dogbone joints on the kingpins; front wheels (tire ring, rim barrel, outer disc, hub, axle) steering with the knuckles; rear tire ring and rim, 8 mm axle, rear pulleys (20T/22T) and belt; receiver. Front belt is 20T to 16T (0.8) so the pulleys fit the 7.5 mm cavity.
+- Zero clashes over lean +-25 with steer 0 and +-17.

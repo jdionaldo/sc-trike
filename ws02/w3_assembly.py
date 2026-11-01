@@ -43,10 +43,12 @@ def rear_arm_mats():
 
 def assembly(phi_deg=0.0, steer=None):
     items = []
+    import w3_mock
     for n, mesh, k in S.scene(phi_deg, steer=steer):
-        if n.startswith(("tub_wall", "front_diff")):
+        if n.startswith(("tub_wall", "front_diff", "tire_")):
             continue
         items.append((n, mesh, k))
+    items += w3_mock.mock(phi_deg, steer)
     for n, mesh in DS.placed():
         items.append((n, mesh, "printed"))
     for n in ("w3_deck_front", "w3_deck_rear"):
@@ -73,7 +75,7 @@ def assembly(phi_deg=0.0, steer=None):
         for part in ("front", "rear"):
             items.append((f"body3_{side}_{part}", _t(f"{MONO}/body3_{side}_{part}.stl"), "printed"))
     b = LY.blocks()
-    for k in ("battery", "esc", "motor", "center_diff", "front_ring", "rear_ring", "rear_tire", "rear_shaft", "front_pinion_shaft", "motor_shaft"):
+    for k in ("battery", "esc", "motor", "front_ring", "rear_ring", "rear_shaft", "front_pinion_shaft", "motor_shaft"):
         items.append((f"b_{k}", b[k], "bought"))
     return items
 

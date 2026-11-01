@@ -31,7 +31,7 @@ lines += ["", f"Printed total (solid, one set; left/right pairs listed separatel
           f"- Front track {2 * S.F.T:.0f} mm (wheel centres), wheelbase 360 mm, front tires 83 x 24, rear 112 x 62.",
           "- Lean limit 25 deg, arm length 100 mm, arm swing about 40 deg, steering +-17 deg (radio mix), 4 servos (lean and steer per front wheel).",
           "- Chassis raked 4 deg nose-down; shaft line at the front axle height, y +21.",
-          "- Gearing: motor 15T to centre diff ring 45T (3:1), bevel 12T/30T (2.5:1) at both ends, front belt 22T to 18T, rear belt 20T to 22T.",
+          "- Gearing: motor 15T to centre diff ring 45T (3:1), bevel 12T/30T (2.5:1) at both ends, front belt 20T to 16T, rear belt 20T to 22T.",
           "- Pose sweep: lean -25..+25 with steer 0, +17, -17: no interference (tests/test_w3.py)."]
 open("WS03_REPORT.md", "w").write("\n".join(lines) + "\n")
 print(len(rows), "parts, about", round(tot), "g")

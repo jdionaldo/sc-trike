@@ -18,7 +18,7 @@ All sizes below are assumptions from the 1/10 and 1/18 RC parts we planned aroun
 | Bearings 5 x 11 x 4 | about 14 | every shaft seat and arm pivot |
 | Bearings 4 x 8 x 3 | 4 | arm tip and carrier |
 | Bearing 8 x 16 x 5 | 2 | rear axle |
-| GT2 3 mm belts and pulleys | 4 belts | front 22T to 18T (x2), rear 20T to 22T (x1), spare |
+| GT2 3 mm belts and pulleys | 4 belts | front 20T to 16T (x2), rear 20T to 22T (x1), spare |
 | Dogbone / CVD with universal joint on the kingpin axis | 2 | about 25 mm lateral room |
 | Wheels: skinny off-road 83 x 24 (front) | 2 | 4 mm axle |
 | Wheel: thick off-road 112 x 62 (rear) | 1 | 8 mm axle, 8 mm hex |
