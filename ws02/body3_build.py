@@ -18,7 +18,7 @@ WALL = 2.4
 
 # profile from the owner's sketch over the RT-1 sheet (assembly frame, mm): truncated nose, roof rising toward the rear, high rear hood
 # with a scoop, open tail underside above the gearbox; wide mid body, narrow tail
-SIDE = [(17.7, 30), (-1.6, -15.2), (-98, -26), (-243, -26), (-243, 50), (-300, 50), (-378, 105), (-259, 97), (-175, 80), (-98, 57), (-59, 44)]
+SIDE = [(17.7, 30), (17.7, -2), (-35, -26), (-243, -26), (-243, 50), (-300, 50), (-378, 105), (-259, 97), (-175, 80), (-98, 57), (-59, 44)]
 HALF = [(17.7, 38), (10, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-300, 44), (-340, 40), (-378, 34)]
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
 
@@ -139,7 +139,7 @@ def details(body):
     for hx, hz in heads:
         circ = [(hx + 2.2 * np.cos(a), hz + 2.2 * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 13)[:-1]]
         body = body - flank_cut(circ, 0.6)
-    for zc in (-8.0, -1.0, 6.0, 13.0):                                     # truncated nose: cooling slots across the slanted front face
+    for zc in (2.0, 9.0, 16.0, 23.0):                                      # flat snub nose: cooling slots across the vertical front face
         body = body - Manifold.cube((30.0, 28.0, 3.0), center=True).translate((8.0, 0.0, zc))
     # rocker panel armor: a 3 mm proud band along the lower flank between the rear bulkhead and the front window
     slab = Manifold.cube((118.0, 300.0, 12.0), center=False).translate((-240.0, -150.0, -24.0))
@@ -204,9 +204,14 @@ def main():
     body = outer - inner
     win = front_window()
     wpts = list(win.exterior.coords)[:-1]
+    from shapely.geometry import box as sbox
+    low = win.intersection(sbox(-500.0, -500.0, 500.0, 25.0))                 # inboard of the arms only the servo level needs clearing
+    lpts = list(low.exterior.coords)[:-1]
     for s in (1, -1):
-        y0, y1 = (30.0, 100.0) if s > 0 else (-100.0, -30.0)
+        y0, y1 = (52.0, 100.0) if s > 0 else (-100.0, -52.0)                  # arm level: everything out
         body = body - MB.prism_xz(wpts, y0, y1)
+        y0, y1 = (30.0, 52.0) if s > 0 else (-52.0, -30.0)                    # servo level: leave the upper shoulder as the frame's top beam
+        body = body - MB.prism_xz(lpts, y0, y1)
     body = body - Manifold.cube((46.0, 46.0, 90.0), center=True).translate((-278.0, 59.0, 0.0))    # rear arm leaves the body, left
     body = body - Manifold.cube((46.0, 46.0, 90.0), center=True).translate((-278.0, -59.0, 0.0))   # mirrored
     for poly in PANELS:

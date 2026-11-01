@@ -92,3 +92,9 @@ Stages
 - Motor plate now bolts to the rear bulkhead (two screws from behind); the rear deck passes under the bulkhead through a notch.
 - Fixed a generator bug: the open-belly sweep also carved the rear bulkhead away.
 - Not done from the markup: the front frame/cowl around the front wheel opening (the arms sweep through it).
+
+## S9 shoulder frame and flat nose
+- Front opening: only the servo level (|y| 30..52, z up to 25) and everything outboard of the walls (|y| > 52) are cut now, so the upper body shoulder stays as the opening's top beam, with the nose block as the front pillar and the rear body as the rear pillar.
+- Nose: flat vertical front face (x 17.7, z -2..30, 76 mm wide) with four cooling slots; the bottom is angled back (z -2 at the face down to z -26 at x -35, about 25 degrees).
+- Upper-link pivot: the wall boss pointed inboard; replaced by a printed standoff (w3_uplink_standoff) between the wall and the link.
+- Clash sweep (lean 0, +-12, +-25 with steer 0/+-17): 0 clashes.

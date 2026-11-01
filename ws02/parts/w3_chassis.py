@@ -70,7 +70,6 @@ def wall(p, side):
     box((xa, -110.0), (zl, 14.0), (0.0, 3.0))                                  # plate, low where the body skin is close (x < -110)
     box((-110.0, xb), (zl, zh), (0.0, 3.0))                                    # plate, full height inside the arm window
     boss_z = 40.0
-    cyl(-100.0, boss_z, 3.0 - 0.1, 7.1, 8.0, op="join")                       # upper-link pivot boss (the link sits 7 mm off the wall)
     cyl(-100.0, boss_z, -0.1, 10.2, 3.4)                                      # pivot pin
     cyl(-100.0, 0.0, -0.1, 3.2, 7.0)                                          # diff output shaft
     for xc, zc, d in ((-71.4, -18.8, 8.0), (-100.0, -14.0, 8.0)):             # servo horn shafts: (-71.4, -18.8) lean, (-100, -14) steer
@@ -141,5 +140,13 @@ def rear_fender(p):
     return part
 
 
+def standoff(p):
+    """Spacer between the servo wall (|y| 57.5) and the upper link (|y| 64.5) on the pivot pin."""
+    part = Part("w3_uplink_standoff", "standing", "PETG")
+    part.cyl((0.0, 0.0, 0.0), 8.0, 6.8)
+    part.cyl((0.0, 0.0, -0.1), 3.4, 7.0, op="cut")
+    return part
+
+
 def build(p):
-    return [body_post(p), wing(p, 1), wing(p, -1), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True), wall(p, 1), wall(p, -1)]
+    return [standoff(p), body_post(p), wing(p, 1), wing(p, -1), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True), wall(p, 1), wall(p, -1)]

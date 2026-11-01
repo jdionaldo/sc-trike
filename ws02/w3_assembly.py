@@ -62,6 +62,9 @@ def assembly(phi_deg=0.0, steer=None):
         items.append((n, _t(f"{STL}/{n}.stl", mm), "printed"))
     for s_ in (1, -1):
         items.append((f"w3_body_post_{s_}", _t(f"{STL}/w3_body_post.stl", shift=(-18.0, s_ * 16.0, -23.0)), "printed"))
+    for s_ in (1, -1):                                                       # upper-link standoff on the pivot pin, between the wall and the link
+        rows = [[1, 0, 0], [0, 0, 1], [0, -1, 0]] if s_ > 0 else [[1, 0, 0], [0, 0, -1], [0, 1, 0]]
+        items.append((f"w3_uplink_standoff_{s_}", _t(f"{STL}/w3_uplink_standoff.stl", M(rows, (-100.0, s_ * 57.6, 40.0))), "printed"))
     mp = M([[0, 0, -1], [1, 0, 0], [0, -1, 0]], (-236.0, 0, 0))
     items.append(("w3_motor_plate", _t(f"{STL}/w3_motor_plate.stl", mp), "printed"))
     items.append(("w3_skid", _t(f"{STL}/w3_skid.stl", shift=(-31.0, -40.0, -29.0)), "printed"))
