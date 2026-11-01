@@ -19,7 +19,8 @@ def build(skin_path="out/base_split/ext_final.stl", out="out/mono/shell_watertig
     if n > 1:
         sizes = ndimage.sum(shell, lab, range(1, n + 1))
         shell = np.isin(lab, 1 + np.where(sizes > 0.02 * sizes.max())[0])
-    verts, faces, _, _ = measure.marching_cubes(np.pad(shell, 1).astype(np.float32), 0.5, spacing=(PITCH,) * 3)
+    field = ndimage.gaussian_filter(np.pad(shell, 1).astype(np.float32), sigma=0.9)          # smooths the voxel terraces
+    verts, faces, _, _ = measure.marching_cubes(field, 0.42, spacing=(PITCH,) * 3)
     verts = verts + origin - PITCH
     m = trimesh.Trimesh(verts, faces[:, ::-1])
     m.merge_vertices()
