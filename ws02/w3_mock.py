@@ -53,7 +53,7 @@ def static_drivetrain():
     it.append(("mock_receiver", LY.box((-75.0, -51.0), (12.0, 27.0), (-20.0, -11.0)), "bought"))
     # rear wheel: tire ring, rim barrel, outer disc, hub and 8 mm axle; one-sided arm with the belt on the left
     ax, az = D.RAXLE
-    it.append(("mock_rear_axle", _cy(ax, 23.0, az, 4.0, 94.0), "bought"))
+    it.append(("mock_rear_axle", _cy(ax, 26.0, az, 4.0, 100.0), "bought"))
     ring = _cy(ax, 0.0, az, 56.0, 62.0)
     hole = _cy(ax, 0.0, az, 38.0, 64.0)
     it.append(("mock_rear_tire_ring", MB.to_trimesh(MB.man(ring) - MB.man(hole)), "bought"))

@@ -24,22 +24,26 @@ def sf(sig):
 def front_arm():
     t = Truss()
     ya = W.ARM_Y[0]
-    planes = {"i": (ya + 2.5, S.RT), "o": (ya + S.YO, S.RO)}
-    for p_, (y, r) in planes.items():
-        for k, (x, z) in S.ARM_NODES.items():
-            t.node(k + p_, (x, y, z))
-        for a, b in S.ARM_RAILS + S.ARM_WEB:
-            t.edge(a + p_, b + p_, r)
+    yi, yo = ya + 2.5, ya + S.YO
+    for k, (x, z) in S.ARM_NODES.items():
+        t.node(k + "i", (x, yi, z))
+        xo, zo = S.ARM_OUTER[k]
+        t.node(k + "o", (xo, yo, zo))
+    for a, b in S.ARM_RAILS + S.ARM_WEB:
+        t.edge(a + "i", b + "i", S.RT)
+    for a, b in S.ARM_RAILS:
+        t.edge(a + "o", b + "o", S.RO)
+    for a, b in S.ARM_WEB:
+        t.edge(a + "o", b + "o", S.RW)
     for rails, r in (([("U0", "U1"), ("U1", "U2"), ("U2", "U3")], S.LAT_TOP), ([("L0", "L1"), ("L1", "L2")], S.LAT_BOT)):
         for a, b in rails:
             t.edge(a + "i", b + "o", r); t.edge(b + "i", a + "o", r)
     for k in ("U0", "L0", "U3", "L2"):
         t.edge(k + "i", k + "o", S.TIE_R[k])
-    # hubs are stiff: tie the end nodes of each plane with a fat bar
-    for p_ in "io":
+    for p_ in "io":                                         # hubs are stiff: tie the end nodes of each plane with a fat bar
         t.edge("U0" + p_, "L0" + p_, 8.0); t.edge("U3" + p_, "L2" + p_, 8.0)
     dy = S.YO - 2.5
-    couple = Fy * 41.5 / dy                      # torque from the cornering force acting 41.5 mm below the axle
+    couple = Fy * 41.5 / dy                                  # torque from the cornering force acting 41.5 mm below the axle
     loads = []
     for p_, sgn in (("i", -1.0), ("o", 1.0)):
         for k in ("U3", "L2"):
@@ -55,10 +59,10 @@ rows.append((f"Front arm (truss FE), 3 g landing + cornering; max {s_:.1f} MPa i
 def rear_arm():
     L = math.hypot(D.XR - D.RAXLE[0], D.RAXLE[1])
     us = [0.0, L / 4, L / 2, 3 * L / 4, L]
-    V, VL = 9.5, 11.0
+    V, VL = 9.5, 12.5
     t = Truss()
-    planes = {"i": (S.REAR_W[0], 2.4), "o": (S.REAR_W[1], 2.5)}
-    for p_, (w, r) in planes.items():
+    planes = {"i": (S.REAR_W[0], 2.4, 2.4), "o": (S.REAR_W[1], 4.5, 3.5)}
+    for p_, (w, r, rw) in planes.items():
         for sg in (1, -1):
             for i, u in enumerate(us):
                 t.node(f"{i}{'p' if sg > 0 else 'n'}{p_}", (u, sg * V, w))
@@ -66,21 +70,21 @@ def rear_arm():
                 t.edge(f"{i}{'p' if sg > 0 else 'n'}{p_}", f"{i+1}{'p' if sg > 0 else 'n'}{p_}", r)
         for i in range(4):
             a, b = ("p", "n") if i % 2 == 0 else ("n", "p")
-            t.edge(f"{i}{a}{p_}", f"{i+1}{b}{p_}", r)
+            t.edge(f"{i}{a}{p_}", f"{i+1}{b}{p_}", rw)
     for i in range(4):
-        for sg, r in (("p", 2.4), ("n", 2.4)):
+        for sg, r in (("p", 3.0), ("n", 3.0)):
             t.edge(f"{i}{sg}i", f"{i+1}{sg}o", r); t.edge(f"{i+1}{sg}i", f"{i}{sg}o", r)
     for i in (0, 4):
         for sg in "pn":
-            t.edge(f"{i}{sg}i", f"{i}{sg}o", 2.4)
+            t.edge(f"{i}{sg}i", f"{i}{sg}o", 3.2)
         for p_ in "io":
             t.edge(f"{i}p{p_}", f"{i}n{p_}", 8.0)
     for i in (0, 4):
         for sg, sgv in (("p", 1), ("n", -1)):
-            for p_, (w, r) in planes.items():
-                t.node(f"{i}{sg}x{p_}", (us[i], sgv * 14.0, w))
-                t.edge(f"{i}{sg}{p_}", f"{i}{sg}x{p_}", 2.4)
-            t.edge(f"{i}{sg}xi", f"{i}{sg}xo", 2.4)
+            for p_, (w, r, rw) in planes.items():
+                t.node(f"{i}{sg}x{p_}", (us[i], sgv * 16.0, w))
+                t.edge(f"{i}{sg}{p_}", f"{i}{sg}x{p_}", 4.0)
+            t.edge(f"{i}{sg}xi", f"{i}{sg}xo", 4.0)
     Mu = N_r * (46.0 + 8.5) + Fy_r * 56.0
     dw = S.REAR_W[1] - S.REAR_W[0]
     loads = []
