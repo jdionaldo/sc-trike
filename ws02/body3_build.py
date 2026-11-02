@@ -107,11 +107,11 @@ def details(body):
     for x in SEAM_X:                                                       # seam bosses straddling y = 0
         z = top_z(x, WALL) - 6.5
         body = body + cyl_m((x, 0.0, z), 4.0, 14.0, "y") + Manifold.cube((8.0, 14.0, 6.0), center=True).translate((x, 0.0, z + 3.0))
-    tri = [(-241, 22), (-209, 22), (-225, 44)]                                   # triangular exhaust vent: recessed pocket, slanted slots, covering blades
+    tri = [(-241, 22), (-209, 22), (-225, 44)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
     pocket = Polygon(tri).buffer(3.0)
     body = body - flank_cut(list(pocket.exterior.coords)[:-1], 0.8)
-    cuts, blades = flank_gills(tri, 4)
-    body = body - cuts + blades
+    hole, wedge, chan = flank_vent(tri)
+    body = body - hole + wedge - chan
     for zc in (28.8, 32.4, 36.0):                                     # snub nose: louvred intake slots, slanted down and inward to scoop air into the nose
         quad = [(38.0, zc + 1.0), (38.0, zc - 1.0), (14.0, zc - 1.0 - 7.0), (14.0, zc + 1.0 - 7.0)]
         body = body - MB.prism_xz(quad, -14.0, 14.0)
@@ -142,8 +142,8 @@ def details(body):
     for s_ in (1, -1):
         rect = [(-237.0, s_ * 5.0), (-205.0, s_ * 5.0), (-205.0, s_ * 37.0), (-237.0, s_ * 37.0)]
         body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))                    # shallow pocket so the blades blend into the roof
-    cuts, blades = roof_gills(-233.0, -209.0, 8.0, 34.0)
-    body = body - cuts + blades
+    cuts, wedges, chans = roof_gills(-233.0, -209.0, 8.0, 34.0)
+    body = body - cuts + wedges - chans
     body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()          # slots where frame tubes pass through the skin
     return body
 
@@ -190,47 +190,58 @@ def _flank_y(x, z):
     return min(hw_in(min(max(x, -299.0), 29.0), 0.0), min(68.0, tent))
 
 
-def flank_gills(tri, n, pitch=5.4, slat=2.6, shift=7.0, blade=3.6):
-    """Louvred exhaust on both flanks: n horizontal slots in a triangle (x, z), cut slanted (inner edge forward) so air leaves rearward, each
-    covered by a thin blade that grows out of the skin at the slot's front edge and rises 3 mm at the rear.  Returns (cuts, blades)."""
+def _shear_y(m, s, zc):
+    """Shear a flank solid so it follows the tent: |y| shrinks by 1/3.615 per mm of height above zc (left s=+1, right s=-1)."""
+    k = 1.0 / TENT_K[2]
+    mat = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, -s * k, s * k * zc], [0.0, 0.0, 1.0, 0.0]])
+    return m.transform(mat)
+
+
+def flank_vent(tri, blade=4.5):
+    """One big exhaust vent per flank: the triangle is cut through the skin, covered by a scoop that grows out of the skin at its front edge and
+    rises 4.5 mm at the rear; a channel inside the scoop opens to the rear only (the top, bottom and ends stay closed).  Returns (hole, scoop, channel)."""
     poly = Polygon(tri)
-    z0 = poly.bounds[1] + 2.0
-    cuts = blades = None
-    for k in range(n):
-        zc = z0 + k * pitch
-        seg = LineString([(-500, zc + slat / 2), (500, zc + slat / 2)]).intersection(poly.buffer(-1.0))
-        if seg.is_empty:
-            continue
-        xa, xb = seg.bounds[0], seg.bounds[2]
-        ys = _flank_y(0.5 * (xa + xb), zc)
-        for s in (1, -1):
-            yo, yi = s * (ys + 4.0), s * (ys - 6.0)
-            cut = MB.prism_xy([(xa, yo), (xb, yo), (xb + shift, yi), (xa + shift, yi)], zc - slat / 2, zc + slat / 2)
-            xf, xr = xa - 1.0, xb + blade
-            bl = MB.prism_xy([(xf, s * (ys - 2.2)), (xf, s * (ys + 0.6)), (xr, s * (ys + 4.2)), (xr, s * (ys + 3.0))], zc - slat / 2 - 0.4, zc + slat / 2 + 0.4)
-            cuts = cut if cuts is None else cuts + cut
-            blades = bl if blades is None else blades + bl
-    return cuts, blades
+    xs = [p[0] for p in tri]
+    xf, xr = max(xs) + 1.0, min(xs) - 2.0
+    zc = poly.centroid.y
+    xm = 0.5 * (xf + xr)
+    ys = _flank_y(xm, zc)
+    inner = list(poly.buffer(-1.2).exterior.coords)[:-1]
+    grown = list(poly.buffer(1.0).exterior.coords)[:-1]
+    hole = scoop = chan = None
+    for s in (1, -1):
+        h = _shear_y(MB.prism_xz(inner, 0.0 if s > 0 else -130.0, 130.0 if s > 0 else 0.0), s, zc)
+        ramp = MB.prism_xy([(xf, s * (ys - 2.2)), (xr, s * (ys - 2.2)), (xr, s * (ys + blade)), (xf, s * (ys + 0.6))], zc - 40.0, zc + 40.0)
+        sc = _shear_y(ramp, s, zc) ^ MB.prism_xz(grown, -200.0, 200.0)
+        cq = MB.prism_xy([(xf - 1.0, s * (ys - 4.0)), (xr - 1.0, s * (ys - 4.0)), (xr - 1.0, s * (ys + blade - 1.3)), (xf - 1.0, s * (ys + 0.3))], zc - 40.0, zc + 40.0)
+        ch = _shear_y(cq, s, zc) ^ MB.prism_xz(inner, -200.0, 200.0)
+        hole = h if hole is None else hole + h
+        scoop = sc if scoop is None else scoop + sc
+        chan = ch if chan is None else chan + ch
+    return hole, scoop, chan
 
 
 def roof_gills(x0, x1, y0, y1, n=4, slat=3.0, shift=8.0, blade=3.6):
-    """Roof exhaust over the motor: n slots across y, slanted so the opening faces the rear, each covered by a blade rising 3 mm at the rear
-    (mirrored left/right).  Returns (cuts, blades)."""
+    """Roof exhaust over the motor: n slanted slots across y; each is covered by a wedge that grows out of the roof at its front edge and rises
+    3.6 mm at the rear, with closed ends (1.2 mm cheeks): the only opening is a slot in the wedge's rear face.  Returns (cuts, wedges, channels)."""
     pitch = (x1 - x0 - slat) / (n - 1)
-    cuts = blades = None
+    cuts = wedges = chans = None
     for k in range(n):
         xa = x0 + k * pitch
         zs = top_z(xa + slat / 2, 0.0)
         quad = [(xa, zs + 4.0), (xa + slat, zs + 4.0), (xa + slat + shift, zs - 6.0), (xa + shift, zs - 6.0)]
         xf, xr = xa - 1.0, xa + slat + blade
-        bq = [(xf, zs - 2.2), (xf, zs + 0.6), (xr, zs + 4.2), (xr, zs + 3.0)]
+        wq = [(xf, zs - 2.2), (xr, zs - 2.2), (xr, zs + 4.2), (xf, zs + 0.6)]
+        cq = [(xa + 0.5, zs - 0.1), (xr + 1.0, zs - 0.1), (xr + 1.0, zs + 3.0), (xa + 0.5, zs + 0.1)]
         for s in (1, -1):
             ya, yb = (y0, y1) if s > 0 else (-y1, -y0)
             c = MB.prism_xz(quad, ya, yb)
-            bl = MB.prism_xz(bq, ya - 0.4, yb + 0.4)
+            w = MB.prism_xz(wq, ya - 0.4, yb + 0.4)
+            ch = MB.prism_xz(cq, ya + 1.2, yb - 1.2)
             cuts = c if cuts is None else cuts + c
-            blades = bl if blades is None else blades + bl
-    return cuts, blades
+            wedges = w if wedges is None else wedges + w
+            chans = ch if chans is None else chans + ch
+    return cuts, wedges, chans
 
 
 def rocker_flare(m, bulge=3.5, z_lo=-22.0, max_edge=4.5):
