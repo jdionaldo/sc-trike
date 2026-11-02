@@ -114,6 +114,8 @@ def scene(phi_deg, steer=None):
         kx, kz = F.P[0] + F.LA * math.cos(t), F.LA * math.sin(t)
         ma = Ry(t, F.P) @ W.mats(s, W.ARM_Y[0])
         items.append((f"arm_{s}", load(f"w3_arm_{'left' if s > 0 else 'right'}", ma), "printed"))
+        from parts import w3_style as _S
+        items.append((f"pod_{s}", load("w3_pod", Ry(t, F.P) @ T(0, s * (W.ARM_Y[0] + _S.YO), _S.POD_Z0)), "printed"))
         mu = Ry(t, (F.P[0], W.ZU)) @ W.mats(s, W.UP_Y[0])
         items.append((f"uplink_{s}", load(f"w3_uplink_{'left' if s > 0 else 'right'}", mu), "printed"))
         car = T(kx, 0, kz) @ W.mats(s, W.CAR_Y[0])

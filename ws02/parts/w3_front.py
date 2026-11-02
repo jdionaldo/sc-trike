@@ -60,4 +60,4 @@ def build(p):
     out = []
     for s in (1, -1):
         out += [w3_style.arm(p, s), w3_style.uplink(p, s), w3_style.carrier(p, s), w3_style.knuckle(p, s)]
-    return out
+    return out + [w3_style.pod(p)]

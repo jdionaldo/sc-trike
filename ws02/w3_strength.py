@@ -127,8 +127,8 @@ rows.append(("Steer tie rod, 3 mm steel turnbuckle, buckling at servo stall", Ps
 P_link = Fy * 41.5 / 40.0 + 0.5 * N_f
 Pcr = math.pi ** 2 * 1500 * (math.pi * 3 ** 4 / 4) / 100 ** 2
 rows.append((f"Upper link (6 mm bar), buckling under {P_link:.0f} N", Pcr / P_link))
-# carrier: kingpin cantilever tube r 3, 17 mm long, carries the vertical wheel load (the angled brace shares it; ignored)
-sig = N_f * 17.0 / (math.pi * 3 ** 3 / 4)
+# carrier: kingpin cantilever tube r 4.5, 17 mm long, carries the vertical wheel load (the angled brace shares it; ignored)
+sig = N_f * 17.0 / (math.pi * S.CAR_RC ** 3 / 4)
 rows.append(("Carrier kingpin cantilever tube (brace ignored), 3 g landing", sf(sig)))
 # knuckle steering V: two r 3 tubes, ~28 mm long, pulled by the tie rod at servo stall along x, 20 deg off the y axis
 sinA = 7.0 / math.hypot(7.0, 16.0)

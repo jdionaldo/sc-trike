@@ -34,7 +34,7 @@ def stretched_skin():
 def swept_windows():
     """Union of every front-mechanism part over the lean range, grown by GAP in x and z."""
     import w3_scene as S
-    keep = ("arm_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod", "lean_horn", "steer_horn")
+    keep = ("arm_", "pod_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod", "lean_horn", "steer_horn")
     acc = None
     for ph in range(-30, 31, 6):
         for n, m, k in S.scene(float(ph)):

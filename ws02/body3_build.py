@@ -21,8 +21,9 @@ WALL = 2.4
 # with a scoop, open tail underside above the gearbox; wide mid body, narrow tail
 NOSE_LOW = (-1.0, -26.0)                              # where the nose underside meets the chassis floor
 NOSE_TH = math.atan2(53.0, 35.0)                      # underside slope (56.6 deg)
-SIDE = [(34, 40), (34, 27), NOSE_LOW, (-243, -26), (-243, 50), (-300, 50), (-378, 105), (-259, 97)]   # straight roofline, flat vertical nose face
-HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-300, 44), (-340, 40), (-378, 34)]
+TAIL = [(-299.0, 50.0), (-341.5, 66.4), (-348.1, 83.3)]                # new tail from the owner's markup: underside rising to the tail-light face, then the roof
+SIDE = [(34, 40), (34, 27), NOSE_LOW, (-243, -26), (-243, 50)] + TAIL + [(-259, 97)]   # straight roofline, flat vertical nose face, short raked tail
+HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-300, 44), (-340, 40), (-348, 38.5)]
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
 
 
@@ -150,15 +151,22 @@ def details(body):
     slab = Manifold.cube((118.0, 300.0, 12.0), center=False).translate((-240.0, -150.0, -24.0))
     sides = Manifold.cube((300.0, 110.0, 40.0), center=False).translate((-300.0, 40.0, -40.0)) + Manifold.cube((300.0, 110.0, 40.0), center=False).translate((-300.0, -150.0, -40.0))
     body = body + (((solid(-3.0) - solid(0.5)) ^ slab) ^ sides)
-    th = NOSE_TH                                                          # the skid plate screws into bosses on the nose underside
+    th = NOSE_TH                                                          # the skid plate screws into the frame's nose pads through these holes
     for u_ in (10.0, 28.0):
         for sy in (1, -1):
             ox, oz = NOSE_LOW[0] + u_ * math.cos(th), NOSE_LOW[1] + u_ * math.sin(th)
             nx, nz = -math.sin(th), math.cos(th)
-            cx, cz = ox + nx * 3.5, oz + nz * 3.5
-            boss = Manifold.cylinder(8.0, 3.0, 3.0, 32, True).rotate((0.0, -math.degrees(th), 0.0)).translate((cx, sy * 22.0, cz))
-            pilot = Manifold.cylinder(12.0, 0.9, 0.9, 24, True).rotate((0.0, -math.degrees(th), 0.0)).translate((ox + nx * 4.0, sy * 22.0, oz + nz * 4.0))
-            body = body + boss - pilot
+            hole = Manifold.cylinder(8.0, 1.35, 1.35, 24, True).rotate((0.0, -math.degrees(th), 0.0)).translate((ox + nx * 1.2, sy * 22.0, oz + nz * 1.2))
+            body = body - hole
+    # tail-light face: a 0.8 mm recess across the short vertical face at the end of the roof (painted red/black)
+    (bx, bz), (cx_, cz_) = TAIL[2], TAIL[1]
+    dvec = np.array([cx_ - bx, cz_ - bz]); dvec /= np.linalg.norm(dvec)
+    nvec = np.array([-dvec[1], dvec[0]])
+    if nvec[0] > 0:
+        nvec = -nvec                                                      # outward = rearward
+    p0, p1 = np.array([bx, bz]) + dvec * 3.0, np.array([cx_, cz_]) - dvec * 3.0
+    quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
+    body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
     canopy = [(-225, -24), (-205, -30), (-150, -30), (-128, -22), (-128, 22), (-150, 30), (-205, 30), (-225, 24)]   # glass canopy, recessed 0.8 for dark paint
     body = body - (MB.prism_xy(canopy, -100.0, 200.0) - solid(0.8))
     # roof spine: a 1.2 mm raised strip along the centre line from the nose to the tail
@@ -182,7 +190,7 @@ def front_window():
     pts = []
     for ph in range(-25, 26, 5):
         for n, m, k in S.scene(float(ph)):
-            if n.startswith(("arm_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
+            if n.startswith(("arm_", "pod_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
                 pts += [(float(x), float(z)) for x, y, z in m.vertices[::7]]
     hull = MultiPoint(pts).convex_hull.buffer(5.5, join_style=2).simplify(2.0)
     return hull

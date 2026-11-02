@@ -144,6 +144,8 @@ def arm(p, side):
             body = body - _cy(x, 0.0, *yy(ho + 0.1 - dep, ho + 0.1), d1)                                            # outer bearing seat, facing out
             body = body - _cy(x, 0.0, *yy(ya - 0.1, ho + 0.1), d2)
         body = body - _cy(xp + W.LUG[0], W.LUG[1], *yy(ya - 0.1, ya + 5.1), 2.4)
+        for x in POD_SCREWS:                                                                    # pilots for the headlight-pod screws
+            body = body - Manifold.cylinder(9.0, 0.9, 0.9, 24).translate((x, s * (ya + YO), _rail_top(x) - 8.0))
         return _to_print(body, s, ya)
     return MeshPart("w3_arm_left" if s > 0 else "w3_arm_right", fn, walls=False, supports=True)
 
@@ -163,6 +165,9 @@ def uplink(p, side):
     return MeshPart("w3_uplink_left" if s > 0 else "w3_uplink_right", fn, walls=False, supports=True)
 
 
+CAR_R0, CAR_R1, CAR_RC, CAR_RB = 6.0, 4.5, 4.5, 3.5          # carrier: post taper, kingpin cantilever, brace radii
+
+
 def carrier(p, side):
     """Spindle post between the shaft hub and the upper-pin hub, a cantilever to the kingpin boss braced by an angled tube."""
     s = side
@@ -172,10 +177,10 @@ def carrier(p, side):
     def fn():
         kp = W.KP_Y
         parts = [_cy(0.0, 0.0, *yy(ya, yb), 18.0), _cy(0.0, W.ZU, *yy(ya, yb), 11.0),
-                 _tb((0.0, yc, 0.0), (0.0, yc, W.ZU), 4.5, 3.0),                                  # tapered post
-                 _tb((0.0, yc, 19.0), (0.0, s * kp, 19.0), 3.0),                                  # cantilever to the kingpin
+                 _tb((0.0, yc, 0.0), (0.0, yc, W.ZU), CAR_R0, CAR_R1),                          # tapered post
+                 _tb((0.0, yc, 19.0), (0.0, s * kp, 19.0), CAR_RC),                              # cantilever to the kingpin
                  Manifold.cylinder(11.0, 5.5, 5.5, 32).translate((0.0, s * kp, 13.5)),            # kingpin boss
-                 _tb((0.0, yc, 34.0), (0.0, s * (kp - 4.0), 20.5), 2.5)]                           # angled brace
+                 _tb((0.0, yc, 34.0), (0.0, s * (kp - 4.0), 20.5), CAR_RB)]                      # angled brace
         body = _join(parts)
         body = body - _cy(0.0, 0.0, *yy(ya - 0.1, yb + 0.1), 8.15)
         body = body - _cy(0.0, W.ZU, *yy(ya - 0.1, yb + 0.1), p.pin_dia + p.clr_slide)
@@ -247,3 +252,33 @@ def rear_arm(p):
         body = body - _cz(0.0, 0.0, wo + 4.8 - D.SEAT_D, wo + 4.8, D.SEAT) - _cz(L, 0.0, wo + 4.8 - 5.1, wo + 4.8, 16.15)                                       # outer seats
         return _clean(MB.to_trimesh(body))
     return MeshPart("w3_rear_arm", fn, walls=False, supports=True)
+
+
+# ---- headlight pod: sits on the top of each front arm's outer rail (arm-local frame), screwed down into the rail ----
+def _rail_top(x):
+    (x0, z0), (x1, z1) = ARM_OUTER["U2"], ARM_OUTER["U3"]
+    return z0 + (z1 - z0) * (x - x0) / (x1 - x0) + RO
+
+
+POD_X = (-40.0, -13.0)
+POD_Z0 = _rail_top(POD_X[1]) + 0.1                              # lowest point of the pod bottom: the STL is shifted so this sits on the bed
+POD_SCREWS = (-35.0, -20.0)
+
+
+def pod(p):
+    """Angular headlight pod for the top of a front arm: wedge housing, 7 mm lens recess on the front face, 5 mm LED hole, two screws
+    down into the rail.  Symmetric in y (same part both sides); built in arm-local coordinates, y centred, z shifted so the bottom is on the bed."""
+    def fn():
+        x0, x1 = POD_X
+        zb0, zb1 = _rail_top(x0) + 0.1, _rail_top(x1) + 0.1
+        poly = [(x0, zb0), (x1, zb1), (x1, zb1 + 9.0), (x1 - 4.0, zb1 + 13.0), (x0, zb0 + 12.5)]
+        body = MB.prism_xz(poly, -4.0, 4.0)
+        lens = Manifold.cylinder(1.6, 3.5, 3.5, 40).rotate((0.0, 90.0, 0.0)).translate((x1 - 1.5, 0.0, zb1 + 5.5))
+        led = Manifold.cylinder(14.0, 2.5, 2.5, 32).rotate((0.0, 90.0, 0.0)).translate((x1 - 14.0, 0.0, zb1 + 5.5))
+        body = body - lens - led
+        for x in POD_SCREWS:
+            body = body - Manifold.cylinder(30.0, 1.1, 1.1, 24).translate((x, 0.0, zb0 - 2.0))
+        m = MB.to_trimesh(body)
+        m.apply_translation((0.0, 0.0, -POD_Z0))
+        return _clean(m)
+    return MeshPart("w3_pod", fn, walls=False, supports=True)

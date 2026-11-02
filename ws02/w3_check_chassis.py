@@ -21,7 +21,7 @@ for k in ("battery", "esc", "motor", "center_diff", "front_diff", "front_ring", 
     others[k] = b[k]
 for ph in (-25.0, 0.0, 25.0):
     for n, mesh, k in S.scene(ph):
-        if n.startswith(("lean_servo", "steer_servo", "uplink", "arm_", "diff_out", "lean_horn", "steer_horn", "tie_rod", "lean_rod")):
+        if n.startswith(("lean_servo", "steer_servo", "uplink", "arm_", "pod_", "diff_out", "lean_horn", "steer_horn", "tie_rod", "lean_rod")):
             others[f"{n}@{ph:+.0f}"] = mesh
 bad = []
 for a, ta in items.items():
