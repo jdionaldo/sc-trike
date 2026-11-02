@@ -27,7 +27,9 @@ PLATE_T = 3.0
 SPLIT = 66.0
 ARCH = 12.0
 LEG_Y, LEG_T = 28.0, 8.0           # foot centre |y| (kept inside the narrow hood)
-WEB_T = 6.0                        # thickness of each sloped web plate (at y = +-LEG_Y)
+WEB_T = 6.0                        # thickness of the hanger web plate (at y = +-LEG_Y)
+FORK_SCREW_U = (-22.0, -48.0)      # chord positions of the two screws through each fork's lower prong into the blade
+FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
 FOOT_X = (-314.0, -300.0)          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
 HOLE_X = -307.0                    # foot screw, from below (the access hole is in the hood underside)
 STRUT_XY = (-296.0, 28.0)          # frame strut node (x, |y|); the pad plate extends rearward to the screw
@@ -111,8 +113,9 @@ def _panel_matrix(sgn):
 def _blade():
     prof = [(2.0, -3.0), (2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-CHORD, 2.5), (-CHORD, -3.0)]
     centre = MB.prism_xz(prof, -FLAT, FLAT)                           # plain blade centre (no raised cap)
-    # two thin sloped web plates under the blade (from the back slope up to the blade's rear), feet through slots in the hood
-    centre = centre + _mount_local()
+    for sg in (1, -1):                                                # blind pilots from the lower face for the fork screws (nothing shows on top)
+        for u in FORK_SCREW_U:
+            centre = centre - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((u, sg * LEG_Y, -3.2))
     body = centre.translate((0.0, 0.0, ARCH))
     for sg in (1, -1):
         y0, y1 = (FLAT - 0.05, SPAN) if sg > 0 else (-SPAN, -FLAT + 0.05)
@@ -174,40 +177,42 @@ def _lower_z(x):
     return a[2] + (b[2] - a[2]) * (x - a[0]) / (b[0] - a[0])
 
 
-def _top_z(x):
-    """Blade top-face height at y = 0 (assembly) at chord position x."""
-    a, b = blade_pt(-30.0, 0.0, 5.5), blade_pt(-60.0, 0.0, 5.5)
-    return a[2] + (b[2] - a[2]) * (x - a[0]) / (b[0] - a[0])
-
-
-def _mount_asm():
-    """Hanger-type mount, one web plate per side at y = +-LEG_Y: it starts thin on the back slope, rises over the blade's leading edge and runs
-    along the blade's TOP face to the trailing edge, so the blade hangs from it; two feet go through slots in the hood onto the frame pads."""
-    x_front, x_foot0 = -300.0, -314.0
-    x_land, x_end = -331.0, -394.0
-    st = 6.0                                                           # strap thickness on top of the blade
+def _hanger_left():
+    """Fork-type hanger for y > 0, in assembly coordinates: a web from the hood feet up to a clevis whose upper and lower prongs take the blade
+    (it slides in from the rear and stops against the riser); two screws from below go through the lower prong into the blade."""
+    Mc = _centre_matrix()
+    A = lambda u, y, w: (Mc @ np.array([u, y, w, 1.0]))[:3]
+    y0f, y1f = LEG_Y - 5.0, LEG_Y + 5.0
+    gap_lo, gap_hi = -3.3, 5.9                                            # blade lower face -3, top 5.5 (+0.3 clearance each side)
+    pr = 3.0                                                              # prong thickness
+    fork = _box(-66.0, 8.0, y0f, y1f, gap_lo - pr, gap_lo) + _box(-66.0, 8.0, y0f, y1f, gap_hi, gap_hi + pr) + _box(3.2, 8.0, y0f, y1f, gap_lo - pr, gap_hi + pr)
+    for u in FORK_SCREW_U:
+        fork = fork - Manifold.cylinder(6.0, 1.35, 1.35, 24).translate((u, LEG_Y, gap_lo - pr - 1.0))           # clear hole in the lower prong
+    fork = fork.transform(Mc[:3, :4])
+    # web from the hood feet up to the riser
+    xf, xr = -300.0, -314.0
     h = lambda x: hood_top(x) + 0.4
-    poly = [(x_front, h(x_front)), (x_foot0, h(x_foot0)), (x_land, _top_z(x_land) - 1.0), (x_end, _top_z(x_end) - 1.0),
-            (x_end, _top_z(x_end) + st), (x_land - 2.0, _top_z(x_land - 2.0) + st)]
-    body = None
-    for sg in (1, -1):
-        web = MB.prism_xz(poly, sg * LEG_Y - WEB_T / 2, sg * LEG_Y + WEB_T / 2)
-        body = web if body is None else body + web
+    rl = A(3.2, LEG_Y, gap_lo - pr)
+    rh = A(8.0, LEG_Y, gap_hi + pr)
+    poly = [(xf, h(xf)), (xr, h(xr)), (rl[0], rl[2]), (rh[0], rh[2] - 0.5)]
+    web = MB.prism_xz(poly, LEG_Y - WEB_T / 2, LEG_Y + WEB_T / 2)
     zf = foot_z()
     x0, x1 = FOOT_X
-    for sg in (1, -1):
-        y0, y1 = sg * LEG_Y - 5.0, sg * LEG_Y + 5.0
-        foot = _box(x0, x1, min(y0, y1), max(y0, y1), zf, zf + 0.5)
-        top = _box(x0, x1, min(y0, y1), max(y0, y1), hood_top(x1) + 0.2, hood_top(x1) + 2.0)
-        body = body + Manifold.batch_hull([foot, top])
-        body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, sg * LEG_Y, zf - 0.1))          # pilot, screw from below through the frame pad
+    foot = _box(x0, x1, y0f, y1f, zf, zf + 0.5)
+    top = _box(x0, x1, y0f, y1f, hood_top(x1) + 0.2, hood_top(x1) + 2.0)
+    body = fork + web + Manifold.batch_hull([foot, top])
+    body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, LEG_Y, zf - 0.1))                 # pilot, screw from below through the frame pad
     return body
 
 
-def _mount_local():
-    Mc = _centre_matrix()
-    inv = np.linalg.inv(Mc)
-    return _mount_asm().transform(inv[:3, :4])
+def _hanger_part(side):
+    from parts.w3_style import _to_print
+    def fn():
+        b = _hanger_left()
+        if side < 0:
+            b = b.mirror((0.0, 1.0, 0.0))
+        return _to_print(b, side, FORK_Y0)
+    return MeshPart("w3_tail_hanger_left" if side > 0 else "w3_tail_hanger_right", fn, walls=False, supports=True)
 
 
 def slot_cutters():
@@ -230,7 +235,7 @@ def build(p):
     return [MeshPart("w3_tail_center", lambda: _piece("center"), walls=False, supports=True),
             MeshPart("w3_tail_left", lambda: _piece("left"), walls=False, supports=True),
             MeshPart("w3_tail_right", lambda: _piece("right"), walls=False, supports=True),
-            ]
+            _hanger_part(1), _hanger_part(-1)]
 
 
 def placed():
@@ -243,5 +248,9 @@ def placed():
         m = trimesh.load(f"out/stl/{n}.stl")
         m.apply_translation((0.0, 0.0, -LIFT[n.split('_')[-1]]))
         m.apply_transform(M)
+        out.append((n, m))
+    for s, n in ((1, "w3_tail_hanger_left"), (-1, "w3_tail_hanger_right")):
+        m = trimesh.load(f"out/stl/{n}.stl")
+        m.apply_transform(W.mats(s, FORK_Y0))
         out.append((n, m))
     return out
