@@ -17,7 +17,7 @@ Y0, Y1 = 54.6, 57.6          # ladder pad thickness (outer face of the servos / 
 YT = 57.6                    # ladder tube centre
 DZ = {"front": 30.0, "rear": 24.0}      # STL z shift per piece (print frame, z min near the bed)
 XS = -175.0                  # split across x
-HEAD = 3.0                   # screw-head clearance radius
+HEAD = 2.9                   # screw-head clearance radius
 PIVOT = (-100.0, 40.0)
 FOOT_Z = -23.0               # top of the base plate
 TAB_PAD = (2.5, 6.5)         # skin-tab pad z range above the node z
@@ -83,7 +83,7 @@ EDGES = [("PE1", "PS2", 3.0, 0, 0), ("PS2", "PM", 3.0, 0, 0), ("PM", "PS1", 3.0,
          ("PE1", "B1", 4.5, 7.0, 0), ("B1", "R1", 4.5, 0, 0), ("R1", "R2", 5.0, 0, 0),
          ("HT", "PH", 5.5, 0, 6.0), ("PH", "PL", 6.0, 0, 0), ("HT", "C100", 5.5, 0, 0), ("HT", "HT2", 5.5, 0, 0), ("HT2", "MU", 5.5, 0, 0), ("MU", "R3", 5.5, 0, 0), ("R3", "R2", 5.5, 0, 0), ("R2", "C262", 5.5, 0, 0),
          ("MU", "XN", 4.5, 0, 0), ("XN", "R2m", 4.5, 0, 0),
-         ("PH", "C40", 4.5, 0, 6.0), ("HT", "XH", 3.5, 0, 0), ("XH", "PHm", 3.5, 0, 6.0),
+         ("PH", "C40", 4.5, 6.0, 0), ("HT", "XH", 3.5, 0, 0), ("XH", "PHm", 3.5, 0, 6.0),
          ("FT", "C29", 5.5, 0, 0), ("FT", "HT", 5.5, 0, 0), ("FT", "FN", 4.5, 0, 0),
          ("FP1", "K1", 3.0, 0, 0), ("K1", "HT2", 3.0, 0, 0), ("R3", "K2", 4.0, 0, 0), ("K2", "FPB", 4.0, 0, 0)]
 BALLS = {"XH": 3.5, "C40": 4.5, "R1": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 4.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 4.0, "FPR": 4.0, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 4.0}
@@ -155,6 +155,10 @@ def piece(name):
     m.merge_vertices()
     m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
     m.apply_translation((0.0, 0.0, DZ["front" if sx > 0 else "rear"]))
+    m.vertices = np.asarray(m.vertices, np.float32).astype(np.float64)          # what the STL will hold
+    m.update_faces(m.nondegenerate_faces())
+    m.remove_unreferenced_vertices()
+    m.merge_vertices()
     return m
 
 
