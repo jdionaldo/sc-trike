@@ -10,7 +10,9 @@ from manifold3d import Manifold
 DECK_Z = (-29.0, -23.0)
 TD = DECK_Z[1] - DECK_Z[0]                                           # base plate thickness
 HALF_W = 33.0
-FRONT_X = (-153.0, -3.0)
+FRONT_X = (-153.0, -1.0)
+TAB_X = (-13.0, 0.6)                       # the grate's foot tab (assembly x), lies in a rebate under the front base plate
+TAB_SCREWS = ((-8.0, 26.0), (-3.0, 12.0))  # (x, |y|) countersunk screws from below, into the base plate
 REAR_X = (-296.0, -153.0)
 HOUSING_BOLTS = [(-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0),
                  (-201.5, -2.5), (-201.5, 44.5), (-161.5, -2.5), (-161.5, 44.5),
@@ -53,6 +55,11 @@ def deck(p, name, xr, limit, perimeter):
             for sgn in (1, -1):
                 body = body + _box(-140.0, -132.0, 30.0 if sgn > 0 else -48.0, 48.0 if sgn > 0 else -30.0, 0.0, TD)
         cuts = []
+        if not perimeter:
+            cuts.append(_box(TAB_X[0] - 0.3, x1 + 1.0, -33.2, 33.2, -1.0, 3.2))                               # rebate for the grate's foot tab: continuous underside
+            for tx, ty in TAB_SCREWS:
+                for sg in (1, -1):
+                    cuts.append(Manifold.cylinder(2.6, 1.1, 1.1, 24).translate((tx, sg * ty, 3.0)))        # pilots in the 3 mm left above the rebate
         for bx, by in HOUSING_BOLTS:
             if x0 < bx < x1:
                 cuts += _slot(bx - 5.0, bx + 5.0, by)
@@ -74,16 +81,35 @@ def deck(p, name, xr, limit, perimeter):
 
 
 def skid(p):
-    """Nose skid plate hugging the angled nose underside (45 deg, 40 mm along the slope), 80 wide, 3 thick, slots like the reference.
-    Print frame: u along the slope, v across, w outward thickness; screws into the bosses on the nose underside."""
-    part = Part("w3_skid", "flat", "PETG")
-    part.box((0.0, -40.0, 0.0), (39.6, 80.0, 3.0))
-    for v in (-30.0, -18.0, -6.0, 6.0, 18.0, 30.0):
-        part.box((6.0, v - 1.7, -1.0), (22.0, 3.4, 5.0), op="cut")
-    for u in (10.0, 28.0):
-        for v in (-22.0, 22.0):
-            part.cyl((u, v, -1.0), p.m2_clear, 5.0, op="cut")
-    return part
+    """Nose grate (skid plate) hugging the angled nose underside, 80 wide, 3 thick, with slots; a flat foot tab at its lower end lies in a rebate in
+    the underside of the base plate so the underside is continuous (countersunk screws from below).  Print frame: u along the slope, v across, w outward."""
+    import math
+    import numpy as np
+    import mono_build as MB
+    from parts.w3_style import MeshPart, _clean
+    from body3_build import NOSE_TH, NOSE_LOW
+    def fn():
+        body = _box(0.0, 39.6, -40.0, 40.0, 0.0, 3.0)
+        for v in (-30.0, -18.0, -6.0, 6.0, 18.0, 30.0):
+            body = body - _box(6.0, 28.0, v - 1.7, v + 1.7, -1.0, 4.0)
+        for u in (10.0, 28.0):
+            for v in (-22.0, 22.0):
+                body = body - Manifold.cylinder(5.0, p.m2_clear / 2, p.m2_clear / 2, 24).translate((u, v, -1.0))
+        # foot tab in assembly coordinates (x -13 .. +0.6, z -29 .. -26), then into the print frame
+        sk = np.array([[math.cos(NOSE_TH), 0, math.sin(NOSE_TH), NOSE_LOW[0]], [0, -1, 0, 0], [math.sin(NOSE_TH), 0, -math.cos(NOSE_TH), NOSE_LOW[1]], [0, 0, 0, 1.0]])
+        tab = _box(TAB_X[0], TAB_X[1], -33.0, 33.0, DECK_Z[0], DECK_Z[0] + 3.0)
+        for x_, y_ in TAB_SCREWS:
+            for sg in (1, -1):
+                tab = tab - Manifold.cylinder(3.2, 1.35, 1.35, 24).translate((x_, sg * y_, DECK_Z[0] - 0.1)) - Manifold.cylinder(1.6, 2.5, 1.35, 24).translate((x_, sg * y_, DECK_Z[0] - 0.1))
+        inv = np.linalg.inv(sk)
+        body = body + tab.transform(inv[:3, :4])
+        m = _clean(MB.to_trimesh(body))
+        lift = -float(m.bounds[0][2])
+        m.apply_translation((0.0, 0.0, lift))                                   # the tab hangs below the plate in the print frame: lift it onto the bed
+        import json, pathlib
+        pathlib.Path('out/stl/w3_skid_lift.json').write_text(json.dumps(lift))
+        return m
+    return MeshPart("w3_skid", fn, walls=False, supports=True)
 
 
 def standoff(p):

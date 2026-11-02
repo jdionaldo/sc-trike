@@ -29,7 +29,8 @@ ARCH = 12.0
 LEG_Y, LEG_T = 28.0, 8.0           # foot centre |y| (kept inside the narrow hood)
 WEB_T = 6.0                        # thickness of the hanger web plate (at y = +-LEG_Y)
 FORK_SCREW_U = (-30.0, -44.0)      # chord positions of the two screws through each fork's lower prong into the blade
-CH = 2.0                           # channel depth in the blade (top and bottom) = prong thickness
+CH = 2.0                           # channel depth in the blade (top and bottom)
+PR = 3.0                           # prong thickness: CH sits in the channel, the rest stands 1 mm proud of the blade surface
 CLR = 0.15                         # prong-to-channel clearance
 PROF_TOP = [(2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-72.0, 2.5)]
 FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
@@ -214,8 +215,9 @@ def _hanger_left():
     y0f, y1f = LEG_Y - 5.0, LEG_Y + 5.0
     c = CLR
     us = [2.0, -8.0, -35.0, -52.0]
-    upper = [(2.5, topw(2.0))] + [(u, topw(u)) for u in us] + [(-60.0, topw(-60.0) - CH + c)] + [(u, topw(u) - CH + c) for u in reversed(us)] + [(2.5, topw(2.0) - CH + c)]
-    lower = [(2.5, -3.0), (-52.0, -3.0), (-60.0, -3.0 + CH - c), (2.5, -3.0 + CH - c)]
+    pd = PR - CH                                                          # proud height
+    upper = [(2.5, topw(2.0) + pd)] + [(u, topw(u) + pd) for u in us] + [(-60.0, topw(-60.0) - CH + c)] + [(u, topw(u) - CH + c) for u in reversed(us)] + [(2.5, topw(2.0) - CH + c)]
+    lower = [(2.5, -3.0 - pd), (-52.0, -3.0 - pd), (-60.0, -3.0 + CH - c), (2.5, -3.0 + CH - c)]
     prongs = MB.prism_xz(upper, y0f, y1f) + MB.prism_xz(lower, y0f, y1f)           # bands (not convex): plain prisms, the end chamfers are in the outline
     cap = _chamfered_prism_uw([(2.2, -3.0), (6.4, -3.0), (6.4, 0.6), (2.2, 0.6)], y0f, y1f)
     fork = prongs + cap

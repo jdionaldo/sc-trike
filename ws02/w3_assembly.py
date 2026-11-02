@@ -66,7 +66,11 @@ def assembly(phi_deg=0.0, steer=None):
     items.append(("w3_motor_plate", _t(f"{STL}/w3_motor_plate.stl", mp), "printed"))
     from body3_build import NOSE_TH as th, NOSE_LOW
     sk = M([[math.cos(th), 0, math.sin(th)], [0, -1, 0], [math.sin(th), 0, -math.cos(th)]], (NOSE_LOW[0], 0.0, NOSE_LOW[1]))
-    items.append(("w3_skid", _t(f"{STL}/w3_skid.stl", sk), "printed"))
+    import json
+    sm = trimesh.load(f"{STL}/w3_skid.stl")
+    sm.apply_translation((0.0, 0.0, -json.loads(open(f"{STL}/w3_skid_lift.json").read())))
+    sm.apply_transform(sk)
+    items.append(("w3_skid", sm, "printed"))
     rows, t0, L = rear_arm_mats()
     items.append(("w3_rear_arm", _t(f"{STL}/w3_rear_arm.stl", M(rows, t0)), "printed"))
     for side in ("left", "right"):
