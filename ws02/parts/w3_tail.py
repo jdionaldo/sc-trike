@@ -237,7 +237,7 @@ def _hanger_left():
     p1 = (FOOT_X[0], float(h(FOOT_X[0])))
     rl = A(2.4, LEG_Y, -3.0)
     cc = A(2.4, LEG_Y, wl(2.4))
-    web = _chamfered([p0, p1, (rl[0], rl[2]), (cc[0], cc[2])], LEG_Y - WEB_T / 2, LEG_Y + WEB_T / 2, 1.2)
+    web = _chamfered([p0, p1, (rl[0], rl[2]), (cc[0], cc[2])], y0f, y1f, 1.2)
     zf = foot_z()
     x0, x1 = FOOT_X
     foot = _box(x0, x1, y0f, y1f, zf, zf + 0.5)
