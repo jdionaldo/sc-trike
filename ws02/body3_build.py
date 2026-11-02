@@ -83,12 +83,9 @@ def solid(inset=0.0, belly=False):
     sec = Polygon(to_new(SECTION, "sec")).buffer(-inset, join_style=2)
     s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0) ^ prism_yz(list(sec.exterior.coords)[:-1], -400.0, 100.0)
     s = s + rocker(inset)
-    if belly:                                        # open belly: sweep the cavity down in 5 mm steps so thin sections stay connected
-        acc = s
-        front = s ^ Manifold.cube((500.0, 400.0, 400.0), center=False).translate((-240.6, -200.0, -200.0))   # sweep only ahead of the rear bulkhead
-        for k in range(1, 14):
-            acc = acc + front.translate((0, 0, -5.0 * k))
-        s = acc
+    if belly:                                        # open belly: remove the floor with a straight prism of the cavity's plan (no stepped sweep: the lower edge stays clean)
+        floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((240.2, 400.0, 100.0), center=False).translate((-240.6, -200.0, -80.0))
+        s = s + floor
     return s
 
 
@@ -136,8 +133,6 @@ def details(body):
             body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
             body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
     tri = [(-241, 22), (-209, 22), (-225, 44)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
-    pocket = Polygon(tri).buffer(3.0)
-    body = body - flank_cut(list(pocket.exterior.coords)[:-1], 0.8)
     hole, wedge, chan = flank_vent(tri)
     body = body - hole + wedge - chan
     for k in range(-4, 5):                                            # nose light bar: a row of 3 mm LED holes (3.2 mm) through the front wall, 7 mm pitch
@@ -173,7 +168,8 @@ def details(body):
         body = body + Manifold.cube((_FR.HINGE[0][1] - _FR.HINGE[0][0], y1 - y0, zt_ - 28.0), center=False).translate((_FR.HINGE[0][0], y0, 28.0))
         body = body - cyl_m((_FR.HINGE_PIN[0], s * 0.5 * (_FR.HINGE_EAR[0] + _FR.HINGE_EAR[1]), _FR.HINGE_PIN[1]), _FR.HINGE_D / 2, 8.0, 'y')
     body = body - __import__('parts.w3_tail', fromlist=['slot_cutters']).slot_cutters()                # slots for the wing-leg feet, access holes for their screws
-    body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()          # slots where frame tubes pass through the skin
+    body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()
+    body = body - __import__('w3_swing').swing_channels()                       # open-ended channels: the frame tubes slide out as the skin swings up on the nose hinge          # slots where frame tubes pass through the skin
     return body
 
 
@@ -241,8 +237,13 @@ def flank_vent(tri, blade=4.5):
         h = _shear_y(MB.prism_xz(inner, 0.0 if s > 0 else -130.0, 130.0 if s > 0 else 0.0), s, zc)
         ramp = MB.prism_xy([(xf, s * (ys - 2.2)), (xr, s * (ys - 2.2)), (xr, s * (ys + blade)), (xf, s * (ys + 0.6))], zc - 40.0, zc + 40.0)
         sc = _shear_y(ramp, s, zc) ^ MB.prism_xz(grown, -200.0, 200.0)
-        cq = MB.prism_xy([(xf - 1.0, s * (ys - 4.0)), (xr - 1.0, s * (ys - 4.0)), (xr - 1.0, s * (ys + blade - 1.3)), (xf - 1.0, s * (ys + 0.3))], zc - 40.0, zc + 40.0)
+        cq = MB.prism_xy([(xf - 1.0, s * (ys - 4.0)), (xr + 3.0, s * (ys - 4.0)), (xr + 3.0, s * (ys + blade - 1.3)), (xf - 1.0, s * (ys + 0.3))], zc - 40.0, zc + 40.0)
         ch = _shear_y(cq, s, zc) ^ MB.prism_xz(inner, -200.0, 200.0)
+        # exit: a channel above the skin that runs out through the scoop's rear face, so the vent really opens to the rear
+        ext = list(Polygon(inner).union(Polygon([(x - 10.0, z) for x, z in inner])).convex_hull.exterior.coords)[:-1]
+        ex = MB.prism_xy([(xr + 2.0, s * (ys + 0.1)), (xr - 1.0, s * (ys + 0.1)), (xr - 1.0, s * (ys + blade - 1.3)), (xr + 2.0, s * (ys + blade - 1.3))], zc - 40.0, zc + 40.0)
+        ex = _shear_y(ex, s, zc) ^ MB.prism_xz(ext, -200.0, 200.0)
+        ch = ch + ex
         hole = h if hole is None else hole + h
         scoop = sc if scoop is None else scoop + sc
         chan = ch if chan is None else chan + ch
@@ -290,8 +291,6 @@ def main():
         body = body - MB.prism_xz(lpts, y0, y1)
     body = body - Manifold.cube((46.0, 46.0, 90.0), center=True).translate((-278.0, 59.0, 0.0))    # rear arm leaves the body, left
     body = body - Manifold.cube((46.0, 46.0, 90.0), center=True).translate((-278.0, -59.0, 0.0))   # mirrored
-    for poly in PANELS:
-        body = body - flank_cut(poly, 0.8)
     body = body - Manifold.cube((16.0, 30.0, 22.0), center=True).translate((-241.8, 21.0, 0.0))     # drive shaft tunnel through the rear bulkhead
     body = body - Manifold.cube((6.0, 300.0, 6.0), center=True).translate((-241.8, 0.0, -25.0))      # the rear deck passes under the bulkhead
     for y_ in (2.0, 35.0):

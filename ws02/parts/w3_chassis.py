@@ -10,7 +10,7 @@ from manifold3d import Manifold
 DECK_Z = (-29.0, -23.0)
 TD = DECK_Z[1] - DECK_Z[0]                                           # base plate thickness
 HALF_W = 33.0
-FRONT_X = (-153.0, -1.0)
+FRONT_X = (-153.0, -2.5)
 TAB_X = (-13.0, 0.6)                       # the grate's foot tab (assembly x), lies in a rebate under the front base plate
 TAB_SCREWS = ((-8.0, 26.0), (-3.0, 12.0))  # (x, |y|) countersunk screws from below, into the base plate
 REAR_X = (-296.0, -153.0)

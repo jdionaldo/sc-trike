@@ -25,6 +25,7 @@ HINGE_LUG = (11.0, 14.0)                  # lug plate |y| range
 HINGE_EAR = (14.2, 17.2)                  # skin ear |y| range (beside the lug)
 HINGE_PIN = (21.4, 29.5)                  # pin axis (x, z), along y
 HINGE_D = 3.2
+RELIEF_G = 0.35                           # clearance around tubes where they pass through the skin (tight: the skin is sealed around them)
 MAG_D = 6.3                               # magnet pocket diameter (6 mm disc, 2 mm thick)
 FOOT_Z = -23.0               # top of the base plate
 TAB_PAD = (2.5, 6.5)         # skin-tab pad z range above the node z
@@ -112,7 +113,7 @@ FEET = {"FS": 8.0, "FP1": 7.0, "FPB": 9.0, "FPR": 7.6, "FPF": 10.0}      # foot 
 
 def frame(relief=False):
     N = nodes()
-    g = 0.8 if relief else 0.0
+    g = RELIEF_G if relief else 0.0
     parts = []
     for a, b, r, ta, tb in EDGES:
         nc = (a, b) == ("PH", "PL")                                              # the pivot pad stack: a plain cylinder, no rounded ends
