@@ -10,7 +10,7 @@ from parts.w3_front import YS
 
 DECK_Z = (-26.0, -23.0)
 HALF_W = 33.0
-FRONT_X = (-153.0, 16.0)
+FRONT_X = (-153.0, -22.0)
 REAR_X = (-296.0, -153.0)
 HOUSING_BOLTS = [(-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0),
                  (-201.5, -2.5), (-201.5, 44.5), (-161.5, -2.5), (-161.5, 44.5),
@@ -117,26 +117,15 @@ def wing(p, side):
 
 
 def skid(p):
-    """Nose skid plate with the slot pattern from the reference: flat 3 mm plate under the nose, x -31..16, y +-40. Screws into the deck nose."""
+    """Nose skid plate hugging the angled nose underside (45 deg, 40 mm along the slope), 80 wide, 3 thick, slots like the reference.
+    Print frame: u along the slope, v across, w outward thickness; screws into the bosses on the nose underside."""
     part = Part("w3_skid", "flat", "PETG")
-    part.box((0.0, 0.0, 0.0), (47.0, 80.0, 3.0))
-    for y in (10.0, 22.0, 34.0, 46.0, 58.0, 70.0):
-        part.box((8.0, y - 1.7, -1.0), (30.0, 3.4, 5.0), op="cut")
-    for x, y in ((25.0, 26.0), (25.0, 46.0), (43.0, 26.0), (43.0, 46.0)):
-        part.cyl((x, y, -1.0), p.m2_clear, 5.0, op="cut")
-    return part
-
-
-def rear_fender(p):
-    """Arch over the rear tire (r 56): half ring r 59.5..61.9, 76 wide, centre (x -362.2, z -10.7), bolts to bosses on the tail.
-    Print frame: u = x + 362.2, v = -(z + 10.7), w = y + 38; the arch is the v <= 0 half, printed lying so the arc extrudes straight up."""
-    part = Part("w3_rear_fender", "arch lying on its side", "PETG")
-    part.cyl((0.0, 0.0, 0.0), 123.8, 76.0)
-    part.cyl((0.0, 0.0, -1.0), 119.0, 78.0, op="cut")
-    part.box((-70.0, 0.0, -1.0), (140.0, 70.0, 78.0), op="cut")                 # keep the upper half only
-    for w0 in (0.0, 71.0):
-        part.box((52.0, 0.0, w0), (10.5, 8.0, 5.0))                           # mounting tabs below the arch front end
-        part.cyl((50.0, 4.0, w0 + 2.5), 2.7, 14.0, axis="X", op="cut")
+    part.box((0.0, -40.0, 0.0), (39.6, 80.0, 3.0))
+    for v in (-30.0, -18.0, -6.0, 6.0, 18.0, 30.0):
+        part.box((6.0, v - 1.7, -1.0), (22.0, 3.4, 5.0), op="cut")
+    for u in (10.0, 28.0):
+        for v in (-22.0, 22.0):
+            part.cyl((u, v, -1.0), p.m2_clear, 5.0, op="cut")
     return part
 
 
@@ -149,4 +138,5 @@ def standoff(p):
 
 
 def build(p):
-    return [standoff(p), body_post(p), wing(p, 1), wing(p, -1), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True), wall(p, 1), wall(p, -1)]
+    from parts import w3_style
+    return [standoff(p), body_post(p), wing(p, 1), wing(p, -1), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True), w3_style.wall(p, 1), w3_style.wall(p, -1)]

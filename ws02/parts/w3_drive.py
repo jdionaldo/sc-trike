@@ -172,6 +172,11 @@ def rear_arm_cover(p):
     return part
 
 
+def _rear_styled(p):
+    from parts import w3_style
+    return [w3_style.rear_arm(p), w3_style.rear_arm_cover(p)]
+
+
 def build(p):
-    return (front_diff_case(p) + center_diff_case(p) + rear_bevel_case(p) + [motor_plate(p), rear_arm(p), rear_arm_cover(p)]
+    return (front_diff_case(p) + center_diff_case(p) + rear_bevel_case(p) + [motor_plate(p)] + _rear_styled(p)
             + [tray("w3_batt_tray", (66.0, 24.0), (6.0, 18.0)), tray("w3_esc_tray", (50.0, 42.0), (8.0, 34.0))])

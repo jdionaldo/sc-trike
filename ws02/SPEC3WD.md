@@ -102,3 +102,8 @@ Stages
 ## S10 mass, strength
 - w3_mass.py: about 1.6 kg total (printed about 510 g with 1.2 mm walls and infill, bought about 990 g, 110 g misc), 61% of the weight on the front axle, CG 45 mm above the ground, static roll-over 71 deg, rolls over at 5.4 m/s on a 1 m radius if it did not lean (it leans, so the real figure is higher).
 - w3_strength.py: kingpin raised to 4 mm steel (factor of safety 2.3 to 5.5); the printed tie rod would buckle at 29 N, so the tie rods are 3 mm steel turnbuckles (printed part kept as an envelope); every other checked part has a factor of safety above 6.
+
+## S11 styling pass
+- Arms, covers, upper links, servo walls and the rear swingarm and cover are now mesh-built (parts/w3_style.py) with tapered, chamfered outlines; the lower arm peak is capped at 20 mm so it clears the upper link at full swing (the two links are 40 cos(theta) apart).
+- Snub nose: front face overhangs (top at x 30, bottom at x 8), underside slopes back at 45 deg to the floor at x -20; angled skid plate (40 mm along the slope) screws into bosses on the underside; posts moved to x -29, ESC to x -79.5..-33.5, receiver to x -75..-51.
+- 0 clashes over lean/steer poses, 112 tests.

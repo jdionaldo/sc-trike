@@ -27,6 +27,9 @@ def all_parts():
 def run_part(part):
     for d in ("commands", "stl", "step"):
         (OUT / d).mkdir(parents=True, exist_ok=True)
+    if hasattr(part, "write"):                      # mesh-built part (parts/w3_style.py)
+        part.write(OUT / "stl" / f"{part.name}.stl")
+        return
     script = OUT / "commands" / f"{part.name}.json"
     script.write_text(json.dumps(part.cmds, indent=1))
     r = subprocess.run(["solidcraft-cli", "run", str(script), "--out", str(OUT / "stl" / f"{part.name}.stl"),
