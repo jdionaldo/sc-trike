@@ -1,12 +1,10 @@
-"""WS-03 inner structure: slotted decks (front and rear), servo/pivot walls, assembly frame (z = 0 at the front axle height).
+"""WS-03 inner structure: 6 mm slotted base plates (front and rear) under the tubular frame (parts/w3_frame.py); z = 0 at the front axle height.
 
-Deck: 3 mm plate at z -26..-23 under the gear housings; the housing clamp bolts pass through slots so the housings slide fore/aft
-(gear mesh and balance), battery and ESC trays sit on long rail slots, perimeter holes screw up into pads on the body skirt.
-Wall: 3 mm plate at |y| 54.5..57.5 carrying both servos (flange screws through the plate), the diff output shaft hole and the
-upper-link pivot boss; two screws into ears on the front diff case hold it.
+Base plate: 6 mm at z -29..-23 under the gear housings; the housing clamp bolts pass through slots so the housings slide fore/aft
+(gear mesh and balance), battery and ESC trays sit on long rail slots, perimeter holes screw up into pads on the body skirt, and the
+frame's strut feet screw down into it.  Servo, diff-case and pivot-pin mounts are pads on the tube frame.
 """
 from cad import Part
-from parts.w3_front import YS
 
 DECK_Z = (-29.0, -23.0)
 TD = DECK_Z[1] - DECK_Z[0]                                           # base plate thickness
@@ -57,70 +55,6 @@ def deck(p, name, xr, limit, perimeter):
     return part
 
 
-def wall(p, side):
-    """Plate in the x-z plane, |y| 48..51, outer face on the bed. Print frame: u = x, v = z (left) or -z (right), w = 51 - |y|."""
-    name = "w3_wall_left" if side > 0 else "w3_wall_right"
-    part = Part(name, "outer face on the bed", "PETG")
-    zl, zh = -26.0, 46.0
-    xa, xb = -155.0, -35.0
-    vv = (lambda a, b: (a, b)) if side > 0 else (lambda a, b: (-b, -a))
-
-    def box(x, z, w, op="join"):
-        v0, v1 = vv(*z)
-        part.box((x[0], v0, w[0]), (x[1] - x[0], v1 - v0, w[1] - w[0]), op=op)
-
-    def cyl(x, z, w0, h, d, op="cut"):
-        v = z if side > 0 else -z
-        part.cyl((x, v, w0), d, h, op=op)
-
-    box((xa, -110.0), (zl, 14.0), (0.0, 3.0))                                  # plate, low where the body skin is close (x < -110)
-    box((-110.0, xb), (zl, zh), (0.0, 3.0))                                    # plate, full height inside the arm window
-    boss_z = 40.0
-    cyl(-100.0, boss_z, -0.1, 10.2, 3.4)                                      # pivot pin
-    cyl(-100.0, 0.0, -0.1, 3.2, 7.0)                                          # diff output shaft
-    for xc, zc, d in ((-71.4, -18.8, 8.0), (-100.0, -14.0, 8.0)):             # servo horn shafts: (-71.4, -18.8) lean, (-100, -14) steer
-        cyl(xc, zc, -0.1, 3.2, d)
-    for xs, zs in ((-60.0, -18.8), (-111.4, -14.0)):                          # servo flange screws, 49 mm apart along x
-        for dx in (-24.5, 24.5):
-            for dz in (-5.0, 5.0):
-                cyl(xs + dx, zs + dz, -0.1, 3.2, p.m2_clear)
-    v0, v1 = vv(zl - 1.0, -22.0)
-    part.box((-108.0, v0, -0.1), (16.0, v1 - v0, 3.2), op="cut")             # notch for the steer rod eye
-    for x in (-150.0, -86.0):                                                 # screws into the front diff case ears
-        cyl(x, -10.0, -0.1, 3.2, 2.7)
-    return part
-
-
-def body_post(p):
-    """Standoff from the deck to the roof boss: M2.5 screw from below through the deck and this tube."""
-    part = Part("w3_body_post", "standing", "PETG")
-    part.cyl((0.0, 0.0, 0.0), 7.6, 50.0)
-    part.cyl((0.0, 0.0, -0.1), 2.8, 50.2, op="cut")
-    return part
-
-
-def wing(p, side):
-    """Wing fender plate bolted to the inboard face of the knuckle carrier (moves with the wheel). Flat; print frame u = x, v = z."""
-    name = "w3_wing_left" if side > 0 else "w3_wing_right"
-    part = Part(name, "flat", "PETG")
-    pts = [(-50.0, -4.0), (-8.0, 40.0), (34.0, 40.0), (40.0, 10.0), (30.0, -4.0)]
-    from shapely.geometry import Polygon
-    import numpy as np
-    poly = Polygon(pts)
-    # stack of 1 mm slabs so the outline stays crisp without a sketch: use a staircase of 2 mm columns
-    xs = np.arange(-50.0, 40.0, 2.0)
-    for x in xs:
-        from shapely.geometry import LineString
-        g = LineString([(x + 1.0, -50), (x + 1.0, 80)]).intersection(poly)
-        if g.is_empty:
-            continue
-        z0, z1 = g.bounds[1], g.bounds[3]
-        part.box((x, z0 + 4.0, 0.0), (2.0, z1 - z0, 3.0))
-    part.cyl((0.0, 4.0, -0.1), 6.4, 3.2, op="cut")                        # lateral shaft passes through
-    for x in (-6.0, 6.0):
-        part.cyl((x, 4.0 + 16.0, -0.1), p.m2_clear, 3.2, op="cut")
-    return part
-
 
 def skid(p):
     """Nose skid plate hugging the angled nose underside (45 deg, 40 mm along the slope), 80 wide, 3 thick, slots like the reference.
@@ -144,5 +78,4 @@ def standoff(p):
 
 
 def build(p):
-    from parts import w3_style
     return [standoff(p), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p)

@@ -4,7 +4,6 @@ Each builder writes an STL in the same print frame as the part it replaces, so p
 """
 import math
 from dataclasses import dataclass, field
-from pathlib import Path
 
 import numpy as np
 import trimesh
@@ -137,55 +136,6 @@ def rear_arm_cover(p):
     return MeshPart("w3_rear_arm_cover", fn)
 
 
-WALL_OUT = [(-157, -20), (-150, -28), (-30, -28), (-24, -22), (-24, 28), (-34, 46), (-104, 46), (-110, 40), (-112, 14), (-150, 14), (-157, 8)]
-
-
-def wall(p, side):
-    """Servo wall with a chamfered outline and a triangular lightening window. |y| 54.5..57.5, outer face on the bed (w = 51 + YS - |y|)."""
-    s = side
-    yo = 51.0 + W.YS
-    def fn():
-        yi, ya = yo - 3.0, yo
-        body = MB.prism_xz(WALL_OUT, *sorted((s * yi, s * ya)))
-        body = body - MB.prism_xz([(-96, 24), (-52, 24), (-96, 38)], *sorted((s * (yi - 0.1), s * (ya + 0.1))))       # lightening window
-        for x, z, d in ((-71.4, -18.8, 8.0), (-100.0, -14.0, 8.0), (-100.0, 0.0, 7.0), (-100.0, 40.0, 3.4)):
-            body = body - _cy(x, z, s * (yi - 0.1), s * (ya + 0.1), d)
-        for xs, zs in ((-60.0, -18.8), (-111.4, -14.0)):
-            for dx in (-24.5, 24.5):
-                for dz in (-5.0, 5.0):
-                    body = body - _cy(xs + dx, zs + dz, s * (yi - 0.1), s * (ya + 0.1), p.m2_clear)
-        for x in (-150.0, -86.0):
-            body = body - _cy(x, -10.0, s * (yi - 0.1), s * (ya + 0.1), 2.7)
-        body = body - MB.prism_xz([(-108, -29), (-92, -29), (-92, -22), (-108, -22)], *sorted((s * (yi - 0.1), s * (ya + 0.1))))   # rod eye notch
-        m = body.to_mesh()
-        t = trimesh.Trimesh(np.asarray(m.vert_properties)[:, :3], np.asarray(m.tri_verts))
-        mm = np.eye(4)
-        if s > 0:
-            mm[:3, :3] = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]; mm[1, 3] = yo
-        else:
-            mm[:3, :3] = [[1, 0, 0], [0, 0, 1], [0, -1, 0]]; mm[1, 3] = -yo
-        t.apply_transform(np.linalg.inv(mm))
-        t.merge_vertices()
-        return t
-    return MeshPart("w3_wall_left" if s > 0 else "w3_wall_right", fn)
-
-
-WING_T = 4.5                                                       # fender plate thickness: stiffer for minor crashes
-WING = [(-50, -4), (-34, 16), (-18, 34), (-8, 42), (30, 42), (38, 34), (42, 12), (34, -4)]
-
-
-def wing_plate(p, side):
-    """Wing fender plate on the inboard face of the carrier; print frame u = x, v = z + 4, w = thickness. Crisp angular outline."""
-    def fn():
-        body = MB.prism_xy([(x, z + 4.0) for x, z in WING], 0.0, WING_T)
-        body = body - _cz(0.0, 4.0, -0.1, WING_T + 0.2, 6.4)
-        for x in (-6.0, 6.0):
-            body = body - _cz(x, 20.0, -0.1, WING_T + 0.2, p.m2_clear)
-        m = MB.to_trimesh(body)
-        m.merge_vertices()
-        return m
-    return MeshPart("w3_wing_left" if side > 0 else "w3_wing_right", fn)
-
 
 CAR_OUT = [(-10, -3), (-6, -7), (6, -7), (10, -3), (10, 6), (5.5, 26), (4.5, 38), (2.5, 45), (-2.5, 45), (-4.5, 38), (-5.5, 26), (-10, 6)]
 KN_OUT = [(-6, -29), (6, -29), (6, -14), (10, -9), (10, 10), (5, 13.5), (-8, 13.5), (-12, 9), (-12, -8), (-6, -14)]
@@ -244,28 +194,3 @@ def knuckle(p, side):
         return _local_to_print(body, km)
     return MeshPart("w3_knuckle_left" if s > 0 else "w3_knuckle_right", fn)
 
-
-def wing(p, side):
-    """Tubular wing fender: an angular loop of 4.5 mm tube following the old plate outline, three spokes to a small mount block on the carrier.
-    Same envelope as the plate (w 0..4.5); print frame u = x, v = z + 4, w = thickness."""
-    from parts.w3_frame import tube, ball
-    def fn():
-        r = WING_T / 2
-        pts = [(x, z + 4.0) for x, z in WING]
-        P = lambda q: (q[0], q[1], r)
-        parts = []
-        for a, b in zip(pts, pts[1:] + pts[:1]):
-            parts += [tube(P(a), P(b), r), ball(P(b), r)]
-        for q in (pts[0], pts[3], pts[6]):                                  # spokes: tail, top shoulder, nose from the mount
-            parts.append(tube(P((0.0, 12.0)), P(q), r))
-        mount = MB.prism_xy([(-8.0, -4.0 + 4.0 - 4.0), (8.0, 0.0), (8.0, 28.0), (-8.0, 28.0)], 0.0, WING_T)
-        body = parts[0]
-        for q in parts[1:] + [mount]:
-            body = body + q
-        body = body - _cz(0.0, 4.0, -0.1, WING_T + 0.2, 6.4)
-        for x in (-6.0, 6.0):
-            body = body - _cz(x, 20.0, -0.1, WING_T + 0.2, p.m2_clear)
-        m = MB.to_trimesh(body)
-        m.merge_vertices()
-        return m
-    return MeshPart("w3_wing_left" if side > 0 else "w3_wing_right", fn, walls=False, supports=True)

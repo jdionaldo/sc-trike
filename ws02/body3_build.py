@@ -92,7 +92,6 @@ def cyl_m(c, r, h, axis="z"):
 
 
 PAD_X = (-228.0, -200.0, -168.0)            # rear deck screw stations (match parts/w3_chassis.py)
-POST_XY = (-29.0, 16.0)                               # front body posts: deck to roof bosses
 SEAM_X = (-270.0, -215.0, -100.0, -20.0)             # seam screws joining the left and right halves
 HEX = lambda cx, cz, r: [(cx + r * np.cos(a), cz + r * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 7)[:-1]]
 
