@@ -169,6 +169,7 @@ def details(body):
         body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))                    # shallow pocket so the blades blend into the roof
     cuts, wedges, chans = roof_gills(-233.0, -209.0, 8.0, 34.0)
     body = body - cuts + wedges - chans
+    body = body - __import__('parts.w3_tail', fromlist=['slot_cutters']).slot_cutters()                # slots for the wing-leg feet, access holes for their screws
     body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()          # slots where frame tubes pass through the skin
     return body
 

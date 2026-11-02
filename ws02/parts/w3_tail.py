@@ -26,11 +26,12 @@ COS_A = math.cos(ALPHA)
 PLATE_T = 3.0
 SPLIT = 66.0
 ARCH = 12.0
-LEG_Y, LEG_T = 38.0, 8.0           # leg centre |y| and thickness
-FOOT_X = (-311.0, -295.0)          # leg foot (assembly x)
-STRUT_XY = (-303.0, 31.0)          # frame strut pad (x, |y|), beside the leg
+LEG_Y, LEG_T = 28.0, 8.0           # leg centre |y| and thickness (kept inside the narrow hood)
+FOOT_X = (-314.0, -300.0)          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
+HOLE_X = -307.0                    # foot screw, from below (the access hole is in the hood underside)
+STRUT_XY = (-296.0, 28.0)          # frame strut node (x, |y|); the pad plate extends rearward to the screw
 TZ = {"center": 3.0, "left": 36.0, "right": 36.0}     # STL lift per piece (end plates hang 34 mm below the blade's lower face)
-LEG_Y0 = LEG_Y - 14.0              # leg print frame: inner face of the foot flange on the bed
+LEG_Y0 = 14.0                      # leg print frame: inner face of the top flange on the bed
 
 
 
@@ -50,11 +51,16 @@ def hood_top(x):
 
 
 def foot_z():
-    return hood_top(STRUT_XY[0]) + 3.5                                # underside of the leg's foot flange
+    return hood_top(HOLE_X) - 6.0                                     # leg foot underside = pad top, 3.6 mm below the inner skin
 
 
 def strut_node():
     return np.array([STRUT_XY[0], STRUT_XY[1], foot_z()])
+
+
+def flange_screws():
+    """Blade-underside pilots / leg flange holes: (u, y) pairs, beside the leg so the heads are reachable from below."""
+    return [(_u_at(x), y) for x in LEG_SCREW_X for y in (LEG_Y - 8.5, LEG_Y + 8.5)]
 
 
 def place_matrix():
@@ -109,11 +115,9 @@ def _blade():
     cap_plan = Polygon([(16.0, -52.0), (16.0, 52.0), (-CHORD - 6.0, 58.0), (-CHORD - 6.0, -58.0)]).buffer(-5.0).buffer(5.0)
     cap = MB.prism_xz(cap_prof, -60.0, 60.0) ^ MB.prism_xy(list(cap_plan.exterior.coords)[:-1], -20.0, 40.0)
     centre = MB.prism_xz(prof, -FLAT, FLAT) + cap
-    for sg in (1, -1):                                                # leg screws: clear through blade and cap, counterbored from the top
-        for x in LEG_SCREW_X:
-            u = _u_at(x)
-            centre = centre - Manifold.cylinder(20.0, 1.35, 1.35, 24).translate((u, sg * LEG_Y, -6.0))
-            centre = centre - Manifold.cylinder(3.0, 2.6, 2.6, 28).translate((u, sg * LEG_Y, 8.5))
+    for sg in (1, -1):                                                # pilots for the leg-flange screws, blind from the lower face (nothing shows on top)
+        for u, y in flange_screws():
+            centre = centre - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((u, sg * y, -3.2))
     body = centre.translate((0.0, 0.0, ARCH))
     for sg in (1, -1):
         y0, y1 = (FLAT - 0.05, SPAN) if sg > 0 else (-SPAN, -FLAT + 0.05)
@@ -163,27 +167,49 @@ def _piece(which):
     return _clean(m)
 
 
-def _leg(side):
-    """Tapered pylon (convex hull of a foot box and a top box that follows the warped blade underside), foot flange inboard with the screw."""
-    s = side
+def _leg_left():
+    """Tapered pylon (hull of the foot box and two top boxes under the blade) with a top flange beside it for screws from below.
+    Built for y > 0 in assembly coordinates."""
     zf = foot_z()
     x0, x1 = FOOT_X
     tx0, tx1 = LEG_SCREW_X[0] + 12.0, LEG_SCREW_X[1] - 12.0
     def top_box(x):
-        a = blade_pt(_u_at(x), s * LEG_Y, -3.0)
-        return _box(x - 1.0, x + 1.0, min(s * (LEG_Y - 3.0), s * (LEG_Y + 3.0)), max(s * (LEG_Y - 3.0), s * (LEG_Y + 3.0)), a[2] - 1.2, a[2] - 0.6)
-    foot = _box(x0, x1, min(s * (LEG_Y - 5.0), s * (LEG_Y + 5.0)), max(s * (LEG_Y - 5.0), s * (LEG_Y + 5.0)), zf, zf + 0.5)
+        a = blade_pt(_u_at(x), LEG_Y, -3.0)
+        return _box(x - 1.0, x + 1.0, LEG_Y - 5.0, LEG_Y + 5.0, a[2] - 3.7, a[2] - 3.0)
+    foot = _box(x0, x1, LEG_Y - 5.0, LEG_Y + 5.0, zf, zf + 0.5)
     body = Manifold.batch_hull([foot, top_box(tx0), top_box(tx1)])
-    fl_y0, fl_y1 = (LEG_Y - 14.0, LEG_Y + 5.0)
-    body = body + _box(x0, x1, min(s * fl_y0, s * fl_y1), max(s * fl_y0, s * fl_y1), zf, zf + 4.0)
-    sx, sy = STRUT_XY
-    body = body - Manifold.cylinder(8.0, 1.35, 1.35, 24).translate((sx, s * sy, zf - 1.0))               # foot screw, from above
-    body = body - Manifold.cylinder(4.0, 2.6, 2.6, 28).translate((sx, s * sy, zf + 2.0))
-    n = place_matrix()[:3, :3] @ np.array([0.0, 0.0, 1.0])
-    for x in LEG_SCREW_X:                                                  # pilots for the blade screws, along the blade normal
-        a = blade_pt(_u_at(x), s * LEG_Y, -3.0)
-        body = body - _tb(a - n * 8.0, a + n * 0.5, 1.0)
+    # flange under the blade: 3 mm thick in the blade's local frame, 0.3 mm below its lower face, spanning the screw positions
+    us = [u for u, _ in flange_screws()]
+    fl = Manifold.cube((max(us) - min(us) + 16.0, 2 * 8.5 + 11.0, 3.0), center=False).translate((min(us) - 8.0, LEG_Y - 8.5 - 5.5, -6.3))
+    Mc = place_matrix() @ np.diag([1.0, 1.0, 1.0, 1.0])
+    Mc = Mc.copy(); Mc[:3, 3] += Mc[:3, :3] @ np.array([0.0, 0.0, ARCH])
+    body = body + fl.transform(Mc[:3, :4])
+    for u, y in flange_screws():
+        hole = Manifold.cylinder(6.0, 1.35, 1.35, 24).translate((u, y, -7.0))
+        body = body - hole.transform(Mc[:3, :4])
+    body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, LEG_Y, zf - 0.1))               # foot pilot, screw from below through the frame pad
     return body
+
+
+def _leg(side):
+    b = _leg_left()
+    return b if side > 0 else b.mirror((0.0, 1.0, 0.0))
+
+
+def slot_cutters():
+    """Hood-skin slots for the leg feet: both legs, grown 0.5 mm in plan, plus the access holes in the hood underside for the screws."""
+    zf = foot_z()
+    x0, x1 = FOOT_X
+    tops = []
+    g = 0.5
+    for tx in (LEG_SCREW_X[0] + 12.0, LEG_SCREW_X[1] - 12.0):
+        a = blade_pt(_u_at(tx), LEG_Y, -3.0)
+        tops.append(_box(tx - 1.0 - g, tx + 1.0 + g, LEG_Y - 5.0 - g, LEG_Y + 5.0 + g, a[2] - 3.7, a[2] - 3.0))
+    foot = _box(x0 - g, x1 + g, LEG_Y - 5.0 - g, LEG_Y + 5.0 + g, zf - 1.0, zf + 0.5)
+    cut = Manifold.batch_hull([foot] + tops)
+    out = cut + cut.mirror((0.0, 1.0, 0.0))
+    acc = Manifold.cylinder(24.0, 4.5, 4.5, 32).translate((HOLE_X, LEG_Y, 44.0))
+    return out + acc + acc.mirror((0.0, 1.0, 0.0))
 
 
 def _leg_part(side):

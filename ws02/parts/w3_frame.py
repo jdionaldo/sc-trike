@@ -126,7 +126,8 @@ def frame(relief=False):
             x, y, z = N[k]
             parts.append(_vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d))
         wx, wy, wz = N["WP"]
-        parts.append(_vcyl(wx, wy, wz + 0.8, wz + 4.8, 9.0))                           # wing-leg strut pad (leg foot flange sits 0.2 above)
+        from parts.w3_tail import HOLE_X
+        parts.append(Manifold.cube((wx - (HOLE_X - 6.5), 10.0, 4.0), center=False).translate((HOLE_X - 6.5, wy - 5.0, wz + 0.8)))   # pad plate for the wing-leg foot; the screw comes from below, behind the tube
         from body3_build import NOSE_TH
         ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
         for k in ("NA", "NB"):                                                         # skid pads: 3 mm discs on the nose-skin inner face
@@ -148,7 +149,8 @@ def frame(relief=False):
         x, y, z = N[k]
         cuts.append(_vcyl(x, y, FOOT_Z - 0.1, FOOT_Z + 2.0, 2.2))                 # self-tapping pilot for the base-plate screw
     wx, wy, wz = N["WP"]
-    cuts.append(_vcyl(wx, wy, wz + 1.2, wz + 5.0, 2.2))                             # pilot for the whale-tail screw
+    from parts.w3_tail import HOLE_X as _HX
+    cuts.append(_vcyl(_HX, wy, wz + 0.5, wz + 5.5, 2.7))                            # clear hole for the wing-leg screw (from below)
     from body3_build import NOSE_TH
     ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
     for k in ("NA", "NB"):
