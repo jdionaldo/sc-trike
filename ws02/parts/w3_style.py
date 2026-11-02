@@ -170,16 +170,17 @@ def wall(p, side):
     return MeshPart("w3_wall_left" if s > 0 else "w3_wall_right", fn)
 
 
+WING_T = 4.5                                                       # fender plate thickness: stiffer for minor crashes
 WING = [(-50, -4), (-34, 16), (-18, 34), (-8, 42), (30, 42), (38, 34), (42, 12), (34, -4)]
 
 
 def wing(p, side):
     """Wing fender plate on the inboard face of the carrier; print frame u = x, v = z + 4, w = thickness. Crisp angular outline."""
     def fn():
-        body = MB.prism_xy([(x, z + 4.0) for x, z in WING], 0.0, 3.0)
-        body = body - _cz(0.0, 4.0, -0.1, 3.2, 6.4)
+        body = MB.prism_xy([(x, z + 4.0) for x, z in WING], 0.0, WING_T)
+        body = body - _cz(0.0, 4.0, -0.1, WING_T + 0.2, 6.4)
         for x in (-6.0, 6.0):
-            body = body - _cz(x, 20.0, -0.1, 3.2, p.m2_clear)
+            body = body - _cz(x, 20.0, -0.1, WING_T + 0.2, p.m2_clear)
         m = MB.to_trimesh(body)
         m.merge_vertices()
         return m

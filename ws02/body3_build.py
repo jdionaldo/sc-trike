@@ -139,8 +139,9 @@ def details(body):
     for tx, ty, tz in FR._tab_pos():                                       # roof / hood bosses over the frame's skin-tab pads
         ztop = 50.6 if tx < -243.0 else top_z(tx, WALL) + 0.4
         for s in (1, -1):
-            body = body + cyl_m((tx, s * ty, 0.5 * (tz + 5.3 + ztop)), 4.5, ztop - tz - 5.3)
-            body = body - cyl_m((tx, s * ty, tz + 5.3 + 3.5), 1.1, 7.0)
+            zb = tz + FR.TAB_BOSS
+            body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
+            body = body - cyl_m((tx, s * ty, zb + 3.5), 1.1, 7.0)
     for hx, hz in heads:
         circ = [(hx + 2.2 * np.cos(a), hz + 2.2 * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 13)[:-1]]
         body = body - flank_cut(circ, 0.6)

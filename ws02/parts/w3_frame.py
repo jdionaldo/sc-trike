@@ -20,7 +20,8 @@ XS = -175.0                  # split across x
 HEAD = 3.0                   # screw-head clearance radius
 PIVOT = (-100.0, 40.0)
 FOOT_Z = -23.0               # top of the base plate
-SKIN_TABS = []               # (x, y, z of pad top) filled by build(); used by the body generator
+TAB_PAD = (2.5, 6.5)         # skin-tab pad z range above the node z
+TAB_BOSS = 6.8               # boss on the skin starts this far above the node z
 
 
 def _zt(x):
@@ -58,8 +59,8 @@ def _stadium(x, z0, z1, y0, y1, r):
 
 
 def _tab_pos():
-    """Skin tab stations (x, y, node z): front roof, hoop top, mid rail, hood.  Node z = skin underside - 12 (roof), 40.4 (hood)."""
-    return [(-29.0, 16.0, _zt(-29.0) - 12.0), (-100.0, 30.0, _zt(-100.0) - 12.0), (-180.0, 36.0, _zt(-180.0) - 12.0), (-262.0, 38.0, 40.4)]
+    """Skin tab stations (x, y, node z): front roof, hoop top, mid rail, hood.  Node z = skin underside - 13.5 (roof), 39.4 (hood)."""
+    return [(-29.0, 28.0, _zt(-29.0) - 13.5), (-100.0, 30.0, _zt(-100.0) - 13.5), (-180.0, 36.0, _zt(-180.0) - 13.5), (-262.0, 38.0, 39.4)]
 
 
 def nodes():
@@ -67,21 +68,24 @@ def nodes():
     (fx, fy, fz), (hx, hy, hz), (mx, my, mz), (rx, ry, rz) = _tab_pos()
     Y = YT
     return {"PE1": (-150.0, Y, -10.0), "PS2": (-135.9, Y, -14.0), "PM": (-86.0, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (PIVOT[0], Y, PIVOT[1]), "FN": (-25.0, Y, 28.0),
-            "B1": (-200.0, Y, -10.0), "R1": (-246.0, 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
+            "B1": (-200.0, 59.0, -10.0), "R1": (-246.0, 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
             "C100": (hx, 0.0, hz), "C262": (rx, 0.0, rz), "FT": (fx, fy, fz), "C29": (fx, 0.0, fz), "XN": (-221.0, 0.0, 0.5 * (mz + rz) + 0.5 * 0.0 + 0.0),
             "R2m": (rx, -ry, rz),
-            "FP1": (-135.9, 44.0, -20.0), "FPB": (-200.0, 52.5, -20.0), "FPR": (-250.0, 41.5, -20.0), "FPF": (-35.5, 28.0, -20.0)}
+            "HT2": (-135.9, hy + (my - hy) * 0.449, hz + (mz - hz) * 0.449), "K1": (-135.9, 38.5, 25.0),
+            "R3": (-200.0, my + (ry - my) * 0.244, mz + (rz - mz) * 0.244), "K2": (-200.0, 52.0, 28.0),
+            "FP1": (-135.9, 44.0, -20.0), "FPB": (-200.0, 52.5, -19.0), "FPR": (-250.0, 41.5, -19.0), "FPF": (-35.5, 28.0, -19.5)}
 
 
 # (a, b, tube radius, trim at a, trim at b): angled tubes only; the roof members are thicker (inboard, no clearance problem)
 EDGES = [("PE1", "PS2", 3.0, 0, 0), ("PS2", "PM", 3.0, 0, 0), ("PM", "PS1", 3.0, 0, 0), ("PS2", "PL", 3.0, 0, 6.0), ("PE1", "PL", 3.0, 0, 6.0),
          ("PS1", "FN", 3.0, 0, 0), ("FN", "PL", 3.0, 0, 6.0),
-         ("PS2", "FP1", 3.0, 0, 0), ("B1", "FPB", 3.0, 0, 0), ("R1", "FPR", 3.0, 0, 0), ("PS1", "FPF", 3.0, 0, 0),
-         ("PE1", "B1", 3.0, 0, 0), ("B1", "R1", 3.0, 0, 0), ("R1", "R2", 3.5, 0, 0),
-         ("HT", "PH", 4.0, 0, 6.0), ("HT", "C100", 4.0, 0, 0), ("HT", "MU", 4.0, 0, 0), ("MU", "R2", 4.0, 0, 0), ("R2", "C262", 4.0, 0, 0),
-         ("MU", "XN", 3.5, 0, 0), ("XN", "R2m", 3.5, 0, 0),
-         ("FT", "C29", 4.0, 0, 0), ("FT", "HT", 4.0, 0, 0), ("FT", "FN", 3.5, 0, 0)]
-BALLS = {"R1": 3.5, "R2": 4.0, "HT": 4.0, "MU": 4.0, "FN": 3.5, "B1": 3.0, "FT": 4.0, "XN": 3.5, "FP1": 3.0, "FPB": 3.0, "FPR": 3.0, "FPF": 3.0}
+         ("PS2", "FP1", 3.0, 0, 0), ("B1", "FPB", 4.0, 0, 0), ("R1", "FPR", 4.0, 0, 0), ("PS1", "FPF", 3.5, 0, 0),
+         ("PE1", "B1", 4.5, 7.0, 0), ("B1", "R1", 4.5, 0, 0), ("R1", "R2", 5.0, 0, 0),
+         ("HT", "PH", 5.5, 0, 6.0), ("HT", "C100", 5.5, 0, 0), ("HT", "HT2", 5.5, 0, 0), ("HT2", "MU", 5.5, 0, 0), ("MU", "R3", 5.5, 0, 0), ("R3", "R2", 5.5, 0, 0), ("R2", "C262", 5.5, 0, 0),
+         ("MU", "XN", 4.5, 0, 0), ("XN", "R2m", 4.5, 0, 0),
+         ("FT", "C29", 5.5, 0, 0), ("FT", "HT", 5.5, 0, 0), ("FT", "FN", 4.5, 0, 0),
+         ("FP1", "K1", 3.0, 0, 0), ("K1", "HT2", 3.0, 0, 0), ("R3", "K2", 4.0, 0, 0), ("K2", "FPB", 4.0, 0, 0)]
+BALLS = {"R1": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 4.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 4.0, "FPR": 4.0, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 4.0}
 FEET = {"FP1": 7.0, "FPB": 9.0, "FPR": 7.6, "FPF": 10.0}      # foot pad diameters, screwed down into the base plate
 
 
@@ -101,7 +105,7 @@ def frame(relief=False):
         parts += [MB.prism_xz([(-92.0, -29.0), (-79.0, -29.0), (-79.0, -5.0), (-92.0, -5.0)], Y0, Y1)]
         parts += [_disc(PL[0], PL[2], Y0, Y1, 16.0), _disc(PL[0], PL[2], 46.0, Y0, 16.0)]
         for (x, y, z) in _tab_pos():
-            parts.append(_vcyl(x, y, z + 1.0, z + 5.0, 9.0))
+            parts.append(_vcyl(x, y, z + TAB_PAD[0], z + TAB_PAD[1], 9.0))
         for k, d in FEET.items():
             x, y, z = N[k]
             parts.append(_vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d))
@@ -116,7 +120,7 @@ def frame(relief=False):
         cuts.append(_disc(x, z, Y1, Y1 + 4.0, 2 * HEAD))
     cuts.append(_disc(PIVOT[0], PIVOT[1], 45.0, Y1 + 0.1, 3.4))
     for (x, y, z) in _tab_pos():
-        cuts.append(_vcyl(x, y, z, z + 6.0, 2.7))
+        cuts.append(_vcyl(x, y, z + TAB_PAD[0] - 1.0, z + TAB_PAD[1] + 1.0, 2.7))
     for k in FEET:
         x, y, z = N[k]
         cuts.append(_vcyl(x, y, FOOT_Z - 0.1, FOOT_Z + 2.0, 2.2))                 # self-tapping pilot for the base-plate screw
