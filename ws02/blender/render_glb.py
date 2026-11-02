@@ -29,8 +29,8 @@ for o in bpy.data.objects:
             pass
 bpy.ops.object.light_add(type="SUN", location=(300, -300, 500)); bpy.context.object.data.energy = 2.2
 bpy.context.object.rotation_euler = (math.radians(45), 0, math.radians(35))
-cam_data = bpy.data.cameras.new("c"); cam = bpy.data.objects.new("c", cam_data); sc.collection.objects.link(cam); sc.camera = cam
-views = {"iso": ((420, 880, 520), (-170, 0, 10)), "side": ((-170, 950, 40), (-170, 0, 30)), "top": ((-170, 0, 950), (-170, 0, 0)), "front": ((800, 120, 160), (-170, 0, 30))}
+cam_data = bpy.data.cameras.new("c"); cam_data.clip_end = 20000; cam_data.clip_start = 1; cam = bpy.data.objects.new("c", cam_data); sc.collection.objects.link(cam); sc.camera = cam
+views = {"iso": ((380, 760, 430), (-170, 0, 10)), "side": ((-170, 950, 40), (-170, 0, 30)), "top": ((-170, 0, 950), (-170, 0, 0)), "front": ((800, 120, 160), (-170, 0, 30))}
 import mathutils
 for name, (loc, tgt) in views.items():
     cam.location = loc
