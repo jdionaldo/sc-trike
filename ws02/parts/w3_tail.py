@@ -27,7 +27,7 @@ PLATE_T = 3.0
 SPLIT = 66.0
 ARCH = 12.0
 LEG_Y, LEG_T = 28.0, 8.0           # foot centre |y| (kept inside the narrow hood)
-MOUNT_Y = 36.0                     # half width of the wedge mount
+WEB_T = 6.0                        # thickness of each sloped web plate (at y = +-LEG_Y)
 FOOT_X = (-314.0, -300.0)          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
 HOLE_X = -307.0                    # foot screw, from below (the access hole is in the hood underside)
 STRUT_XY = (-296.0, 28.0)          # frame strut node (x, |y|); the pad plate extends rearward to the screw
@@ -110,13 +110,8 @@ def _panel_matrix(sgn):
 
 def _blade():
     prof = [(2.0, -3.0), (2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-CHORD, 2.5), (-CHORD, -3.0)]
-    # centre: flat blade plus a cap that wraps the blade (front lip, top, and down over the trailing edge), lifted by ARCH
-    cap_prof = [(14.0, -3.0), (14.0, 7.5), (6.0, 11.0), (-10.0, 10.5), (-CHORD - 4.0, 8.0), (-CHORD - 4.0, -3.0)]
-    from shapely.geometry import Polygon
-    cap_plan = Polygon([(16.0, -52.0), (16.0, 52.0), (-CHORD - 6.0, 58.0), (-CHORD - 6.0, -58.0)]).buffer(-5.0).buffer(5.0)
-    cap = MB.prism_xz(cap_prof, -60.0, 60.0) ^ MB.prism_xy(list(cap_plan.exterior.coords)[:-1], -20.0, 40.0)
-    centre = MB.prism_xz(prof, -FLAT, FLAT) + cap
-    # integral wedge mount under the blade (fills the gap to the back slope) with two feet that pass through slots in the hood
+    centre = MB.prism_xz(prof, -FLAT, FLAT)                           # plain blade centre (no raised cap)
+    # two thin sloped web plates under the blade (from the back slope up to the blade's rear), feet through slots in the hood
     centre = centre + _mount_local()
     body = centre.translate((0.0, 0.0, ARCH))
     for sg in (1, -1):
@@ -183,7 +178,10 @@ def _mount_asm():
     """Assembly-frame wedge: hood-top conforming bottom, blade-lower-face top, +-36 mm wide, plus the two feet down to the pads."""
     xa, xb = -312.0, -381.0
     poly = [(xa, hood_top(xa) + 0.4), (xb, hood_top(xb) + 0.4), (xb, _lower_z(xb) + 1.5), (xa, _lower_z(xa) + 1.5)]
-    body = MB.prism_xz(poly, -MOUNT_Y, MOUNT_Y)
+    body = None
+    for sg in (1, -1):
+        web = MB.prism_xz(poly, sg * LEG_Y - WEB_T / 2, sg * LEG_Y + WEB_T / 2)
+        body = web if body is None else body + web
     zf = foot_z()
     x0, x1 = FOOT_X
     for sg in (1, -1):
