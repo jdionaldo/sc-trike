@@ -13,11 +13,9 @@ man = lambda t: m.Manifold(m.Mesh(vert_properties=np.asarray(t.vertices, np.floa
 items = {}
 for n in ("w3_deck_front", "w3_deck_rear"):
     t = trimesh.load(f"out/stl/{n}.stl"); t.apply_translation((0, 0, C.DECK_Z[0])); items[n] = t
-for n, side in (("w3_wall_left", 1), ("w3_wall_right", -1)):
-    t = trimesh.load(f"out/stl/{n}.stl"); mm = np.eye(4)
-    if side > 0: mm[:3, :3] = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]; mm[1, 3] = 51.0 + C.YS
-    else: mm[:3, :3] = [[1, 0, 0], [0, 0, 1], [0, -1, 0]]; mm[1, 3] = -(51.0 + C.YS)
-    t.apply_transform(mm); items[n] = t
+import parts.w3_frame as FR
+for n, t in FR.placed():
+    items[n] = t
 others = dict(DS.placed()); b = LY.blocks()
 for k in ("battery", "esc", "motor", "center_diff", "front_diff", "front_ring", "rear_shaft", "front_pinion_shaft"):
     others[k] = b[k]

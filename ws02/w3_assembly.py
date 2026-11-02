@@ -53,13 +53,9 @@ def assembly(phi_deg=0.0, steer=None):
         items.append((n, mesh, "printed"))
     for n in ("w3_deck_front", "w3_deck_rear"):
         items.append((n, _t(f"{STL}/{n}.stl", shift=(0, 0, C.DECK_Z[0])), "printed"))
-    for n, side in (("w3_wall_left", 1), ("w3_wall_right", -1)):
-        mm = np.eye(4)
-        if side > 0:
-            mm[:3, :3] = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]; mm[1, 3] = 51.0 + W.YS
-        else:
-            mm[:3, :3] = [[1, 0, 0], [0, 0, 1], [0, -1, 0]]; mm[1, 3] = -(51.0 + W.YS)
-        items.append((n, _t(f"{STL}/{n}.stl", mm), "printed"))
+    import parts.w3_frame as FR
+    for n, mesh in FR.placed():
+        items.append((n, mesh, "printed"))
     for s_ in (1, -1):
         items.append((f"w3_body_post_{s_}", _t(f"{STL}/w3_body_post.stl", shift=(-29.0, s_ * 16.0, -23.0)), "printed"))
     for s_ in (1, -1):                                                       # upper-link standoff on the pivot pin, between the wall and the link

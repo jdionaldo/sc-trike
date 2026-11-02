@@ -124,7 +124,7 @@ def motor_plate(p):
     Print frame: u = y, v = -z, w = -x - 232 (plate thickness up); a proper rotation to the assembly frame."""
     part = Part("w3_motor_plate", "plate on its back", "PETG")
     t = 4.0
-    part.box((-4.0, -46.0, 0.0), (45.0, 38.0, t))                            # plate, y -4..41, z 8..46 (clear of the shaft line)
+    part.box((-4.0, -42.0, 0.0), (45.0, 34.0, t))                            # plate, y -4..41, z 8..42 (clear of the shaft line and the frame rail)
     for dy in (-8.0, 8.0):
         for z in (16.0, 32.0):
             part.box((SY + dy - 1.7, -z - 4.0, -1.0), (3.4, 8.0, t + 2.0), op="cut")   # motor screw slots, 8 long
