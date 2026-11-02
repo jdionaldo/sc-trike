@@ -67,8 +67,8 @@ def assembly(phi_deg=0.0, steer=None):
         items.append((f"w3_uplink_standoff_{s_}", _t(f"{STL}/w3_uplink_standoff.stl", M(rows, (-100.0, s_ * 57.6, 40.0))), "printed"))
     mp = M([[0, 0, -1], [1, 0, 0], [0, -1, 0]], (-236.0, 0, 0))
     items.append(("w3_motor_plate", _t(f"{STL}/w3_motor_plate.stl", mp), "printed"))
-    th = math.atan2(28.0, 28.0)
-    sk = M([[math.cos(th), 0, math.sin(th)], [0, -1, 0], [math.sin(th), 0, -math.cos(th)]], (-20.0, 0.0, -26.0))
+    from body3_build import NOSE_TH as th, NOSE_LOW
+    sk = M([[math.cos(th), 0, math.sin(th)], [0, -1, 0], [math.sin(th), 0, -math.cos(th)]], (NOSE_LOW[0], 0.0, NOSE_LOW[1]))
     items.append(("w3_skid", _t(f"{STL}/w3_skid.stl", sk), "printed"))
     rows, t0, L = rear_arm_mats()
     items.append(("w3_rear_arm", _t(f"{STL}/w3_rear_arm.stl", M(rows, t0)), "printed"))

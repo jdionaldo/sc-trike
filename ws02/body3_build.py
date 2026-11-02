@@ -19,7 +19,9 @@ WALL = 2.4
 
 # profile from the owner's sketch over the RT-1 sheet (assembly frame, mm): truncated nose, roof rising toward the rear, high rear hood
 # with a scoop, open tail underside above the gearbox; wide mid body, narrow tail
-SIDE = [(30, 32), (8, 2), (-20, -26), (-243, -26), (-243, 50), (-300, 50), (-378, 105), (-259, 97), (-175, 80), (-98, 57), (-59, 44)]
+NOSE_LOW = (-1.0, -26.0)                              # where the nose underside meets the chassis floor
+NOSE_TH = math.atan2(53.0, 35.0)                      # underside slope (56.6 deg)
+SIDE = [(34, 40), (34, 27), NOSE_LOW, (-243, -26), (-243, 50), (-300, 50), (-378, 105), (-259, 97)]   # straight roofline, flat vertical nose face
 HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-300, 44), (-340, 40), (-378, 34)]
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
 
@@ -140,16 +142,16 @@ def details(body):
     for hx, hz in heads:
         circ = [(hx + 2.2 * np.cos(a), hz + 2.2 * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 13)[:-1]]
         body = body - flank_cut(circ, 0.6)
-    for zc in (8.0, 14.5, 21.0, 27.5):                                     # snub nose: cooling slots across the overhanging front face
-        body = body - Manifold.cube((50.0, 28.0, 3.0), center=True).translate((20.0, 0.0, zc))
+    for zc in (29.5, 33.0, 36.5):                                     # snub nose: cooling slots across the overhanging front face
+        body = body - Manifold.cube((50.0, 28.0, 2.5), center=True).translate((20.0, 0.0, zc))
     # rocker panel armor: a 3 mm proud band along the lower flank between the rear bulkhead and the front window
     slab = Manifold.cube((118.0, 300.0, 12.0), center=False).translate((-240.0, -150.0, -24.0))
     sides = Manifold.cube((300.0, 110.0, 40.0), center=False).translate((-300.0, 40.0, -40.0)) + Manifold.cube((300.0, 110.0, 40.0), center=False).translate((-300.0, -150.0, -40.0))
     body = body + (((solid(-3.0) - solid(0.5)) ^ slab) ^ sides)
-    th = math.atan2(28.0, 28.0)                                           # nose underside slope (45 deg), the skid plate screws into bosses on it
+    th = NOSE_TH                                                          # the skid plate screws into bosses on the nose underside
     for u_ in (10.0, 28.0):
         for sy in (1, -1):
-            ox, oz = -20.0 + u_ * math.cos(th), -26.0 + u_ * math.sin(th)
+            ox, oz = NOSE_LOW[0] + u_ * math.cos(th), NOSE_LOW[1] + u_ * math.sin(th)
             nx, nz = -math.sin(th), math.cos(th)
             cx, cz = ox + nx * 3.5, oz + nz * 3.5
             boss = Manifold.cylinder(8.0, 3.0, 3.0, 32, True).rotate((0.0, -math.degrees(th), 0.0)).translate((cx, sy * 22.0, cz))
