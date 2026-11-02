@@ -22,12 +22,17 @@ def rot(m, deg):
 
 def load_body():
     bodies = [MB.man(trimesh.load(f"out/mono3/body3_{p}.stl")) for p in ("front", "rear")]
-    return bodies[0] + bodies[1]
+    import w3_assembly as A
+    wing = [MB.man(m) for n, m, k in A.assembly(0.0, 0.0) if n.startswith("w3_tail")]
+    out = bodies[0] + bodies[1]
+    for w in wing:
+        out = out + w
+    return out
 
 
 def fixed_parts():
     import w3_assembly as A
-    return [(n, MB.man(m)) for n, m, k in A.assembly(0.0, 0.0) if not n.startswith("body3")]
+    return [(n, MB.man(m)) for n, m, k in A.assembly(0.0, 0.0) if not n.startswith(("body3", "w3_tail"))]      # the wing is screwed to the skin and swings with it
 
 
 def report():

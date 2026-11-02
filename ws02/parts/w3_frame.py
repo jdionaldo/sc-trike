@@ -132,9 +132,6 @@ def frame(relief=False):
         for k, d in FEET.items():
             x, y, z = N[k]
             parts.append(_vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d))
-        wx, wy, wz = N["WP"]
-        from parts.w3_tail import HOLE_X
-        parts.append(Manifold.cube((wx - (HOLE_X - 6.5), 10.0, 4.0), center=False).translate((HOLE_X - 6.5, wy - 5.0, wz + 0.8)))   # pad plate for the wing-leg foot; the screw comes from below, behind the tube
         parts.append(Manifold.cube((HINGE[0][1] - HINGE[0][0], HINGE_LUG[1] - HINGE_LUG[0], HINGE[1][1] - HINGE[1][0]), center=False).translate((HINGE[0][0], HINGE_LUG[0], HINGE[1][0])))   # hinge lug plate on the bumper cross bar
         from body3_build import NOSE_TH
         ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
@@ -157,9 +154,6 @@ def frame(relief=False):
         x, y, z = N[k]
         cuts.append(_vcyl(x, y, FOOT_Z - 0.1, FOOT_Z + 2.0, 2.2))                 # self-tapping pilot for the base-plate screw
     cuts.append(Manifold.cylinder(8.0, HINGE_D / 2, HINGE_D / 2, 28).rotate((-90.0, 0.0, 0.0)).translate((HINGE_PIN[0], HINGE_LUG[0] - 2.0, HINGE_PIN[1])))   # hinge pin hole through the lug
-    wx, wy, wz = N["WP"]
-    from parts.w3_tail import HOLE_X as _HX
-    cuts.append(_vcyl(_HX, wy, wz + 0.5, wz + 5.5, 2.7))                            # clear hole for the wing-leg screw (from below)
     from body3_build import NOSE_TH
     ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
     for k in ("NA", "NB"):

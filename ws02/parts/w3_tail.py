@@ -28,7 +28,7 @@ SPLIT = 66.0
 ARCH = 12.0
 LEG_Y, LEG_T = 28.0, 8.0           # foot centre |y| (kept inside the narrow hood)
 WEB_T = 6.0                        # thickness of the hanger web plate (at y = +-LEG_Y)
-FORK_SCREW_U = (-30.0, -44.0)      # chord positions of the two screws through each fork's lower prong into the blade
+FORK_SCREW_U = (-30.0, -46.0, -58.0)      # chord positions of the two screws through each fork's lower prong into the blade
 CH = 2.0                           # channel depth in the blade (top and bottom)
 PR = 3.0                           # prong thickness: CH sits in the channel, the rest stands 1 mm proud of the blade surface
 CLR = 0.15                         # prong-to-channel clearance
@@ -126,9 +126,9 @@ def _blade():
     centre = MB.prism_xz(prof, -FLAT, FLAT)                           # plain blade centre (no raised cap)
     # snug channels for the fork prongs (top follows the blade profile, bottom is flat) and blind pilots for the prong screws
     ya, yb = LEG_Y - 5.3, LEG_Y + 5.3
-    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-52.15, topw(-52.15) - CH),
-               (-52.15, 30.0), (3.0, 30.0)]
-    bot_pts = [(3.0, -3.5), (-52.15, -3.5), (-52.15, -3.0 + CH), (3.0, -3.0 + CH)]
+    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-66.15, topw(-66.15) - CH),
+               (-66.15, 30.0), (3.0, 30.0)]
+    bot_pts = [(3.0, -3.5), (-66.15, -3.5), (-66.15, -3.0 + CH), (3.0, -3.0 + CH)]
     for sg in (1, -1):
         y0, y1 = (ya, yb) if sg > 0 else (-yb, -ya)
         centre = centre - MB.prism_xz(top_pts, y0, y1) - MB.prism_xz(bot_pts, y0, y1)
@@ -211,7 +211,7 @@ def _hanger_left():
     A = lambda u, y, w: (Mc @ np.array([u, y, w, 1.0]))[:3]
     y0f, y1f = LEG_Y - 5.0, LEG_Y + 5.0
     c = CLR
-    us = [2.0, -8.0, -35.0, -52.0]
+    us = [2.0, -8.0, -35.0, -66.0]
     pd = PR - CH
     fl = lambda u: topw(u) - CH + c
     w_a, w_b = topw(-8.0) + pd, topw(2.0) + pd
@@ -238,12 +238,12 @@ def _hanger_left():
     rl = A(2.4, LEG_Y, -3.0)
     cc = A(2.4, LEG_Y, wl(2.4))
     web = _chamfered([p0, p1, (rl[0], rl[2]), (cc[0], cc[2])], y0f, y1f, 1.2)
-    zf = foot_z()
     x0, x1 = FOOT_X
-    foot = _box(x0, x1, y0f, y1f, zf, zf + 0.5)
+    sl = lambda x: hood_top(x) + 0.05                                                       # foot sits on the hood skin (the wing flips up with the skin)
+    foot = Manifold.batch_hull([_box(x0, x0 + 0.01, y0f, y1f, sl(x0), sl(x0) + 0.5), _box(x1 - 0.01, x1, y0f, y1f, sl(x1), sl(x1) + 0.5)])
     top = _box(x0, x1, y0f, y1f, hood_top(x1) + 0.2, hood_top(x1) + 2.0)
     body = fork + web + Manifold.batch_hull([foot, top])
-    body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, LEG_Y, zf - 0.1))                 # pilot, screw from below through the frame pad
+    body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, LEG_Y, sl(HOLE_X) - 0.1))        # pilot: screw from inside the skin up through the hood
     return body
 
 
@@ -270,19 +270,21 @@ def _hanger_part(side):
     return MeshPart("w3_tail_hanger_left" if side > 0 else "w3_tail_hanger_right", fn, walls=False, supports=True)
 
 
-def slot_cutters():
-    """Hood-skin slots for the two feet (grown 0.5 mm) and the access holes in the hood underside for their screws."""
-    zf = foot_z()
-    x0, x1 = FOOT_X
-    g = 0.5
+def screw_holes():
+    """Clearance holes through the hood for the foot screws (driven from inside the skin)."""
     out = None
     for sg in (1, -1):
-        y0, y1 = sg * LEG_Y - 5.0 - g, sg * LEG_Y + 5.0 + g
-        foot = _box(x0 - g, x1 + g, y0, y1, zf - 1.0, zf + 0.5)
-        top = _box(x0 - g, x1 + g, y0, y1, hood_top(x1) + 1.0, hood_top(x1) + 2.0)
-        cut = Manifold.batch_hull([foot, top])
-        acc = Manifold.cylinder(24.0, 4.5, 4.5, 32).translate((HOLE_X, sg * LEG_Y, 44.0))
-        out = cut + acc if out is None else out + cut + acc
+        c = Manifold.cylinder(12.0, 1.6, 1.6, 24).translate((HOLE_X, sg * LEG_Y, hood_top(HOLE_X) - 8.0))
+        out = c if out is None else out + c
+    return out
+
+
+def screw_bosses():
+    """Bosses on the hood's inner face under each foot (seat for the screw head)."""
+    out = None
+    for sg in (1, -1):
+        c = Manifold.cylinder(4.0, 4.5, 4.5, 32).translate((HOLE_X, sg * LEG_Y, hood_top(HOLE_X) - 6.0))
+        out = c if out is None else out + c
     return out
 
 
