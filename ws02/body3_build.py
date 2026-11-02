@@ -163,11 +163,6 @@ def details(body):
     body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
     canopy = [(-225, -24), (-205, -30), (-150, -30), (-128, -22), (-128, 22), (-150, 30), (-205, 30), (-225, 24)]   # glass canopy, recessed 0.8 for dark paint
     body = body - (MB.prism_xy(canopy, -100.0, 200.0) - solid(0.8))
-    # roof spine: a 1.2 mm raised strip along the centre line from the nose to the tail
-    spine = [(-258, -4.5), (-232, -6), (-120, -6), (-30, -4), (-8, -2), (-8, 2), (-30, 4), (-120, 6), (-232, 6), (-258, 4.5)]
-    grown = solid(-1.2) - solid(0.0)
-    if not os.environ.get("NO_SPINE"):
-        body = body + ((MB.prism_xy(spine, -100.0, 200.0) ^ grown) ^ Manifold.cube((600.0, 100.0, 300.0), center=False).translate((-400.0, -50.0, 20.0)))
     # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
     for s_ in (1, -1):
         rect = [(-237.0, s_ * 5.0), (-205.0, s_ * 5.0), (-205.0, s_ * 37.0), (-237.0, s_ * 37.0)]

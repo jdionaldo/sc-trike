@@ -74,49 +74,66 @@ def _box(x0, x1, y0, y1, z0, z1):
     return Manifold.cube((x1 - x0, y1 - y0, z1 - z0), center=False).translate((x0, y0, z0))
 
 
-ARCH, SWEEP = 12.0, 8.0            # reference wing: the blade arches up toward the centre and its ends sweep rearward
-RIM_FIN = 3.0
+ARCH, SWEEP = 12.0, 8.0            # angular dihedral: flat centre |y| <= FLAT, outer panels slope down by ARCH and sweep rearward by SWEEP
+FLAT = 50.0
+FIN = 3.0
 
 
 def _warp_pt(u, y, w):
-    """Local point after the arch/sweep warp."""
-    r = (y / SPAN) ** 2
-    return u - SWEEP * r, y, w + ARCH * (1.0 - r)
+    """Local point after the angular dihedral/sweep (flat centre, straight outer panels)."""
+    t = max(0.0, (abs(y) - FLAT) / (SPAN - FLAT))
+    return u - SWEEP * t, y, w + ARCH * (1.0 - t)
 
 
-def blade_pt(u, y, w):                                              # overrides the flat version above: includes the warp
+def blade_pt(u, y, w):
     p = place_matrix() @ np.array([*_warp_pt(u, y, w), 1.0])
     return p[:3]
 
 
+def _panel_matrix(sgn):
+    """Shear for an outer panel: z' = z + ARCH (SPAN-|y|)/(SPAN-FLAT), x' = x - SWEEP (|y|-FLAT)/(SPAN-FLAT)."""
+    k = 1.0 / (SPAN - FLAT)
+    return np.array([[1.0, -sgn * SWEEP * k, 0.0, sgn * SWEEP * k * FLAT * sgn * sgn],
+                     [0.0, 1.0, 0.0, 0.0],
+                     [0.0, -sgn * ARCH * k, 1.0, ARCH * (1.0 + FLAT * k)]]) if False else np.array(
+        [[1.0, -SWEEP * k * sgn, 0.0, SWEEP * k * FLAT],
+         [0.0, 1.0, 0.0, 0.0],
+         [0.0, -ARCH * k * sgn, 1.0, ARCH * (1.0 + FLAT * k) - ARCH]])
+
+
 def _blade():
     prof = [(2.0, -3.0), (2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-CHORD, 2.5), (-CHORD, -3.0)]
-    body = MB.prism_xz(prof, -SPAN, SPAN)
-    # centre hump with a spoon lip, rounded in plan
+    # centre: flat blade plus a cap that wraps the blade (front lip, top, and down over the trailing edge), lifted by ARCH
+    cap_prof = [(14.0, -3.0), (14.0, 7.5), (6.0, 11.0), (-10.0, 10.5), (-CHORD - 4.0, 8.0), (-CHORD - 4.0, -3.0)]
     from shapely.geometry import Polygon
-    hump_plan = Polygon([(12.0, -46.0), (12.0, 46.0), (-56.0, 52.0), (-56.0, -52.0)]).buffer(-6.0).buffer(6.0)
-    hump = MB.prism_xz([(12.0, 0.5), (12.0, 7.5), (5.0, 10.5), (-10.0, 10.0), (-56.0, 8.0), (-56.0, 0.5)], -60.0, 60.0) ^ MB.prism_xy(list(hump_plan.exterior.coords)[:-1], -10.0, 40.0)
-    body = body + hump
-    for sg in (1, -1):                                                # small swept end fins, mostly hanging below the blade like the reference
-        fin = [(6.0, -16.0), (6.0, 5.0), (-22.0, 12.0), (-CHORD - 6.0, 14.0), (-CHORD - 6.0, -6.0), (-40.0, -12.0)]
-        y0, y1 = (SPAN - RIM_FIN, SPAN) if sg > 0 else (-SPAN, -SPAN + RIM_FIN)
-        body = body + MB.prism_xz(fin, y0, y1)
-    for sg in (1, -1):                                                # leg screws: clear through the blade, counterbored from the top
+    cap_plan = Polygon([(16.0, -52.0), (16.0, 52.0), (-CHORD - 6.0, 58.0), (-CHORD - 6.0, -58.0)]).buffer(-5.0).buffer(5.0)
+    cap = MB.prism_xz(cap_prof, -60.0, 60.0) ^ MB.prism_xy(list(cap_plan.exterior.coords)[:-1], -20.0, 40.0)
+    centre = MB.prism_xz(prof, -FLAT, FLAT) + cap
+    for sg in (1, -1):                                                # leg screws: clear through blade and cap, counterbored from the top
         for x in LEG_SCREW_X:
             u = _u_at(x)
-            body = body - Manifold.cylinder(18.0, 1.35, 1.35, 24).translate((u, sg * LEG_Y, -6.0))
-            body = body - Manifold.cylinder(3.0, 2.6, 2.6, 28).translate((u, sg * LEG_Y, 7.5))
-    body = body.refine(10)                                            # dense enough to bend smoothly
-    def warp(v):
-        r = (v[1] / SPAN) ** 2
-        return (v[0] - SWEEP * r, v[1], v[2] + ARCH * (1.0 - r))
-    return body.warp(warp)
+            centre = centre - Manifold.cylinder(20.0, 1.35, 1.35, 24).translate((u, sg * LEG_Y, -6.0))
+            centre = centre - Manifold.cylinder(3.0, 2.6, 2.6, 28).translate((u, sg * LEG_Y, 8.5))
+    body = centre.translate((0.0, 0.0, ARCH))
+    for sg in (1, -1):
+        y0, y1 = (FLAT - 0.05, SPAN) if sg > 0 else (-SPAN, -FLAT + 0.05)
+        panel = MB.prism_xz(prof, y0, y1)
+        fin = [(6.0, -3.0), (6.0, 4.0), (-25.0, 9.0), (-CHORD - 4.0, 20.0), (-CHORD - 4.0, -2.0), (-35.0, -5.0)]       # swept wedge fin, rising at the rear
+        fy0, fy1 = (SPAN - FIN, SPAN) if sg > 0 else (-SPAN, -SPAN + FIN)
+        panel = panel + MB.prism_xz(fin, fy0, fy1)
+        k = 1.0 / (SPAN - FLAT)
+        # |y|-dependent shear (y>0: t=(y-FLAT)k, y<0: t=(-y-FLAT)k)
+        mat = np.array([[1.0, -sg * SWEEP * k, 0.0, SWEEP * k * FLAT],
+                        [0.0, 1.0, 0.0, 0.0],
+                        [0.0, -sg * ARCH * k, 1.0, ARCH + ARCH * k * FLAT]])
+        body = body + panel.transform(mat)
+    return body
 
 
 def _decimate(m):
-    """The warp needs a dense mesh; flat areas collapse again.  Keep the first watertight single-body result."""
+    """Keep the first watertight single-body simplification (the cap and panels are flat: they collapse well)."""
     import fast_simplification
-    for red in (0.95, 0.9, 0.8, 0.6):
+    for red in (0.9, 0.8, 0.6):
         v, f = fast_simplification.simplify(np.asarray(m.vertices), np.asarray(m.faces), target_reduction=red, agg=3)
         q = trimesh.Trimesh(v, f, process=True)
         q.merge_vertices()
@@ -136,7 +153,6 @@ def _piece(which):
     m = MB.to_trimesh(body ^ keep)
     m.merge_vertices()
     m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
-    m = _decimate(m)
     lift = -float(m.bounds[0][2]) + 0.5
     m.apply_translation((0.0, 0.0, lift))
     import json, pathlib
