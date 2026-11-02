@@ -16,17 +16,33 @@ from parts.w3_style import MeshPart, _clean, _tb
 
 SPAN = 134.5                       # half span = half the front track (269 / 2)
 X_LE = -325.0                      # leading edge (assembly x)
-Z_LE = 120.0                       # lower-face height at the leading edge
+Z_LE = 120.0                       # lower-face height at the leading edge (set below so the blade top lies on the front roofline plane)
 CHORD = 72.0
-SLOPE = 0.2                        # the front roofline: z rises 0.2 mm per mm toward the rear
+ROOF_P = (33.7, 40.4)              # front roofline: z = 40.4 + ROOF_K * (33.7 - x), from the nose top to the roof peak
+ROOF_K = (97.0 - 40.4) / (33.7 + 259.0)
+SLOPE = ROOF_K                     # the blade lies in the front roofline's plane
 ALPHA = math.atan(SLOPE)
+COS_A = math.cos(ALPHA)
 PLATE_T = 3.0
 SPLIT = 66.0
+ARCH = 12.0
 LEG_Y, LEG_T = 38.0, 8.0           # leg centre |y| and thickness
 FOOT_X = (-311.0, -295.0)          # leg foot (assembly x)
 STRUT_XY = (-303.0, 31.0)          # frame strut pad (x, |y|), beside the leg
 TZ = {"center": 3.0, "left": 36.0, "right": 36.0}     # STL lift per piece (end plates hang 34 mm below the blade's lower face)
 LEG_Y0 = LEG_Y - 14.0              # leg print frame: inner face of the foot flange on the bed
+
+
+
+def _z_le_from_roof():
+    """Z_LE such that the blade's top surface at the centre of the chord lies on the roofline plane extended rearward."""
+    u, w = -35.0, 5.5 + 12.0                                       # mid-chord top of the blade at y = 0 (profile top 5.5 + arch 12)
+    x = X_LE + u * math.cos(ALPHA) + w * math.sin(ALPHA)
+    z_roof = ROOF_P[1] + ROOF_K * (ROOF_P[0] - x)
+    return z_roof - (-u * math.sin(ALPHA) + w * math.cos(ALPHA))
+
+
+Z_LE = _z_le_from_roof()
 
 
 def hood_top(x):
@@ -139,7 +155,7 @@ def _leg(side):
     tx0, tx1 = LEG_SCREW_X[0] + 12.0, LEG_SCREW_X[1] - 12.0
     def top_box(x):
         a = blade_pt(_u_at(x), s * LEG_Y, -3.0)
-        return _box(x - 1.0, x + 1.0, min(s * (LEG_Y - 3.0), s * (LEG_Y + 3.0)), max(s * (LEG_Y - 3.0), s * (LEG_Y + 3.0)), a[2] - 1.0, a[2] - 0.3)
+        return _box(x - 1.0, x + 1.0, min(s * (LEG_Y - 3.0), s * (LEG_Y + 3.0)), max(s * (LEG_Y - 3.0), s * (LEG_Y + 3.0)), a[2] - 1.2, a[2] - 0.6)
     foot = _box(x0, x1, min(s * (LEG_Y - 5.0), s * (LEG_Y + 5.0)), max(s * (LEG_Y - 5.0), s * (LEG_Y + 5.0)), zf, zf + 0.5)
     body = Manifold.batch_hull([foot, top_box(tx0), top_box(tx1)])
     fl_y0, fl_y1 = (LEG_Y - 14.0, LEG_Y + 5.0)

@@ -35,9 +35,15 @@ def _cy(x, z, y0, y1, d):
 
 
 def _clean(t):
-    """Round to what the STL holds, drop degenerate faces (unless that opens a hole), merge."""
+    """Round to what the STL holds, drop zero-volume slivers and degenerate faces (unless that opens a hole), merge."""
     t.vertices = np.asarray(t.vertices, np.float32).astype(np.float64)
     t.merge_vertices()
+    comps = t.split(only_watertight=False)
+    if len(comps) > 1:
+        keep = [c for c in comps if abs(c.volume) > 1.0]
+        if keep:
+            t = trimesh.util.concatenate(keep)
+            t.merge_vertices()
     was = t.is_watertight
     u = t.copy()
     u.update_faces(u.nondegenerate_faces())
@@ -70,19 +76,23 @@ def _local_to_print(m, mat):
 
 
 # ---- tubular trellis redesign: swing arm as a 3D box truss, spindle upper link, trellis carrier and knuckle ----
-def _tb(a, b, r, r2=None):
-    """Tube (or cone from radius r to r2) between two assembly-frame points."""
+def _tb(a, b, r, r2=None, caps=True):
+    """Tube (or cone from radius r to r2) between two assembly-frame points, with round (spherical) ends so no joint is ever open."""
     a, b = np.array(a, float), np.array(b, float)
     d = b - a
     L = float(np.linalg.norm(d))
     T = trimesh.geometry.align_vectors([0.0, 0.0, 1.0], d / L)
     mat = np.array(T[:3, :4])
     mat[:, 3] = a
-    return Manifold.cylinder(L, r, r if r2 is None else r2, 28).transform(mat)
+    r2_ = r if r2 is None else r2
+    m = Manifold.cylinder(L, r, r2_, 40).transform(mat)
+    if caps:
+        m = m + Manifold.sphere(r, 36).translate(tuple(a)) + Manifold.sphere(r2_, 36).translate(tuple(b))
+    return m
 
 
 def _ball(p, r):
-    return Manifold.sphere(r, 28).translate(tuple(p))
+    return Manifold.sphere(r, 36).translate(tuple(p))
 
 
 def _join(ms):
@@ -185,8 +195,8 @@ def carrier(p, side):
                  Manifold.cylinder(11.0, 5.5, 5.5, 32).translate((0.0, s * kp, 13.5)),            # kingpin boss
                  _tb((0.0, yc, 34.0), (0.0, s * (kp - 4.0), 20.5), CAR_RB)]                      # angled brace
         body = _join(parts)
-        body = body - _cy(0.0, 0.0, *yy(ya - 0.1, yb + 0.1), 8.15)
-        body = body - _cy(0.0, W.ZU, *yy(ya - 0.1, yb + 0.1), p.pin_dia + p.clr_slide)
+        body = body - _cy(0.0, 0.0, *yy(ya - 6.0, yb + 6.0), 8.15)                       # longer than the hub: the rounded tube ends overhang it
+        body = body - _cy(0.0, W.ZU, *yy(ya - 6.0, yb + 6.0), p.pin_dia + p.clr_slide)
         body = body - Manifold.cylinder(12.0, (W.KP_D + p.clr_press) / 2, (W.KP_D + p.clr_press) / 2, 32).translate((0.0, s * kp, 13.0))
         return _local_to_print(body, W.mats(s, ya))
     return MeshPart("w3_carrier_left" if s > 0 else "w3_carrier_right", fn, walls=False, supports=True)

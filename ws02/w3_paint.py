@@ -41,8 +41,6 @@ def build(path="out/WS03_painted.glb", phi=0.0, steer=None, yup=False):
         m = mesh.copy()
         if n.startswith("body3"):
             m.visual = trimesh.visual.ColorVisuals(m, face_colors=body_colors(m))
-        elif n == "lid3":
-            m.visual.face_colors = BLACK + [255]
         elif n.startswith("mock_") and "tire" in n:
             m.visual.face_colors = TIRE + [255]
         elif n.startswith("w3_frame"):

@@ -46,6 +46,35 @@ def prism_yz(pts, x0, x1):
     return MB.man(m)
 
 
+ROCK = dict(zb=-26.0, zp=-10.0, zt=2.0, b=5.5)       # base, peak height, blend-out height above the peak, peak bulge (mm)
+
+
+def _plan_hw(x):
+    xs = [p[0] for p in sorted(HALF)]
+    ys = [p[1] for p in sorted(HALF)]
+    return float(np.interp(x, xs, ys))
+
+
+def rocker(inset=0.0):
+    """Rocker panels: an angular bulge along the lower flank (peak 5.5 mm out at z -10) that angles back in to the base plate below and blends
+    into the flank above.  Built as hulls of cross-sections at the plan's own breakpoints, so the surface is exact and flat-faced."""
+    r = ROCK
+    xs = sorted({x for x, _ in HALF if -243.0 < x < -28.0} | {-243.0, -231.0, -42.0, -28.0})
+    def scale(x):
+        return float(np.clip((x + 243.0) / 12.0, 0.0, 1.0) * np.clip((-28.0 - x) / 14.0, 0.0, 1.0))
+    def pts(x, sgn):
+        w0 = min(_plan_hw(x), 68.0) - inset
+        bb = r["b"] * scale(x)
+        prof = [(w0 - 10.0, r["zb"]), (w0, r["zb"]), (w0 + bb, r["zp"]), (w0, r["zt"]), (w0 - 10.0, r["zt"])]
+        return [(x, sgn * y, z) for y, z in prof]
+    out = None
+    for a, c in zip(xs, xs[1:]):
+        for sgn in (1, -1):
+            h = Manifold.hull_points(np.array(pts(a, sgn) + pts(c, sgn), float))
+            out = h if out is None else out + h
+    return out
+
+
 def solid(inset=0.0, belly=False):
     side = Polygon(to_new(SIDE, "side")).buffer(-inset, join_style=2)
     hp = to_new(HALF, "plan")
@@ -53,6 +82,7 @@ def solid(inset=0.0, belly=False):
     plan = Polygon(plan_pts).buffer(-inset, join_style=2)
     sec = Polygon(to_new(SECTION, "sec")).buffer(-inset, join_style=2)
     s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0) ^ prism_yz(list(sec.exterior.coords)[:-1], -400.0, 100.0)
+    s = s + rocker(inset)
     if belly:                                        # open belly: sweep the cavity down in 5 mm steps so thin sections stay connected
         acc = s
         front = s ^ Manifold.cube((500.0, 400.0, 400.0), center=False).translate((-240.6, -200.0, -200.0))   # sweep only ahead of the rear bulkhead
@@ -166,7 +196,6 @@ PANELS = [  # recessed
     [(-232, -15), (-132, -18), (-124, -6), (-232, 2)],                          # low sill panel
     [(-205, 6), (-152, 6), (-130, 24), (-152, 46), (-205, 38)],               # big diagonal panel behind the arm window
 ]
-HATCH = (-96.0, -40.0, 24.0)        # roof access hatch over the battery and ESC: x0, x1, half width
 
 
 def flank_cut(poly, depth=None):
@@ -235,36 +264,13 @@ def roof_gills(x0, x1, y0, y1, n=4, slat=3.0, shift=8.0, blade=3.6):
         cq = [(xa + slat - 0.5, zs - 0.1), (xr - 1.0, zs - 0.1), (xr - 1.0, zs + 3.0), (xa + slat - 0.5, zs + 0.1)]
         for s in (1, -1):
             ya, yb = (y0, y1) if s > 0 else (-y1, -y0)
-            c = MB.prism_xz(quad, ya, yb)
+            c = MB.prism_xz(quad, ya + 2.0, yb - 2.0)                         # the skin slot is shorter than the wedge: no slanted slot face shows at the ends
             w = MB.prism_xz(wq, ya - 0.4, yb + 0.4)
-            ch = MB.prism_xz(cq, ya + 1.2, yb - 1.2)
+            ch = MB.prism_xz(cq, ya + 2.5, yb - 2.5)
             cuts = c if cuts is None else cuts + c
             wedges = w if wedges is None else wedges + w
             chans = ch if chans is None else chans + ch
     return cuts, wedges, chans
-
-
-def rocker_flare(m, bulge=3.5, z_lo=-22.0, max_edge=4.5):
-    """Rocker panels: the lower flank swells outward by up to `bulge` mm (a smooth sin^2 profile from z_lo up to z = 0) and comes back in
-    to meet the base plate.  The mesh is subdivided first so the displacement is smooth; inner and outer surfaces move together."""
-    v, f = trimesh.remesh.subdivide_to_size(np.asarray(m.vertices), np.asarray(m.faces), max_edge=max_edge)
-    v = v.copy()
-    y, z = v[:, 1], v[:, 2]
-    t = np.clip((z - z_lo) / (0.0 - z_lo), 0.0, 1.0)
-    b = bulge * np.sin(np.pi * t) ** 2
-    a = np.clip((np.abs(y) - 38.0) / 14.0, 0.0, 1.0)
-    a = a * a * (3.0 - 2.0 * a)
-    v[:, 1] = y + np.sign(y) * b * a
-    import fast_simplification
-    out = trimesh.Trimesh(v, f, process=True)
-    out.merge_vertices()
-    for red in (0.8, 0.65, 0.5):                                                              # flat areas collapse again; keep the first watertight result
-        v2, f2 = fast_simplification.simplify(v, np.asarray(f), target_reduction=red, agg=3)
-        t = trimesh.Trimesh(v2, f2, process=True)
-        t.merge_vertices()
-        if t.is_watertight and len(t.split(only_watertight=False)) == 1:
-            return t
-    return out
 
 
 def main():
@@ -291,24 +297,10 @@ def main():
     for y_ in (2.0, 35.0):
         body = body - cyl_m((-241.8, y_, 27.0), 1.35, 6.0, 'x')                                       # screws that hold the motor plate
     body = details(body)
-    # roof hatch: a snug lid cut from the roof (0.25 mm gap all round)
-    hx0, hx1, hy = HATCH
-    cube = lambda g: Manifold.cube((hx1 - hx0 + 2 * g, 2 * (hy + g), 200.0), center=False).translate((hx0 - g, -(hy + g), 40.0 - g))
-    lid = body ^ cube(-0.25)
-    body = body - cube(0.25)
-    ml = MB.to_trimesh(lid)
-    ml.merge_vertices()
-    ml.export(OUT / "lid3.stl")
     m = MB.to_trimesh(body)
     m.merge_vertices()
     m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
-    m = rocker_flare(m)
-    rel = __import__('parts.w3_frame', fromlist=['relief']).relief()                 # the flare moved the skin: cut the tube slots again
-    m = MB.to_trimesh(MB.man(m) - rel)
-    m.merge_vertices()
-    m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
     m.export(OUT / "body3.stl")
-    print("lid3", len(ml.faces), ml.is_watertight, np.round(ml.extents, 1).tolist())
     print("body3", len(m.faces), m.is_watertight, round(m.volume), np.round(m.bounds, 1).tolist())
 
 

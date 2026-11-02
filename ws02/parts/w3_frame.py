@@ -31,6 +31,7 @@ def _zt(x):
 
 
 def tube(a, b, r=R, trim_a=0.0, trim_b=0.0):
+    """Round tube with spherical ends (except where an end is trimmed back to a pad), so no joint is ever open."""
     a, b = np.array(a, float), np.array(b, float)
     d = b - a
     L = float(np.linalg.norm(d))
@@ -40,11 +41,16 @@ def tube(a, b, r=R, trim_a=0.0, trim_b=0.0):
     T = trimesh.geometry.align_vectors([0.0, 0.0, 1.0], u)
     mat = np.array(T[:3, :4])
     mat[:, 3] = a2
-    return Manifold.cylinder(L2, r, r, 28).transform(mat)
+    m = Manifold.cylinder(L2, r, r, 40).transform(mat)
+    if trim_a == 0.0:
+        m = m + Manifold.sphere(r, 36).translate(tuple(a2))
+    if trim_b == 0.0:
+        m = m + Manifold.sphere(r, 36).translate(tuple(b2))
+    return m
 
 
 def ball(p, r=R):
-    return Manifold.sphere(r, 28).translate(tuple(p))
+    return Manifold.sphere(r, 36).translate(tuple(p))
 
 
 def _disc(x, z, y0, y1, d):
@@ -103,7 +109,8 @@ def frame(relief=False):
     g = 0.8 if relief else 0.0
     parts = []
     for a, b, r, ta, tb in EDGES:
-        parts.append(tube(N[a], N[b], r + g, ta, tb))
+        nc = (a, b) == ("PH", "PL")                                              # the pivot pad stack: a plain cylinder, no rounded ends
+        parts.append(tube(N[a], N[b], r + g, ta + (1e-6 if nc else 0.0), tb + (1e-6 if nc else 0.0)))
     for k, r in BALLS.items():
         parts.append(ball(N[k], r + g))
     if relief:
