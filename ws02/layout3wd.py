@@ -68,8 +68,8 @@ def blocks():
     rz = L["rear_od"] / 2 - L["tire_od"] / 2 - L["wheelbase"] * np.tan(np.radians(L["rake_deg"]))   # chassis raked nose-down: rear axle lower in the chassis frame
     b["rear_ring"] = cyl((-272.0, 21.0, 0), 15, 6, "y")
     b["rear_bevel"] = cyl((-257.0, 21.0, 0), 6, 8, "x")
-    b["rear_out"] = cyl((-272.0, 40.0, 0), 2.5, 40, "y")
-    b["rear_arm"] = box((rear_x - 8, -264), (46, 60), (min(-9, rz - 9), 9))
+    b["rear_out"] = cyl((-272.0, 45.0, 0), 2.5, 50, "y")
+    b["rear_arm"] = box((rear_x - 8, -264), (46, 70), (min(-9, rz - 9), 9))
     b["rear_tire"] = cyl((rear_x, 0, rz), L["rear_od"] / 2, L["rear_w"], "y")
     return b
 

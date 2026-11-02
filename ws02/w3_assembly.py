@@ -66,8 +66,6 @@ def assembly(phi_deg=0.0, steer=None):
     items.append(("w3_skid", _t(f"{STL}/w3_skid.stl", sk), "printed"))
     rows, t0, L = rear_arm_mats()
     items.append(("w3_rear_arm", _t(f"{STL}/w3_rear_arm.stl", M(rows, t0)), "printed"))
-    cov = M(rows, (t0[0], 58.0, t0[2]))
-    items.append(("w3_rear_arm_cover", _t(f"{STL}/w3_rear_arm_cover.stl", cov), "printed"))
     for f in ("lid3",):
         items.append((f, _t(f"{MONO}/{f}.stl"), "printed"))
     for side in ("left", "right"):

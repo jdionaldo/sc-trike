@@ -146,35 +146,9 @@ def tray(name, size, rails, strap=False):
     return part
 
 
-def rear_arm(p):
-    """Single-sided rear swingarm housing, straight along u (pivot at u = 0, axle at u = L). Inner face on the bed (w = 0)."""
-    L = math.hypot(XR - RAXLE[0], RAXLE[1])
-    part = Part("w3_rear_arm", "inner face on the bed, belt cavity up", "PETG")
-    hh = 11.0
-    part.supports = True                                                        # bearing seat ledge bridges 16 mm
-    part.box((-14.0, -hh, 0.0), (L + 28.0, 2 * hh, 12.0))
-    part.box((-8.0, -8.5, 7.2), (L + 16.0, 17.0, 4.9), op="cut")               # belt cavity (floor 7.2, depth 4.8)
-    part.cyl((0.0, 0.0, -0.1), SEAT, SEAT_D + 0.1, op="cut")                    # pivot bearing seat on the inner face
-    part.cyl((0.0, 0.0, -0.1), BORE, 12.2, op="cut")
-    part.cyl((L, 0.0, -0.1), 16.15, 5.1, op="cut")                              # axle bearing 8 x 16 x 5
-    part.cyl((L, 0.0, -0.1), 8.4, 12.2, op="cut")
-    for u in (-11.0, L + 11.0):
-        part.cyl((u, 0.0, 6.0), 2.0, 6.1, op="cut")                             # cover screws
-    return part
-
-
-def rear_arm_cover(p):
-    L = math.hypot(XR - RAXLE[0], RAXLE[1])
-    part = Part("w3_rear_arm_cover", "flat", "PETG")
-    part.box((-14.0, -11.0, 0.0), (L + 28.0, 22.0, 1.5))
-    for u in (-11.0, L + 11.0):
-        part.cyl((u, 0.0, -0.1), 2.7, 1.7, op="cut")
-    return part
-
-
 def _rear_styled(p):
     from parts import w3_style
-    return [w3_style.rear_arm(p), w3_style.rear_arm_cover(p)]
+    return [w3_style.rear_arm(p)]
 
 
 def build(p):

@@ -18,14 +18,24 @@ RAILS = [(-84.0, -14.0, -8.0), (-84.0, -14.0, 8.0), (-170.0, -115.0, -17.0), (-1
 SLOT_W = 3.4
 
 
+HEAD_D, HEAD_DEPTH = 5.2, 2.7        # M2.5 pan head 4.5 x 2.5: sunk into the underside so nothing catches
+
+
 def _slot(part, x0, x1, y):
     part.box((x0, y - SLOT_W / 2, -1.0), (x1 - x0, SLOT_W, TD + 2.0), op="cut")
+    part.box((x0 - 1.0, y - HEAD_D / 2, -1.0), (x1 - x0 + 2.0, HEAD_D, HEAD_DEPTH + 1.0), op="cut")      # channel for the heads along the slot
+
+
+def _hole(part, x, y, d):
+    part.cyl((x, y, -1.0), d, TD + 2.0, op="cut")
+    part.cyl((x, y, -1.0), HEAD_D, HEAD_DEPTH + 1.0, op="cut")                                          # counterbore for the head
 
 
 def deck(p, name, xr, limit, perimeter):
     """Staircase outline that follows the body's inner plan (3 mm inside the wall), capped at +-limit."""
     from body3_build import hw_in, PAD_X
     part = Part(name, "flat", "PETG")
+    part.supports = True                                                  # the head channels bridge 5 mm on the bed side (or print it upside down)
     x0, x1 = xr
     x = x0
     while x < x1 - 1e-6:
@@ -43,15 +53,15 @@ def deck(p, name, xr, limit, perimeter):
         for px in PAD_X:
             if x0 < px < x1:
                 for sgn in (1, -1):
-                    part.cyl((px, sgn * (hw_in(px) - 7.0), -1.0), p.m2_clear, TD + 2.0, op="cut")
+                    _hole(part, px, sgn * (hw_in(px) - 7.0), p.m2_clear)
     import parts.w3_frame as FR
     if not perimeter:                                                      # outboard tab that carries the strut foot beside the front diff case
         for sgn in (1, -1):
             part.box((-140.0, 30.0 if sgn > 0 else -48.0, 0.0), (8.0, 18.0, TD))
     for fx, fy in FR.feet_xy():                                            # screws up into the frame feet
         if x0 < fx < x1:
-            part.cyl((fx, fy, -1.0), p.m2_clear + 0.2, TD + 2.0, op="cut")
-            part.cyl((fx, -fy, -1.0), p.m2_clear + 0.2, TD + 2.0, op="cut")
+            _hole(part, fx, fy, p.m2_clear + 0.2)
+            _hole(part, fx, -fy, p.m2_clear + 0.2)
     return part
 
 
