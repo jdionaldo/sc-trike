@@ -26,7 +26,8 @@ COS_A = math.cos(ALPHA)
 PLATE_T = 3.0
 SPLIT = 66.0
 ARCH = 12.0
-LEG_Y, LEG_T = 28.0, 8.0           # leg centre |y| and thickness (kept inside the narrow hood)
+LEG_Y, LEG_T = 28.0, 8.0           # foot centre |y| (kept inside the narrow hood)
+MOUNT_Y = 36.0                     # half width of the wedge mount
 FOOT_X = (-314.0, -300.0)          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
 HOLE_X = -307.0                    # foot screw, from below (the access hole is in the hood underside)
 STRUT_XY = (-296.0, 28.0)          # frame strut node (x, |y|); the pad plate extends rearward to the screw
@@ -115,9 +116,8 @@ def _blade():
     cap_plan = Polygon([(16.0, -52.0), (16.0, 52.0), (-CHORD - 6.0, 58.0), (-CHORD - 6.0, -58.0)]).buffer(-5.0).buffer(5.0)
     cap = MB.prism_xz(cap_prof, -60.0, 60.0) ^ MB.prism_xy(list(cap_plan.exterior.coords)[:-1], -20.0, 40.0)
     centre = MB.prism_xz(prof, -FLAT, FLAT) + cap
-    for sg in (1, -1):                                                # pilots for the leg-flange screws, blind from the lower face (nothing shows on top)
-        for u, y in flange_screws():
-            centre = centre - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((u, sg * y, -3.2))
+    # integral wedge mount under the blade (fills the gap to the back slope) with two feet that pass through slots in the hood
+    centre = centre + _mount_local()
     body = centre.translate((0.0, 0.0, ARCH))
     for sg in (1, -1):
         y0, y1 = (FLAT - 0.05, SPAN) if sg > 0 else (-SPAN, -FLAT + 0.05)
@@ -167,64 +167,61 @@ def _piece(which):
     return _clean(m)
 
 
-def _leg_left():
-    """Tapered pylon (hull of the foot box and two top boxes under the blade) with a top flange beside it for screws from below.
-    Built for y > 0 in assembly coordinates."""
+def _centre_matrix():
+    Mc = place_matrix().copy()
+    Mc[:3, 3] += Mc[:3, :3] @ np.array([0.0, 0.0, ARCH])
+    return Mc
+
+
+def _lower_z(x):
+    """Blade lower-face height at y = 0 (assembly) at chord position x."""
+    a, b = blade_pt(-30.0, 0.0, -3.0), blade_pt(-60.0, 0.0, -3.0)
+    return a[2] + (b[2] - a[2]) * (x - a[0]) / (b[0] - a[0])
+
+
+def _mount_asm():
+    """Assembly-frame wedge: hood-top conforming bottom, blade-lower-face top, +-36 mm wide, plus the two feet down to the pads."""
+    xa, xb = -312.0, -381.0
+    poly = [(xa, hood_top(xa) + 0.4), (xb, hood_top(xb) + 0.4), (xb, _lower_z(xb) + 1.5), (xa, _lower_z(xa) + 1.5)]
+    body = MB.prism_xz(poly, -MOUNT_Y, MOUNT_Y)
     zf = foot_z()
     x0, x1 = FOOT_X
-    tx0, tx1 = LEG_SCREW_X[0] + 12.0, LEG_SCREW_X[1] - 12.0
-    def top_box(x):
-        a = blade_pt(_u_at(x), LEG_Y, -3.0)
-        return _box(x - 1.0, x + 1.0, LEG_Y - 5.0, LEG_Y + 5.0, a[2] - 3.7, a[2] - 3.0)
-    foot = _box(x0, x1, LEG_Y - 5.0, LEG_Y + 5.0, zf, zf + 0.5)
-    body = Manifold.batch_hull([foot, top_box(tx0), top_box(tx1)])
-    # flange under the blade: 3 mm thick in the blade's local frame, 0.3 mm below its lower face, spanning the screw positions
-    us = [u for u, _ in flange_screws()]
-    fl = Manifold.cube((max(us) - min(us) + 16.0, 2 * 8.5 + 11.0, 3.0), center=False).translate((min(us) - 8.0, LEG_Y - 8.5 - 5.5, -6.3))
-    Mc = place_matrix() @ np.diag([1.0, 1.0, 1.0, 1.0])
-    Mc = Mc.copy(); Mc[:3, 3] += Mc[:3, :3] @ np.array([0.0, 0.0, ARCH])
-    body = body + fl.transform(Mc[:3, :4])
-    for u, y in flange_screws():
-        hole = Manifold.cylinder(6.0, 1.35, 1.35, 24).translate((u, y, -7.0))
-        body = body - hole.transform(Mc[:3, :4])
-    body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, LEG_Y, zf - 0.1))               # foot pilot, screw from below through the frame pad
+    for sg in (1, -1):
+        y0, y1 = sg * LEG_Y - 5.0, sg * LEG_Y + 5.0
+        foot = _box(x0, x1, y0, y1, zf, zf + 0.5)
+        top = _box(x0, x1, y0, y1, hood_top(x1) + 0.2, hood_top(x1) + 2.0)
+        body = body + Manifold.batch_hull([foot, top])
+        body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, sg * LEG_Y, zf - 0.1))          # pilot, screw from below through the frame pad
     return body
 
 
-def _leg(side):
-    b = _leg_left()
-    return b if side > 0 else b.mirror((0.0, 1.0, 0.0))
+def _mount_local():
+    Mc = _centre_matrix()
+    inv = np.linalg.inv(Mc)
+    return _mount_asm().transform(inv[:3, :4])
 
 
 def slot_cutters():
-    """Hood-skin slots for the leg feet: both legs, grown 0.5 mm in plan, plus the access holes in the hood underside for the screws."""
+    """Hood-skin slots for the two feet (grown 0.5 mm) and the access holes in the hood underside for their screws."""
     zf = foot_z()
     x0, x1 = FOOT_X
-    tops = []
     g = 0.5
-    for tx in (LEG_SCREW_X[0] + 12.0, LEG_SCREW_X[1] - 12.0):
-        a = blade_pt(_u_at(tx), LEG_Y, -3.0)
-        tops.append(_box(tx - 1.0 - g, tx + 1.0 + g, LEG_Y - 5.0 - g, LEG_Y + 5.0 + g, a[2] - 3.7, a[2] - 3.0))
-    foot = _box(x0 - g, x1 + g, LEG_Y - 5.0 - g, LEG_Y + 5.0 + g, zf - 1.0, zf + 0.5)
-    cut = Manifold.batch_hull([foot] + tops)
-    out = cut + cut.mirror((0.0, 1.0, 0.0))
-    acc = Manifold.cylinder(24.0, 4.5, 4.5, 32).translate((HOLE_X, LEG_Y, 44.0))
-    return out + acc + acc.mirror((0.0, 1.0, 0.0))
-
-
-def _leg_part(side):
-    from parts import w3_front as W
-    from parts.w3_style import _to_print
-    def fn():
-        return _to_print(_leg(side), side, LEG_Y0)
-    return MeshPart("w3_tail_leg_left" if side > 0 else "w3_tail_leg_right", fn, walls=False, supports=True)
+    out = None
+    for sg in (1, -1):
+        y0, y1 = sg * LEG_Y - 5.0 - g, sg * LEG_Y + 5.0 + g
+        foot = _box(x0 - g, x1 + g, y0, y1, zf - 1.0, zf + 0.5)
+        top = _box(x0 - g, x1 + g, y0, y1, hood_top(x1) + 1.0, hood_top(x1) + 2.0)
+        cut = Manifold.batch_hull([foot, top])
+        acc = Manifold.cylinder(24.0, 4.5, 4.5, 32).translate((HOLE_X, sg * LEG_Y, 44.0))
+        out = cut + acc if out is None else out + cut + acc
+    return out
 
 
 def build(p):
     return [MeshPart("w3_tail_center", lambda: _piece("center"), walls=False, supports=True),
             MeshPart("w3_tail_left", lambda: _piece("left"), walls=False, supports=True),
             MeshPart("w3_tail_right", lambda: _piece("right"), walls=False, supports=True),
-            _leg_part(1), _leg_part(-1)]
+            ]
 
 
 def placed():
@@ -237,9 +234,5 @@ def placed():
         m = trimesh.load(f"out/stl/{n}.stl")
         m.apply_translation((0.0, 0.0, -LIFT[n.split('_')[-1]]))
         m.apply_transform(M)
-        out.append((n, m))
-    for s, n in ((1, "w3_tail_leg_left"), (-1, "w3_tail_leg_right")):
-        m = trimesh.load(f"out/stl/{n}.stl")
-        m.apply_transform(W.mats(s, LEG_Y0))
         out.append((n, m))
     return out
