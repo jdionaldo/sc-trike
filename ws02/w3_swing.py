@@ -51,13 +51,16 @@ if __name__ == "__main__":
 
 
 THETA_MAX = 35.0
-STEP = 0.5
+STEP = 0.25
 
 
 def swing_channels(theta_max=THETA_MAX, step=STEP):
     """Union, in the skin's frame, of the frame tubes (grown 0.8 mm, the same solids that give the static slots) over the whole opening: subtracting it from the
     skin leaves open-ended channels the tubes slide out of as the skin swings up."""
-    rel = FR.relief()
+    rel = FR.relief() + FR.frame()                               # grown tubes plus the pads, lugs and plates (the real frame solid)
+    for n, m in fixed_parts():                                   # inner printed parts the skin's lower rear (below the hinge axis it swings rearward) would also hit
+        if n in ("w3_rbc_upper", "w3_rbc_lower", "w3_deck_front", "b_rear_shaft"):
+            rel = rel + m
     acc = rel
     n = int(theta_max / step)
     for k in range(1, n + 1):
