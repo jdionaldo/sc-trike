@@ -154,7 +154,7 @@ def scene(phi_deg, steer=None):
         items.append((f"steer_servo_{s}", flat_box((SH_STEER[0] - 11.4, s * (SERVO_Y[0] + SERVO_Y[1]) / 2, SH_STEER[1]),
                                                    (40.0, SERVO_Y[1] - SERVO_Y[0], 20.0)), "bought"))
         items.append((f"tub_wall_{s}", flat_box((-105, s * (49.0 + W.YS), -5), (170.0, 2.0, 78.0)), "bought"))
-        items.append((f"diff_out_{s}", LY.cyl((F.P[0], s * (33.0 + W.YS / 2), 0), 2.5, 66.0 + W.YS, "y"), "bought"))
+        items.append((f"diff_out_{s}", LY.cyl((F.P[0], s * 40.0, 0), 2.5, 80.0, "y"), "bought"))
         items.append((f"tip_shaft_{s}", LY.cyl((kx, s * (86.0 + W.YS / 2), kz), 2.0, 74.0 - W.YS, "y"), "bought"))
         if not math.isnan(ps):
             items.append((f"tie_rod_{s}", rod_mesh("w3_tie_rod", [ts[0], s * tip_y, ts[1]], [a_pt[0], a_pt[1], a_pt[2]], (0, 0, 1)), "printed"))

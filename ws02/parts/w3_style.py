@@ -124,39 +124,44 @@ def _join(ms):
     return out
 
 
-RT = 2.4                      # arm rail radius (0.1 clear of the print-frame planes)
-ARM_NODES = {"L0": (-100.0, -10.3), "L1": (-60.0, -8.9), "L2": (0.0, -9.3),
+RT, RO = 2.4, 2.5             # rail radii (inner plane / outer plane)
+YO = 12.5                     # outer plane offset from the arm's inner face (belt at +6..+9, outer plane tubes from +10)
+# rail nodes (x, z); the lower rails stay above z = -11.4 so the tie rod passes under the arm at every lean angle
+ARM_NODES = {"L0": (-100.0, -9.0), "L1": (-60.0, -9.0), "L2": (0.0, -9.0),
              "U0": (-100.0, 10.5), "U1": (-76.0, 17.5), "U2": (-38.0, 11.5), "U3": (0.0, 9.4)}
 ARM_RAILS = [("L0", "L1"), ("L1", "L2"), ("U0", "U1"), ("U1", "U2"), ("U2", "U3")]
-ARM_WEB = [("L0", "U1"), ("U1", "L1"), ("L1", "U2"), ("U2", "L2")]          # zigzag in the inner plane
-ARM_OUTER = {"L0": (-100.0, -10.0), "L1": (-60.0, -9.3), "L2": (0.0, -9.2), "U0": (-100.0, 10.5), "U1": (-76.0, 17.0), "U2": (-38.0, 11.5), "U3": (0.0, 9.0)}
-RO = 2.5                      # outer rail radius: fits between the belt hull and the old arm envelope
+ARM_WEB = [("L0", "U1"), ("U1", "L1"), ("L1", "U2"), ("U2", "L2")]          # zigzag in both side planes (the belt is between them)
 
 
 def arm(p, side):
-    """Box-truss swing arm, open (no cover plate): inner plane = rails + zigzag, outer plane = fat rails (the belt runs between, clear of
-    the diagonals), ties across; hubs with the bearing seats on the inner face; lug for the lean rod."""
+    """Wide box-truss swing arm: two side planes (rails + zigzag), the belt between them, X lattices in the top and bottom faces,
+    hubs on both planes (bearing seats on the inner face of each plane); lug for the lean rod on the inner plane."""
     s = side
     ya, yb = W.ARM_Y
-    yi, yo = s * (ya + 2.5), s * (ya + 6.5)               # inner / outer plane centres (67.0, 71.0): outer faces end at 74.0 like the old cover-less arm
+    yi, yo = s * (ya + 2.5), s * (ya + YO)                # plane centres: 67.0 and 77.0 (outer tubes 74.6..79.4)
     yy = lambda a, b: (s * a, s * b)
     def fn():
         P = lambda k, y: (ARM_NODES[k][0], y, ARM_NODES[k][1])
-        Q = lambda k, y: (ARM_OUTER[k][0], y, ARM_OUTER[k][1])
         parts = []
-        for a, b in ARM_RAILS:
-            parts += [_tb(P(a, yi), P(b, yi), RT), _tb(Q(a, yo), Q(b, yo), 2.3 if a[0] == "L" else RO)]
-        for a, b in ARM_WEB:
-            parts.append(_tb(P(a, yi), P(b, yi), RT))
-        for k in ARM_NODES:                                # ties across the belt gap, outside the belt hull
-            parts += [_tb(P(k, yi), Q(k, yo), RT), _ball(P(k, yi), RT), _ball(Q(k, yo), RO)]
+        for y, r in ((yi, RT), (yo, RO)):
+            for a, b in ARM_RAILS + ARM_WEB:
+                parts.append(_tb(P(a, y), P(b, y), r))
+            for k in ARM_NODES:
+                parts.append(_ball(P(k, y), r))
+        for rails, r in (([("U0", "U1"), ("U1", "U2"), ("U2", "U3")], 2.0), ([("L0", "L1"), ("L1", "L2")], 1.6)):   # lateral X lattices
+            for a, b in rails:
+                parts += [_tb(P(a, yi), P(b, yo), r), _tb(P(b, yi), P(a, yo), r)]
+        for k in ("U0", "L0", "U3", "L2"):                                       # ties at the hub ends
+            parts.append(_tb(P(k, yi), P(k, yo), 2.0 if k[0] == "U" else 1.6))
         xp = -W.ARM_L
-        parts += [_cy(xp, 0.0, *yy(ya, ya + 5.5), 20.0), _cy(0.0, 0.0, *yy(ya, ya + 5.5), 18.0)]          # hubs
-        parts += [_cy(W.LUG[0] + xp, W.LUG[1], *yy(ya, ya + 5.0), 9.0)]                                    # lean-rod lug
+        parts += [_cy(xp, 0.0, *yy(ya, ya + 5.5), 20.0), _cy(0.0, 0.0, *yy(ya, ya + 5.5), 18.0)]                    # inner hubs
+        parts += [_cy(xp, 0.0, *yy(ya + 10.1, ya + 15.0), 20.0), _cy(0.0, 0.0, *yy(ya + 10.1, ya + 15.0), 18.0)]    # outer hubs
+        parts += [_cy(W.LUG[0] + xp, W.LUG[1], *yy(ya, ya + 5.0), 9.0)]                                             # lean-rod lug
         body = _join(parts)
         for x, d1, d2 in ((xp, 11.15, 5.4), (0.0, 8.15, 4.4)):
-            body = body - _cy(x, 0.0, *yy(ya - 0.1, ya + (4.0 if x == xp else 3.0)), d1)
-            body = body - _cy(x, 0.0, *yy(ya - 0.1, yb + 0.1), d2)
+            body = body - _cy(x, 0.0, *yy(ya - 0.1, ya + (4.0 if x == xp else 3.0)), d1)                           # inner bearing seat
+            body = body - _cy(x, 0.0, *yy(ya + 15.1 - (4.0 if x == xp else 3.0), ya + 15.1), d1)                    # outer bearing seat, facing out
+            body = body - _cy(x, 0.0, *yy(ya - 0.1, ya + 15.1), d2)
         body = body - _cy(xp + W.LUG[0], W.LUG[1], *yy(ya - 0.1, ya + 5.1), 2.4)
         return _to_print(body, s, ya)
     return MeshPart("w3_arm_left" if s > 0 else "w3_arm_right", fn, walls=False, supports=True)
