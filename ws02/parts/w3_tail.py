@@ -28,7 +28,10 @@ SPLIT = 66.0
 ARCH = 12.0
 LEG_Y, LEG_T = 28.0, 8.0           # foot centre |y| (kept inside the narrow hood)
 WEB_T = 6.0                        # thickness of the hanger web plate (at y = +-LEG_Y)
-FORK_SCREW_U = (-22.0, -48.0)      # chord positions of the two screws through each fork's lower prong into the blade
+FORK_SCREW_U = (-30.0, -44.0)      # chord positions of the two screws through each fork's lower prong into the blade
+CH = 2.0                           # channel depth in the blade (top and bottom) = prong thickness
+CLR = 0.15                         # prong-to-channel clearance
+PROF_TOP = [(2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-72.0, 2.5)]
 FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
 FOOT_X = (-314.0, -300.0)          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
 HOLE_X = -307.0                    # foot screw, from below (the access hole is in the hood underside)
@@ -110,17 +113,31 @@ def _panel_matrix(sgn):
          [0.0, -ARCH * k * sgn, 1.0, ARCH * (1.0 + FLAT * k) - ARCH]])
 
 
+def topw(u):
+    """Blade top-face height (local w) at chord position u."""
+    us = [p[0] for p in PROF_TOP][::-1]
+    ws = [p[1] for p in PROF_TOP][::-1]
+    return float(np.interp(u, us, ws))
+
+
 def _blade():
     prof = [(2.0, -3.0), (2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-CHORD, 2.5), (-CHORD, -3.0)]
     centre = MB.prism_xz(prof, -FLAT, FLAT)                           # plain blade centre (no raised cap)
-    for sg in (1, -1):                                                # blind pilots from the lower face for the fork screws (nothing shows on top)
+    # snug channels for the fork prongs (top follows the blade profile, bottom is flat) and blind pilots for the prong screws
+    ya, yb = LEG_Y - 5.3, LEG_Y + 5.3
+    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-62.0, topw(-62.0) - CH),
+               (-62.0, 30.0), (3.0, 30.0)]
+    bot_pts = [(3.0, -3.5), (-62.0, -3.5), (-62.0, -3.0 + CH), (3.0, -3.0 + CH)]
+    for sg in (1, -1):
+        y0, y1 = (ya, yb) if sg > 0 else (-yb, -ya)
+        centre = centre - MB.prism_xz(top_pts, y0, y1) - MB.prism_xz(bot_pts, y0, y1)
         for u in FORK_SCREW_U:
-            centre = centre - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((u, sg * LEG_Y, -3.2))
+            centre = centre - Manifold.cylinder(4.0, 1.0, 1.0, 24).translate((u, sg * LEG_Y, -3.0 + CH - 0.1))
     body = centre.translate((0.0, 0.0, ARCH))
     for sg in (1, -1):
         y0, y1 = (FLAT - 0.05, SPAN) if sg > 0 else (-SPAN, -FLAT + 0.05)
         panel = MB.prism_xz(prof, y0, y1)
-        fin = [(6.0, -3.0), (6.0, 4.0), (-25.0, 9.0), (-CHORD - 4.0, 20.0), (-CHORD - 4.0, -2.0), (-35.0, -5.0)]       # swept wedge fin, rising at the rear
+        fin = [(8.0, -3.0), (8.0, 3.5), (-30.0, 6.0), (-CHORD - 2.0, 5.0), (-CHORD - 2.0, -28.0), (-40.0, -20.0), (-12.0, -9.0)]   # swept fin that hangs DOWN from the blade's end
         fy0, fy1 = (SPAN - FIN, SPAN) if sg > 0 else (-SPAN, -SPAN + FIN)
         panel = panel + MB.prism_xz(fin, fy0, fy1)
         k = 1.0 / (SPAN - FLAT)
@@ -177,25 +194,40 @@ def _lower_z(x):
     return a[2] + (b[2] - a[2]) * (x - a[0]) / (b[0] - a[0])
 
 
+def _chamfered(poly, y0, y1, c=1.2):
+    """Convex (x, z) polygon extruded across y with 45-degree edge chamfers of size c on both faces."""
+    from shapely.geometry import Polygon
+    p = Polygon(poly)
+    inner = list(p.buffer(-c, join_style=2).exterior.coords)[:-1]
+    full = list(p.exterior.coords)[:-1]
+    pts = [(x, y0 + c, z) for x, z in full] + [(x, y1 - c, z) for x, z in full] + [(x, y0, z) for x, z in inner] + [(x, y1, z) for x, z in inner]
+    return Manifold.hull_points(np.array(pts, float))
+
+
 def _hanger_left():
-    """Fork-type hanger for y > 0, in assembly coordinates: a web from the hood feet up to a clevis whose upper and lower prongs take the blade
-    (it slides in from the rear and stops against the riser); two screws from below go through the lower prong into the blade."""
+    """Fork hanger for y > 0, in assembly coordinates.  A web from the hood feet up to a nose cap that wraps the blade's leading edge; two prongs
+    (1.2-style flush bands, 2 mm) follow the blade's top profile and its flat underside inside channels in the blade, and end in chamfers
+    (down on top, up underneath).  The blade slides in from the rear; two screws from below go through the lower prong into the blade.
+    Everything is chamfered."""
     Mc = _centre_matrix()
     A = lambda u, y, w: (Mc @ np.array([u, y, w, 1.0]))[:3]
     y0f, y1f = LEG_Y - 5.0, LEG_Y + 5.0
-    gap_lo, gap_hi = -3.3, 5.9                                            # blade lower face -3, top 5.5 (+0.3 clearance each side)
-    pr = 3.0                                                              # prong thickness
-    fork = _box(-66.0, 8.0, y0f, y1f, gap_lo - pr, gap_lo) + _box(-66.0, 8.0, y0f, y1f, gap_hi, gap_hi + pr) + _box(3.2, 8.0, y0f, y1f, gap_lo - pr, gap_hi + pr)
+    c = CLR
+    us = [2.0, -8.0, -35.0, -52.0]
+    upper = [(2.5, topw(2.0))] + [(u, topw(u)) for u in us] + [(-60.0, topw(-60.0) - CH + c)] + [(u, topw(u) - CH + c) for u in reversed(us)] + [(2.5, topw(2.0) - CH + c)]
+    lower = [(2.5, -3.0), (-52.0, -3.0), (-60.0, -3.0 + CH - c), (2.5, -3.0 + CH - c)]
+    prongs = MB.prism_xz(upper, y0f, y1f) + MB.prism_xz(lower, y0f, y1f)           # bands (not convex): plain prisms, the end chamfers are in the outline
+    cap = _chamfered_prism_uw([(2.2, -3.0), (6.4, -3.0), (6.4, 0.6), (2.2, 0.6)], y0f, y1f)
+    fork = prongs + cap
     for u in FORK_SCREW_U:
-        fork = fork - Manifold.cylinder(6.0, 1.35, 1.35, 24).translate((u, LEG_Y, gap_lo - pr - 1.0))           # clear hole in the lower prong
+        fork = fork - Manifold.cylinder(CH + 2.0, 1.35, 1.35, 24).translate((u, LEG_Y, -3.5))              # clear hole through the lower prong
     fork = fork.transform(Mc[:3, :4])
-    # web from the hood feet up to the riser
     xf, xr = -300.0, -314.0
     h = lambda x: hood_top(x) + 0.4
-    rl = A(3.2, LEG_Y, gap_lo - pr)
-    rh = A(8.0, LEG_Y, gap_hi + pr)
-    poly = [(xf, h(xf)), (xr, h(xr)), (rl[0], rl[2]), (rh[0], rh[2] - 0.5)]
-    web = MB.prism_xz(poly, LEG_Y - WEB_T / 2, LEG_Y + WEB_T / 2)
+    rl = A(3.2, LEG_Y, -2.0)                                           # web tips run into the cap so the hanger is one body
+    rh = A(5.6, LEG_Y, -0.2)
+    poly = [(xf, h(xf)), (xr, h(xr)), (rl[0], rl[2]), (rh[0], rh[2])]
+    web = _chamfered(poly, LEG_Y - WEB_T / 2, LEG_Y + WEB_T / 2, 1.2)
     zf = foot_z()
     x0, x1 = FOOT_X
     foot = _box(x0, x1, y0f, y1f, zf, zf + 0.5)
@@ -203,6 +235,19 @@ def _hanger_left():
     body = fork + web + Manifold.batch_hull([foot, top])
     body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, LEG_Y, zf - 0.1))                 # pilot, screw from below through the frame pad
     return body
+
+
+def _chamfered_prism_uw(poly, y0, y1, c=0.5):
+    """(u, w) polygon extruded across y with small chamfers on the outer faces; used for the prongs and the nose cap in the blade's local frame."""
+    from shapely.geometry import Polygon
+    p = Polygon(poly)
+    inner = p.buffer(-c, join_style=2)
+    if inner.is_empty:
+        return MB.prism_xz(poly, y0, y1)
+    full = list(p.exterior.coords)[:-1]
+    ins = list(inner.exterior.coords)[:-1]
+    pts = [(x, y0 + c, z) for x, z in full] + [(x, y1 - c, z) for x, z in full] + [(x, y0, z) for x, z in ins] + [(x, y1, z) for x, z in ins]
+    return Manifold.hull_points(np.array(pts, float))
 
 
 def _hanger_part(side):
