@@ -73,9 +73,8 @@ def assembly(phi_deg=0.0, steer=None):
     items.append(("w3_skid", sm, "printed"))
     rows, t0, L = rear_arm_mats()
     items.append(("w3_rear_arm", _t(f"{STL}/w3_rear_arm.stl", M(rows, t0)), "printed"))
-    for side in ("left", "right"):
-        for part in ("front", "rear"):
-            items.append((f"body3_{side}_{part}", _t(f"{MONO}/body3_{side}_{part}.stl"), "printed"))
+    for part in ("front", "rear"):
+        items.append((f"body3_{part}", _t(f"{MONO}/body3_{part}.stl"), "printed"))
     b = LY.blocks()
     for k in ("battery", "esc", "motor", "front_ring", "rear_ring", "rear_shaft", "front_pinion_shaft", "motor_shaft"):
         items.append((f"b_{k}", b[k], "bought"))

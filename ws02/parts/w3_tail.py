@@ -126,9 +126,9 @@ def _blade():
     centre = MB.prism_xz(prof, -FLAT, FLAT)                           # plain blade centre (no raised cap)
     # snug channels for the fork prongs (top follows the blade profile, bottom is flat) and blind pilots for the prong screws
     ya, yb = LEG_Y - 5.3, LEG_Y + 5.3
-    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-60.15, topw(-60.15) - CH),
-               (-60.15, 30.0), (3.0, 30.0)]
-    bot_pts = [(3.0, -3.5), (-60.15, -3.5), (-60.15, -3.0 + CH), (3.0, -3.0 + CH)]
+    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-52.15, topw(-52.15) - CH),
+               (-52.15, 30.0), (3.0, 30.0)]
+    bot_pts = [(3.0, -3.5), (-52.15, -3.5), (-52.15, -3.0 + CH), (3.0, -3.0 + CH)]
     for sg in (1, -1):
         y0, y1 = (ya, yb) if sg > 0 else (-yb, -ya)
         centre = centre - MB.prism_xz(top_pts, y0, y1) - MB.prism_xz(bot_pts, y0, y1)
@@ -164,12 +164,10 @@ def _decimate(m):
 
 def _piece(which):
     body = _blade()
-    if which == "center":
-        keep = _box(-200.0, 20.0, -SPLIT + 0.025, SPLIT - 0.025, -60.0, 60.0)
-    elif which == "left":
-        keep = _box(-200.0, 20.0, SPLIT + 0.025, 200.0, -60.0, 60.0)
+    if which == "main":                                                   # centre + left outer panel welded: 200 mm span fits the bed
+        keep = _box(-200.0, 20.0, -SPLIT + 0.0125, 200.0, -60.0, 60.0)
     else:
-        keep = _box(-200.0, 20.0, -200.0, -SPLIT - 0.025, -60.0, 60.0)
+        keep = _box(-200.0, 20.0, -200.0, -SPLIT - 0.0125, -60.0, 60.0)
     m = MB.to_trimesh(body ^ keep)
     m.merge_vertices()
     m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
@@ -217,8 +215,8 @@ def _hanger_left():
     us = [2.0, -8.0, -35.0, -52.0]
     pd = PR - CH                                                          # proud height
     fl = lambda u: topw(u) - CH + c                                       # channel floor under the prong
-    upper = [(2.5, topw(2.0) + pd)] + [(u, topw(u) + pd) for u in us] + [(-60.0, fl(-60.0) + 1.0), (-60.0, fl(-60.0))] + [(u, fl(u)) for u in reversed(us)] + [(2.5, fl(2.0))]
-    lower = [(2.5, -3.0 - pd), (-52.0, -3.0 - pd), (-60.0, -3.0 + CH - c - 1.0), (-60.0, -3.0 + CH - c), (2.5, -3.0 + CH - c)]
+    upper = [(2.5, topw(2.0) + pd)] + [(u, topw(u) + pd) for u in us] + [(u, fl(u)) for u in reversed(us)] + [(2.5, fl(2.0))]          # square end at u = -52: no wedge
+    lower = [(2.5, -3.0 - pd), (-52.0, -3.0 - pd), (-52.0, -3.0 + CH - c), (2.5, -3.0 + CH - c)]
     prongs = MB.prism_xz(upper, y0f, y1f) + MB.prism_xz(lower, y0f, y1f)           # bands (not convex): plain prisms, the end chamfers are in the outline
     cap = _chamfered_prism_uw([(2.2, -3.0), (6.4, -3.0), (6.4, 0.6), (2.2, 0.6)], y0f, y1f)
     fork = prongs + cap
@@ -280,8 +278,7 @@ def slot_cutters():
 
 
 def build(p):
-    return [MeshPart("w3_tail_center", lambda: _piece("center"), walls=False, supports=True),
-            MeshPart("w3_tail_left", lambda: _piece("left"), walls=False, supports=True),
+    return [MeshPart("w3_tail_main", lambda: _piece("main"), walls=False, supports=True),
             MeshPart("w3_tail_right", lambda: _piece("right"), walls=False, supports=True),
             _hanger_part(1), _hanger_part(-1)]
 
@@ -292,7 +289,7 @@ def placed():
     LIFT = json.loads(open('out/stl/w3_tail_lift.json').read())
     out = []
     M = place_matrix()
-    for n in ("w3_tail_center", "w3_tail_left", "w3_tail_right"):
+    for n in ("w3_tail_main", "w3_tail_right"):
         m = trimesh.load(f"out/stl/{n}.stl")
         m.apply_translation((0.0, 0.0, -LIFT[n.split('_')[-1]]))
         m.apply_transform(M)

@@ -186,11 +186,9 @@ def piece(name):
     if "f" not in _CACHE:
         _CACHE["f"] = frame()
     f = _CACHE["f"]
-    sgn = 1 if "_left_" in name else -1
     sx = 1 if name.endswith("front") else -1
-    ybox = Manifold.cube((2000.0, 1000.0, 2000.0), center=True).translate((0, sgn * 500.0 + sgn * 0.013, 0))
-    xbox = Manifold.cube((400.0, 400.0, 400.0), center=True).translate((XS + sx * 200.0 + sx * 0.05, 0, 0))
-    m = MB.to_trimesh(f ^ ybox ^ xbox)
+    xbox = Manifold.cube((400.0, 400.0, 400.0), center=True).translate((XS + sx * 200.0 + sx * 0.0125, 0, 0))
+    m = MB.to_trimesh(f ^ xbox)
     m.merge_vertices()
     m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
     m.apply_translation((0.0, 0.0, DZ["front" if sx > 0 else "rear"]))
@@ -201,7 +199,7 @@ def piece(name):
     return m
 
 
-NAMES = ["w3_frame_left_front", "w3_frame_left_rear", "w3_frame_right_front", "w3_frame_right_rear"]
+NAMES = ["w3_frame_front", "w3_frame_rear"]
 
 
 def build(p):

@@ -52,14 +52,13 @@ def test_assembly_clash_free(body_built, lean, steer):
 
 
 def test_body_pieces(body_built):
-    for side in ("left", "right"):
-        for part in ("front", "rear"):
-            t = trimesh.load(f"out/mono3/body3_{side}_{part}.stl")
-            assert t.is_watertight
-            pm = t.copy()
-            pm.apply_translation((0, 0, -pm.bounds[0][2]))
-            ok, msg = validate.check_bed(pm, 3.0)
-            assert ok, msg
+    for part in ("front", "rear"):
+        t = trimesh.load(f"out/mono3/body3_{part}.stl")
+        assert t.is_watertight
+        pm = t.copy()
+        pm.apply_translation((0, 0, -pm.bounds[0][2]))
+        ok, msg = validate.check_bed(pm, 3.0)
+        assert ok, msg
 
 
 def test_interior_inside_body(body_built):
