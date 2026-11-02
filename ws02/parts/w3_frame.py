@@ -25,6 +25,7 @@ HINGE_LUG = (11.0, 14.0)                  # lug plate |y| range
 HINGE_EAR = (14.2, 17.2)                  # skin ear |y| range (beside the lug)
 HINGE_PIN = (21.4, 29.5)                  # pin axis (x, z), along y
 HINGE_D = 3.2
+MAG_D = 6.3                               # magnet pocket diameter (6 mm disc, 2 mm thick)
 FOOT_Z = -23.0               # top of the base plate
 TAB_PAD = (2.5, 6.5)         # skin-tab pad z range above the node z
 TAB_BOSS = 6.8               # boss on the skin starts this far above the node z
@@ -125,7 +126,7 @@ def frame(relief=False):
         parts += [_disc(PE1[0], PE1[2], Y0, Y1, 15.0), _stadium(PS2[0], -19.0, -9.0, Y0, Y1, 4.5), _stadium(PS1[0], -23.8, -13.8, Y0, Y1, 4.5)]
         parts += [MB.prism_xz([(-92.0, -29.0), (-79.0, -29.0), (-79.0, -5.0), (-92.0, -5.0)], Y0, Y1)]
         parts += [_disc(PL[0], PL[2], Y0, Y1, 16.0), _disc(PL[0], PL[2], 46.0, Y0, 16.0)]
-        for (x, y, z) in _tab_pos():
+        for (x, y, z) in _tab_pos()[3:]:                                          # only the hood tab remains: a pad with a magnet pocket (the skin is held by hinge + magnets)
             parts.append(_vcyl(x, y, z + TAB_PAD[0], z + TAB_PAD[1], 9.0))
         for k, d in FEET.items():
             x, y, z = N[k]
@@ -149,8 +150,8 @@ def frame(relief=False):
         cuts.append(_disc(x, z, Y0 - 0.1, Y1 + 4.0, 2.4))
         cuts.append(_disc(x, z, Y1, Y1 + 4.0, 2 * HEAD))
     cuts.append(_disc(PIVOT[0], PIVOT[1], 45.0, Y1 + 0.1, 3.4))
-    for (x, y, z) in _tab_pos():
-        cuts.append(_vcyl(x, y, z + TAB_PAD[0] - 1.0, z + TAB_PAD[1] + 1.0, 2.7))
+    for (x, y, z) in _tab_pos()[3:]:
+        cuts.append(_vcyl(x, y, z + TAB_PAD[1] - 2.1, z + TAB_PAD[1] + 0.1, MAG_D))                  # pocket for a 6 x 2 mm neodymium disc
     for k in FEET:
         x, y, z = N[k]
         cuts.append(_vcyl(x, y, FOOT_Z - 0.1, FOOT_Z + 2.0, 2.2))                 # self-tapping pilot for the base-plate screw

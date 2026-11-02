@@ -128,12 +128,13 @@ SEAM_X = (-270.0, -215.0, -100.0, -20.0)             # seam screws joining the l
 
 def details(body):
     """Pads, posts, seam bosses, antenna boss, base-style details. Returns the body with them added."""
-    for x in PAD_X:                                                        # rear deck pads inside the skirt
-        h = hw_in(x)
+    import parts.w3_frame as FR
+    for tx, ty, tz in FR._tab_pos()[3:]:                                   # hood boss over the frame's magnet pad (no screws: hinge + magnets hold the skin)
+        ztop = 50.6
         for s in (1, -1):
-            pad = Manifold.cube((10.0, 9.9, 3.6), center=False).translate((x - 5.0, (h - 9.5) if s > 0 else -(h + 0.4), -23.0))
-            body = body + pad
-            body = body - cyl_m((x, s * (h - 7.0), -21.0), 0.9, 6.0)
+            zb = tz + FR.TAB_BOSS
+            body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
+            body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
     for x in SEAM_X:                                                       # seam bosses straddling y = 0
         z = top_z(x, WALL) - 6.5
         body = body + cyl_m((x, 0.0, z), 4.0, 14.0, "y") + Manifold.cube((8.0, 14.0, 6.0), center=True).translate((x, 0.0, z + 3.0))
@@ -142,9 +143,8 @@ def details(body):
     body = body - flank_cut(list(pocket.exterior.coords)[:-1], 0.8)
     hole, wedge, chan = flank_vent(tri)
     body = body - hole + wedge - chan
-    for zc in (28.8, 32.4, 36.0):                                     # snub nose: louvred intake slots, slanted down and inward to scoop air into the nose
-        quad = [(38.0, zc + 1.0), (38.0, zc - 1.0), (14.0, zc - 1.0 - 7.0), (14.0, zc + 1.0 - 7.0)]
-        body = body - MB.prism_xz(quad, -14.0, 14.0)
+    for k in range(-4, 5):                                            # nose light bar: a row of 3 mm LED holes (3.2 mm) through the front wall, 7 mm pitch
+        body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 33.5))
     th = NOSE_TH                                                          # the skid plate screws into the frame's nose pads through these holes
     for u_ in (10.0, 28.0):
         for sy in (1, -1):

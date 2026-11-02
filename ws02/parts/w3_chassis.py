@@ -1,7 +1,7 @@
 """WS-03 inner structure: 6 mm slotted base plates (front and rear) under the tubular frame (parts/w3_frame.py); z = 0 at the front axle height.
 
 Base plate: 6 mm at z -29..-23 under the gear housings; the housing clamp bolts pass through slots so the housings slide fore/aft
-(gear mesh and balance), battery and ESC trays sit on long rail slots, perimeter holes screw up into pads on the body skirt, and the
+(gear mesh and balance), battery and ESC trays sit on long rail slots, the skin is held by the front hinge and tail magnets (no skirt screws), and the
 frame's strut feet screw down into it.  Servo, diff-case and pivot-pin mounts are pads on the tube frame.
 """
 from cad import Part
@@ -41,7 +41,7 @@ def _hole(x, y, d):
 def deck(p, name, xr, limit, perimeter):
     """Base plate with a smooth outline (a polyline sampled every 2 mm along the body's inner plan, 3 mm inside the wall), capped at +-limit."""
     import numpy as np
-    from body3_build import hw_in, PAD_X
+    from body3_build import hw_in
     import parts.w3_frame as FR
     import mono_build as MB
     from parts.w3_style import MeshPart, _clean
@@ -66,11 +66,6 @@ def deck(p, name, xr, limit, perimeter):
         for a, b, y in RAILS:
             if x0 < (a + b) / 2 < x1:
                 cuts += _slot(max(a, x0 + 4.0), min(b, x1 - 4.0), y)
-        if perimeter:                                                      # screws up into the pads on the body skirt
-            for px in PAD_X:
-                if x0 < px < x1:
-                    for sgn in (1, -1):
-                        cuts += _hole(px, sgn * (hw_in(px) - 7.0), p.m2_clear)
         for fx, fy in FR.feet_xy():                                        # screws up into the frame feet
             if x0 < fx < x1:
                 cuts += _hole(fx, fy, p.m2_clear + 0.2) + _hole(fx, -fy, p.m2_clear + 0.2)

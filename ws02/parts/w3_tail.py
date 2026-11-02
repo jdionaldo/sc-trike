@@ -126,9 +126,9 @@ def _blade():
     centre = MB.prism_xz(prof, -FLAT, FLAT)                           # plain blade centre (no raised cap)
     # snug channels for the fork prongs (top follows the blade profile, bottom is flat) and blind pilots for the prong screws
     ya, yb = LEG_Y - 5.3, LEG_Y + 5.3
-    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-62.0, topw(-62.0) - CH),
-               (-62.0, 30.0), (3.0, 30.0)]
-    bot_pts = [(3.0, -3.5), (-62.0, -3.5), (-62.0, -3.0 + CH), (3.0, -3.0 + CH)]
+    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-60.15, topw(-60.15) - CH),
+               (-60.15, 30.0), (3.0, 30.0)]
+    bot_pts = [(3.0, -3.5), (-60.15, -3.5), (-60.15, -3.0 + CH), (3.0, -3.0 + CH)]
     for sg in (1, -1):
         y0, y1 = (ya, yb) if sg > 0 else (-yb, -ya)
         centre = centre - MB.prism_xz(top_pts, y0, y1) - MB.prism_xz(bot_pts, y0, y1)
@@ -216,8 +216,9 @@ def _hanger_left():
     c = CLR
     us = [2.0, -8.0, -35.0, -52.0]
     pd = PR - CH                                                          # proud height
-    upper = [(2.5, topw(2.0) + pd)] + [(u, topw(u) + pd) for u in us] + [(-60.0, topw(-60.0) - CH + c)] + [(u, topw(u) - CH + c) for u in reversed(us)] + [(2.5, topw(2.0) - CH + c)]
-    lower = [(2.5, -3.0 - pd), (-52.0, -3.0 - pd), (-60.0, -3.0 + CH - c), (2.5, -3.0 + CH - c)]
+    fl = lambda u: topw(u) - CH + c                                       # channel floor under the prong
+    upper = [(2.5, topw(2.0) + pd)] + [(u, topw(u) + pd) for u in us] + [(-60.0, fl(-60.0) + 1.0), (-60.0, fl(-60.0))] + [(u, fl(u)) for u in reversed(us)] + [(2.5, fl(2.0))]
+    lower = [(2.5, -3.0 - pd), (-52.0, -3.0 - pd), (-60.0, -3.0 + CH - c - 1.0), (-60.0, -3.0 + CH - c), (2.5, -3.0 + CH - c)]
     prongs = MB.prism_xz(upper, y0f, y1f) + MB.prism_xz(lower, y0f, y1f)           # bands (not convex): plain prisms, the end chamfers are in the outline
     cap = _chamfered_prism_uw([(2.2, -3.0), (6.4, -3.0), (6.4, 0.6), (2.2, 0.6)], y0f, y1f)
     fork = prongs + cap
