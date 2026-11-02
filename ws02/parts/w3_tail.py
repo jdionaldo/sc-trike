@@ -15,16 +15,16 @@ import mono_build as MB
 from parts.w3_style import MeshPart, _clean, _tb
 
 SPAN = 134.5                       # half span = half the front track (269 / 2)
-X_LE = -296.0                      # leading edge (assembly x)
-Z_LE = 116.0                       # lower-face height at the leading edge
+X_LE = -325.0                      # leading edge (assembly x)
+Z_LE = 120.0                       # lower-face height at the leading edge
 CHORD = 72.0
 SLOPE = 0.2                        # the front roofline: z rises 0.2 mm per mm toward the rear
 ALPHA = math.atan(SLOPE)
 PLATE_T = 3.0
 SPLIT = 66.0
 LEG_Y, LEG_T = 38.0, 8.0           # leg centre |y| and thickness
-FOOT_X = (-282.0, -266.0)          # leg foot (assembly x)
-STRUT_XY = (-274.0, 31.0)          # frame strut pad (x, |y|), beside the leg
+FOOT_X = (-311.0, -295.0)          # leg foot (assembly x)
+STRUT_XY = (-303.0, 31.0)          # frame strut pad (x, |y|), beside the leg
 TZ = {"center": 3.0, "left": 36.0, "right": 36.0}     # STL lift per piece (end plates hang 34 mm below the blade's lower face)
 LEG_Y0 = LEG_Y - 14.0              # leg print frame: inner face of the foot flange on the bed
 
@@ -56,7 +56,7 @@ def _u_at(x, w=-3.0):
     return (x - X_LE + (-w) * math.sin(ALPHA) * -1.0) / math.cos(ALPHA) if False else (x - X_LE - w * math.sin(ALPHA)) / math.cos(ALPHA)
 
 
-LEG_SCREW_X = (-322.0, -340.0)
+LEG_SCREW_X = (-351.0, -369.0)
 
 
 def _box(x0, x1, y0, y1, z0, z1):

@@ -35,12 +35,15 @@ def _cy(x, z, y0, y1, d):
 
 
 def _clean(t):
-    """Round to what the STL holds, drop degenerate faces, merge."""
+    """Round to what the STL holds, drop degenerate faces (unless that opens a hole), merge."""
     t.vertices = np.asarray(t.vertices, np.float32).astype(np.float64)
-    t.update_faces(t.nondegenerate_faces())
-    t.remove_unreferenced_vertices()
     t.merge_vertices()
-    return t
+    was = t.is_watertight
+    u = t.copy()
+    u.update_faces(u.nondegenerate_faces())
+    u.remove_unreferenced_vertices()
+    u.merge_vertices()
+    return u if (u.is_watertight or not was) else t
 
 
 def _to_print(m, side, y0):
