@@ -182,7 +182,7 @@ def front_window():
     pts = []
     for ph in range(-25, 26, 5):
         for n, m, k in S.scene(float(ph)):
-            if n.startswith(("arm_", "cover_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
+            if n.startswith(("arm_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
                 pts += [(float(x), float(z)) for x, y, z in m.vertices[::7]]
     hull = MultiPoint(pts).convex_hull.buffer(5.5, join_style=2).simplify(2.0)
     return hull

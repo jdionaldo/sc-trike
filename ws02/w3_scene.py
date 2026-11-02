@@ -114,8 +114,6 @@ def scene(phi_deg, steer=None):
         kx, kz = F.P[0] + F.LA * math.cos(t), F.LA * math.sin(t)
         ma = Ry(t, F.P) @ W.mats(s, W.ARM_Y[0])
         items.append((f"arm_{s}", load(f"w3_arm_{'left' if s > 0 else 'right'}", ma), "printed"))
-        mc = Ry(t, F.P) @ W.mats(s, W.COVER_Y[0])
-        items.append((f"cover_{s}", load(f"w3_arm_cover_{'left' if s > 0 else 'right'}", mc), "printed"))
         mu = Ry(t, (F.P[0], W.ZU)) @ W.mats(s, W.UP_Y[0])
         items.append((f"uplink_{s}", load(f"w3_uplink_{'left' if s > 0 else 'right'}", mu), "printed"))
         car = T(kx, 0, kz) @ W.mats(s, W.CAR_Y[0])
@@ -166,7 +164,7 @@ def scene(phi_deg, steer=None):
 
 
 OK_PAIRS = [("mock_axle", "knuckle"), ("mock_joint", "knuckle"), ("mock_joint", "carrier"), ("mock_hub", "knuckle"), ("mock_rimdisc", "knuckle"), ("mock_tire", "knuckle"), ("mock_rim", "knuckle"), ("wing", "tip_shaft"), ("wing", "carrier"), ("tip_shaft", "carrier"), ("tip_shaft", "knuckle"), ("tip_shaft", "tire"), ("tip_shaft", "arm"), ("tip_shaft", "cover"),
-            ("diff_out", "arm"), ("diff_out", "tub_wall"), ("diff_out", "front_diff"), ("diff_out", "cover"),
+            ("diff_out", "arm"), ("diff_out", "tub_wall"), ("diff_out", "front_diff"), 
             ("tire", "knuckle"), ("lean_rod", "lean_horn"), ("tie_rod", "steer_horn"), ("lean_rod", "arm"),
             ("tie_rod", "knuckle"), ("tire", "carrier")]
 

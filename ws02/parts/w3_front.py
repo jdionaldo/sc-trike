@@ -12,7 +12,6 @@ ARM_L = 100.0
 ZU = 40.0                  # upper link pin height above the lower pin
 YS = 6.5                   # outward shift of the arm / servo / wall stack (clears the front diff case)
 ARM_Y = (58.0 + YS, 67.5 + YS)       # arm body |y| (floor 58-63.5, belt cavity 63.5-67.5)
-COVER_Y = (67.5 + YS, 69.0 + YS)
 UP_Y = (58.0 + YS, 61.5 + YS)
 KP_D = 4.0                 # kingpin diameter (steel, hangs from the carrier tab; 3 mm gave a factor of safety of only 2.3)
 KP_Y = 123.0               # kingpin / dogbone joint |y|
@@ -56,50 +55,9 @@ def mats(side, y0):
     return m
 
 
-def arm(p, side):
-    name = "w3_arm_left" if side > 0 else "w3_arm_right"
-    part = Part(name, "inner face on the bed, belt cavity up", "PETG")
-    f = PF(part, side, ARM_Y[0])
-    xp = -ARM_L
-    f.box((xp - 14, 14), ARM_Y, (-9.5, 9.5))                                  # belt housing
-    f.box((xp + 10, xp + 34), ARM_Y, (9.5, 16.0))                             # peak (inverted V) carries the lean link
-    f.box((xp + 16, xp + 28), ARM_Y, (16.0, 22.0))
-    f.box((xp - 7.5, 7.5), (63.5 + YS, ARM_Y[1] + 0.1), (-7.5, 7.5), op="cut")     # belt cavity
-    for x in (xp, 0.0):                                                       # bearing seats on the inner face, shaft bores through
-        f.cyl_y(x, 0.0, (ARM_Y[0] - 0.1, ARM_Y[0] + 4.0), 11.15 if x == xp else 8.15, op="cut")
-        f.cyl_y(x, 0.0, (ARM_Y[0] - 0.1, ARM_Y[1] + 0.1), 5.4 if x == xp else 4.4, op="cut")
-    f.cyl_y(xp + LUG[0], LUG[1], (ARM_Y[0] - 0.1, ARM_Y[1] + 0.1), p.m2_clear, op="cut")
-    for x in (xp - 11.0, 11.0):                                               # cover screws
-        f.cyl_y(x, 0.0, (ARM_Y[1] - 5.0, ARM_Y[1] + 0.1), p.m2_insert_hole, op="cut")
-    return part
-
-
-def cover(p, side):
-    name = "w3_arm_cover_left" if side > 0 else "w3_arm_cover_right"
-    part = Part(name, "flat", "PETG")
-    f = PF(part, side, COVER_Y[0])
-    xp = -ARM_L
-    f.box((xp - 14, 14), COVER_Y, (-9.5, 9.5))
-    for x in (xp - 11.0, 11.0):
-        f.cyl_y(x, 0.0, (COVER_Y[0] - 0.1, COVER_Y[1] + 0.1), p.m2_clear, op="cut")
-    return part
-
-
-def uplink(p, side):
-    name = "w3_uplink_left" if side > 0 else "w3_uplink_right"
-    part = Part(name, "flat", "PETG")
-    f = PF(part, side, UP_Y[0])
-    xp = -ARM_L
-    f.box((xp - 7, 7), UP_Y, (ZU - 5, ZU + 5))
-    for x in (xp, 0.0):
-        f.cyl_y(x, ZU, (UP_Y[0] - 0.1, UP_Y[1] + 0.1), p.pin_dia + p.clr_slide, op="cut")
-    return part
-
-
-
 def build(p):
     from parts import w3_style
     out = []
     for s in (1, -1):
-        out += [w3_style.arm(p, s), w3_style.cover(p, s), w3_style.uplink(p, s), w3_style.carrier(p, s), w3_style.knuckle(p, s)]
+        out += [w3_style.arm(p, s), w3_style.uplink(p, s), w3_style.carrier(p, s), w3_style.knuckle(p, s)]
     return out
