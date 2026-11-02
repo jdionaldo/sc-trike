@@ -22,8 +22,8 @@ WALL = 2.4
 NOSE_LOW = (-1.0, -26.0)                              # where the nose underside meets the chassis floor
 NOSE_TH = math.atan2(53.0, 35.0)                      # underside slope (56.6 deg)
 TAIL = [(-299.0, 50.0), (-341.5, 66.4), (-348.1, 83.3)]                # new tail from the owner's markup: underside rising to the tail-light face, then the roof
-SIDE = [(34, 40), (34, 27), NOSE_LOW, (-243, -26), (-243, 50)] + TAIL + [(-259, 97)]   # straight roofline, flat vertical nose face, short raked tail
-HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-300, 44), (-340, 40), (-348, 38.5)]
+SIDE = [(34, 40), (34, 27), NOSE_LOW, (-299, -26)] + TAIL + [(-259, 97)]   # straight roofline, flat vertical nose face, short raked tail
+HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-262, 43), (-300, 42), (-340, 40), (-348, 38.5)]
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
 
 
@@ -84,7 +84,7 @@ def solid(inset=0.0, belly=False):
     s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0) ^ prism_yz(list(sec.exterior.coords)[:-1], -400.0, 100.0)
     s = s + rocker(inset)
     if belly:                                        # open belly: remove the floor with a straight prism of the cavity's plan (no stepped sweep: the lower edge stays clean)
-        floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((240.2, 400.0, 100.0), center=False).translate((-240.6, -200.0, -80.0))
+        floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((296.2, 400.0, 100.0), center=False).translate((-296.6, -200.0, -80.0))
         s = s + floor
     return s
 
@@ -132,7 +132,7 @@ def details(body):
             zb = tz + FR.TAB_BOSS
             body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
             body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
-    tri = [(-241, 22), (-209, 22), (-225, 44)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
+    tri = [(-254, 8), (-203, 8), (-229, 47)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
     hole, wedge, chan = flank_vent(tri)
     body = body - hole + wedge - chan
     for k in range(-4, 5):                                            # nose light bar: a row of 3 mm LED holes (3.2 mm) through the front wall, 7 mm pitch
