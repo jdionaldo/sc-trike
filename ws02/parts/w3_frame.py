@@ -73,7 +73,9 @@ def nodes():
     def nose(u):
         px, pz = NOSE_LOW[0] + u * math.cos(NOSE_TH) + inw[0] * 4.2, NOSE_LOW[1] + u * math.sin(NOSE_TH) + inw[1] * 4.2
         return (px, 22.0, pz)
-    return {"NA": nose(10.0), "NB": nose(28.0), "FS": (-8.0, 22.0, -19.5), "PE1": (-150.0, Y, -10.0), "PS2": (-135.9, Y, -14.0), "PM": (-86.0, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (PIVOT[0], Y, PIVOT[1]), "FN": (-25.0, Y, 28.0),
+    from parts.w3_tail import strut_node
+    sn = strut_node()
+    return {"WP": (sn[0], sn[1], sn[2] - 4.2), "NA": nose(10.0), "NB": nose(28.0), "FS": (-8.0, 22.0, -19.5), "PE1": (-150.0, Y, -10.0), "PS2": (-135.9, Y, -14.0), "PM": (-86.0, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (PIVOT[0], Y, PIVOT[1]), "FN": (-25.0, Y, 28.0),
             "B1": (-200.0, 59.0, -10.0), "R1": (-246.0, 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
             "C100": (hx, 0.0, hz), "C262": (rx, 0.0, rz), "FT": (fx, fy, fz), "C29": (fx, 0.0, fz), "XN": (-221.0, 0.0, 0.5 * (mz + rz) + 0.5 * 0.0 + 0.0),
             "R2m": (rx, -ry, rz), "PHm": (hx, -53.0, PIVOT[1]), "C40": (hx, 0.0, PIVOT[1]), "XH": (hx, 0.0, hz - (30.0 / 83.0) * (hz - PIVOT[1])),
@@ -91,8 +93,8 @@ EDGES = [("PE1", "PS2", 3.0, 0, 0), ("PS2", "PM", 3.0, 0, 0), ("PM", "PS1", 3.0,
          ("MU", "XN", 4.5, 0, 0), ("XN", "R2m", 4.5, 0, 0),
          ("PH", "C40", 4.5, 6.0, 0), ("HT", "XH", 3.5, 0, 0), ("XH", "PHm", 3.5, 0, 6.0),
          ("FT", "C29", 5.5, 0, 0), ("FT", "HT", 5.5, 0, 0), ("FT", "FN", 4.5, 0, 0),
-         ("FS", "NA", 3.5, 0, 0), ("NA", "NB", 3.0, 0, 0), ("FP1", "K1", 3.0, 0, 0), ("K1", "HT2", 3.0, 0, 0), ("R3", "K2", 4.0, 0, 0), ("K2", "FPB", 4.0, 0, 0)]
-BALLS = {"FS": 3.5, "XH": 3.5, "C40": 4.5, "R1": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 4.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 4.0, "FPR": 4.0, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 4.0}
+         ("R2", "WP", 4.0, 0, 0), ("FS", "NA", 3.5, 0, 0), ("NA", "NB", 3.0, 0, 0), ("FP1", "K1", 3.0, 0, 0), ("K1", "HT2", 3.0, 0, 0), ("R3", "K2", 4.0, 0, 0), ("K2", "FPB", 4.0, 0, 0)]
+BALLS = {"WP": 4.0, "FS": 3.5, "XH": 3.5, "C40": 4.5, "R1": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 4.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 4.0, "FPR": 4.0, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 4.0}
 FEET = {"FS": 8.0, "FP1": 7.0, "FPB": 9.0, "FPR": 7.6, "FPF": 10.0}      # foot pad diameters, screwed down into the base plate
 
 
@@ -116,6 +118,8 @@ def frame(relief=False):
         for k, d in FEET.items():
             x, y, z = N[k]
             parts.append(_vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d))
+        wx, wy, wz = N["WP"]
+        parts.append(_vcyl(wx, wy, wz + 0.8, wz + 2.6, 9.0))                           # whale-tail strut pad (the boss base is tilted with the plate)
         from body3_build import NOSE_TH
         ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
         for k in ("NA", "NB"):                                                         # skid pads: 3 mm discs on the nose-skin inner face
@@ -136,6 +140,8 @@ def frame(relief=False):
     for k in FEET:
         x, y, z = N[k]
         cuts.append(_vcyl(x, y, FOOT_Z - 0.1, FOOT_Z + 2.0, 2.2))                 # self-tapping pilot for the base-plate screw
+    wx, wy, wz = N["WP"]
+    cuts.append(_vcyl(wx, wy, wz + 0.5, wz + 3.0, 2.2))                             # pilot for the whale-tail screw
     from body3_build import NOSE_TH
     ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
     for k in ("NA", "NB"):

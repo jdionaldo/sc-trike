@@ -5,6 +5,7 @@ Base plate: 6 mm at z -29..-23 under the gear housings; the housing clamp bolts 
 frame's strut feet screw down into it.  Servo, diff-case and pivot-pin mounts are pads on the tube frame.
 """
 from cad import Part
+from manifold3d import Manifold
 
 DECK_Z = (-29.0, -23.0)
 TD = DECK_Z[1] - DECK_Z[0]                                           # base plate thickness
@@ -21,49 +22,55 @@ SLOT_W = 3.4
 HEAD_D, HEAD_DEPTH = 5.2, 2.7        # M2.5 pan head 4.5 x 2.5: sunk into the underside so nothing catches
 
 
-def _slot(part, x0, x1, y):
-    part.box((x0, y - SLOT_W / 2, -1.0), (x1 - x0, SLOT_W, TD + 2.0), op="cut")
-    part.box((x0 - 1.0, y - HEAD_D / 2, -1.0), (x1 - x0 + 2.0, HEAD_D, HEAD_DEPTH + 1.0), op="cut")      # channel for the heads along the slot
+def _box(x0, x1, y0, y1, z0, z1):
+    return Manifold.cube((x1 - x0, y1 - y0, z1 - z0), center=False).translate((x0, y0, z0))
 
 
-def _hole(part, x, y, d):
-    part.cyl((x, y, -1.0), d, TD + 2.0, op="cut")
-    part.cyl((x, y, -1.0), HEAD_D, HEAD_DEPTH + 1.0, op="cut")                                          # counterbore for the head
+def _slot(x0, x1, y):
+    return [_box(x0, x1, y - SLOT_W / 2, y + SLOT_W / 2, -1.0, TD + 1.0),
+            _box(x0 - 1.0, x1 + 1.0, y - HEAD_D / 2, y + HEAD_D / 2, -1.0, HEAD_DEPTH)]            # channel for the heads along the slot
+
+
+def _hole(x, y, d):
+    return [Manifold.cylinder(TD + 2.0, d / 2, d / 2, 28).translate((x, y, -1.0)),
+            Manifold.cylinder(HEAD_DEPTH + 1.0, HEAD_D / 2, HEAD_D / 2, 28).translate((x, y, -1.0))]    # counterbore for the head
 
 
 def deck(p, name, xr, limit, perimeter):
-    """Staircase outline that follows the body's inner plan (3 mm inside the wall), capped at +-limit."""
+    """Base plate with a smooth outline (a polyline sampled every 2 mm along the body's inner plan, 3 mm inside the wall), capped at +-limit."""
+    import numpy as np
     from body3_build import hw_in, PAD_X
-    part = Part(name, "flat", "PETG")
-    part.supports = True                                                  # the head channels bridge 5 mm on the bed side (or print it upside down)
-    x0, x1 = xr
-    x = x0
-    while x < x1 - 1e-6:
-        xe = min(x + 4.0, x1)
-        w = min(limit if x < -156.0 else min(limit, 52.0), hw_in(0.5 * (x + xe)) - 3.0)
-        part.box((x, -w, 0.0), (xe - x, 2 * w, TD))
-        x = xe
-    for bx, by in HOUSING_BOLTS:
-        if x0 < bx < x1:
-            _slot(part, bx - 5.0, bx + 5.0, by)
-    for a, b, y in RAILS:
-        if x0 < (a + b) / 2 < x1:
-            _slot(part, max(a, x0 + 4.0), min(b, x1 - 4.0), y)
-    if perimeter:                                                         # screws up into the pads on the body skirt
-        for px in PAD_X:
-            if x0 < px < x1:
-                for sgn in (1, -1):
-                    _hole(part, px, sgn * (hw_in(px) - 7.0), p.m2_clear)
     import parts.w3_frame as FR
-    if not perimeter:                                                      # outboard tab that carries the strut foot beside the front diff case
-        for sgn in (1, -1):
-            part.box((-140.0, 30.0 if sgn > 0 else -48.0, 0.0), (8.0, 18.0, TD))
-    for fx, fy in FR.feet_xy():                                            # screws up into the frame feet
-        if x0 < fx < x1:
-            _hole(part, fx, fy, p.m2_clear + 0.2)
-            _hole(part, fx, -fy, p.m2_clear + 0.2)
-    return part
-
+    import mono_build as MB
+    from parts.w3_style import MeshPart, _clean
+    x0, x1 = xr
+    def fn():
+        xs = list(np.arange(x0, x1, 2.0)) + [x1]
+        up = [(float(x), float(min(limit if x < -156.0 else min(limit, 52.0), hw_in(min(max(x, -299.0), 29.0)) - 3.0))) for x in xs]
+        pts = up + [(x, -w) for x, w in reversed(up)]
+        body = MB.prism_xy(pts, 0.0, TD)
+        if not perimeter:                                                  # outboard tab that carries the strut foot beside the front diff case
+            for sgn in (1, -1):
+                body = body + _box(-140.0, -132.0, 30.0 if sgn > 0 else -48.0, 48.0 if sgn > 0 else -30.0, 0.0, TD)
+        cuts = []
+        for bx, by in HOUSING_BOLTS:
+            if x0 < bx < x1:
+                cuts += _slot(bx - 5.0, bx + 5.0, by)
+        for a, b, y in RAILS:
+            if x0 < (a + b) / 2 < x1:
+                cuts += _slot(max(a, x0 + 4.0), min(b, x1 - 4.0), y)
+        if perimeter:                                                      # screws up into the pads on the body skirt
+            for px in PAD_X:
+                if x0 < px < x1:
+                    for sgn in (1, -1):
+                        cuts += _hole(px, sgn * (hw_in(px) - 7.0), p.m2_clear)
+        for fx, fy in FR.feet_xy():                                        # screws up into the frame feet
+            if x0 < fx < x1:
+                cuts += _hole(fx, fy, p.m2_clear + 0.2) + _hole(fx, -fy, p.m2_clear + 0.2)
+        for cut in cuts:
+            body = body - cut
+        return _clean(MB.to_trimesh(body))
+    return MeshPart(name, fn, walls=True, supports=True)
 
 
 def skid(p):
@@ -88,4 +95,4 @@ def standoff(p):
 
 
 def build(p):
-    return [standoff(p), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p)
+    return [standoff(p), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p) + __import__('parts.w3_tail', fromlist=['build']).build(p)

@@ -56,6 +56,9 @@ def assembly(phi_deg=0.0, steer=None):
     import parts.w3_frame as FR
     for n, mesh in FR.placed():
         items.append((n, mesh, "printed"))
+    import parts.w3_tail as TL
+    for n, mesh in TL.placed():
+        items.append((n, mesh, "printed"))
     for s_ in (1, -1):                                                       # upper-link standoff on the pivot pin, between the wall and the link
         rows = [[1, 0, 0], [0, 0, 1], [0, -1, 0]] if s_ > 0 else [[1, 0, 0], [0, 0, -1], [0, 1, 0]]
         items.append((f"w3_uplink_standoff_{s_}", _t(f"{STL}/w3_uplink_standoff.stl", M(rows, (-100.0, s_ * 57.6, 40.0))), "printed"))

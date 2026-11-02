@@ -127,30 +127,9 @@ def details(body):
     for x in SEAM_X:                                                       # seam bosses straddling y = 0
         z = top_z(x, WALL) - 6.5
         body = body + cyl_m((x, 0.0, z), 4.0, 14.0, "y") + Manifold.cube((8.0, 14.0, 6.0), center=True).translate((x, 0.0, z + 3.0))
-    ztop = top_z(-255.0)                                                   # antenna post on the tail, standing proud of the roof
-    body = body + cyl_m((-255.0, 0.0, ztop + 4.0), 4.0, 20.0) - cyl_m((-255.0, 0.0, ztop + 8.0), 1.6, 24.0)
-    for tri in [[(-241, 22), (-209, 22), (-225, 44)]]:                     # honeycomb in the triangular vent, both flanks
-        for hexp in honeycomb(tri):
-            for s in (1, -1):
-                y0, y1 = (20.0, 120.0) if s > 0 else (-120.0, -20.0)
-                body = body - MB.prism_xz(hexp, y0, y1)
-    heads = [(-230, 0), (-200, -10), (-150, -10), (-130, 10), (-205, 2), (-150, 2), (-292, 34), (-292, 58)]       # screw heads
-    import parts.w3_frame as FR
-    for tx, ty, tz in FR._tab_pos():                                       # roof / hood bosses over the frame's skin-tab pads
-        ztop = 50.6 if tx < -243.0 else top_z(tx, WALL) + 0.4
-        for s in (1, -1):
-            zb = tz + FR.TAB_BOSS
-            body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
-            body = body - cyl_m((tx, s * ty, zb + 3.5), 1.1, 7.0)
-    for hx, hz in heads:
-        circ = [(hx + 2.2 * np.cos(a), hz + 2.2 * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 13)[:-1]]
-        body = body - flank_cut(circ, 0.6)
+    body = body - flank_gills([(-241, 22), (-209, 22), (-225, 44)], 4)       # triangular vent: gill louvres, openings facing the rear
     for zc in (29.5, 33.0, 36.5):                                     # snub nose: cooling slots across the overhanging front face
         body = body - Manifold.cube((50.0, 28.0, 2.5), center=True).translate((20.0, 0.0, zc))
-    # rocker panel armor: a 3 mm proud band along the lower flank between the rear bulkhead and the front window
-    slab = Manifold.cube((118.0, 300.0, 12.0), center=False).translate((-240.0, -150.0, -24.0))
-    sides = Manifold.cube((300.0, 110.0, 40.0), center=False).translate((-300.0, 40.0, -40.0)) + Manifold.cube((300.0, 110.0, 40.0), center=False).translate((-300.0, -150.0, -40.0))
-    body = body + (((solid(-3.0) - solid(0.5)) ^ slab) ^ sides)
     th = NOSE_TH                                                          # the skid plate screws into the frame's nose pads through these holes
     for u_ in (10.0, 28.0):
         for sy in (1, -1):
@@ -174,11 +153,8 @@ def details(body):
     grown = solid(-1.2) - solid(0.0)
     if not os.environ.get("NO_SPINE"):
         body = body + ((MB.prism_xy(spine, -100.0, 200.0) ^ grown) ^ Manifold.cube((600.0, 100.0, 300.0), center=False).translate((-400.0, -50.0, 20.0)))
-    # roof grilles over the motor (honeycomb through the roof), mirrored left and right
-    for s_ in (1, -1):
-        rect = [(-232, s_ * 8), (-210, s_ * 8), (-210, s_ * 34), (-232, s_ * 34)]
-        for hexp in honeycomb(rect):
-            body = body - MB.prism_xy(hexp, -100.0, 200.0)
+    # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
+    body = body - roof_gills(-233.0, -209.0, 8.0, 34.0)
     body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()          # slots where frame tubes pass through the skin
     return body
 
@@ -201,10 +177,6 @@ PANELS = [  # recessed
     [(-232, -15), (-132, -18), (-124, -6), (-232, 2)],                          # low sill panel
     [(-205, 6), (-152, 6), (-130, 24), (-152, 46), (-205, 38)],               # big diagonal panel behind the arm window
 ]
-VENTS = [  # through the skin
-    [(-296, 34), (-262, 34), (-266, 40), (-296, 40)], [(-296, 44), (-262, 44), (-266, 50), (-296, 50)],      # louvre slots on the hood
-    [(-241, 22), (-209, 22), (-225, 44)],                                       # triangular vent
-]
 HATCH = (-96.0, -40.0, 24.0)        # roof access hatch over the battery and ESC: x0, x1, half width
 
 
@@ -217,6 +189,74 @@ def flank_cut(poly, depth=None):
         if depth is not None:
             p = p - solid(depth)
         out = p if out is None else out + p
+    return out
+
+
+TENT_K = 68.0, -9.3, 3.615           # flank tent: y = 68 - (z + 9.3) / 3.615 above z -9.3
+
+
+def _flank_y(x, z):
+    """Skin outer surface |y| at (x, z): the smaller of the plan half width and the tent."""
+    tent = TENT_K[0] - (z - TENT_K[1]) / TENT_K[2]
+    return min(hw_in(min(max(x, -299.0), 29.0), 0.0), min(68.0, tent))
+
+
+def flank_gills(tri, n, pitch=5.4, slat=2.6, shift=7.0):
+    """Louvred vent on both flanks, n horizontal slats inside a triangle (x, z); each slot is cut slanted so its opening faces the rear."""
+    poly = Polygon(tri)
+    z0 = poly.bounds[1] + 2.0
+    out = None
+    for k in range(n):
+        zc = z0 + k * pitch
+        seg = LineString([(-500, zc + slat / 2), (500, zc + slat / 2)]).intersection(poly.buffer(-1.0))
+        if seg.is_empty:
+            continue
+        xa, xb = seg.bounds[0], seg.bounds[2]
+        xm = 0.5 * (xa + xb)
+        ys = _flank_y(xm, zc)
+        for s in (1, -1):
+            yo, yi = s * (ys + 4.0), s * (ys - 6.0)
+            quad = [(xa, yo), (xb, yo), (xb + shift, yi), (xa + shift, yi)]             # outer edge rearward, inner edge forward
+            cut = MB.prism_xy(quad, zc - slat / 2, zc + slat / 2)
+            out = cut if out is None else out + cut
+    return out
+
+
+def roof_gills(x0, x1, y0, y1, n=4, slat=3.0, shift=8.0):
+    """Roof vent over the motor: n slats across y, each slot slanted so the opening faces the rear (mirrored left/right)."""
+    pitch = (x1 - x0 - slat) / (n - 1)
+    out = None
+    for k in range(n):
+        xa = x0 + k * pitch
+        zs = top_z(xa + slat / 2, 0.0)
+        quad = [(xa, zs + 4.0), (xa + slat, zs + 4.0), (xa + slat + shift, zs - 6.0), (xa + shift, zs - 6.0)]    # top edge rearward of the bottom edge
+        for s in (1, -1):
+            ya, yb = (y0, y1) if s > 0 else (-y1, -y0)
+            cut = MB.prism_xz(quad, ya, yb)
+            out = cut if out is None else out + cut
+    return out
+
+
+def rocker_flare(m, bulge=3.5, z_lo=-22.0, max_edge=4.5):
+    """Rocker panels: the lower flank swells outward by up to `bulge` mm (a smooth sin^2 profile from z_lo up to z = 0) and comes back in
+    to meet the base plate.  The mesh is subdivided first so the displacement is smooth; inner and outer surfaces move together."""
+    v, f = trimesh.remesh.subdivide_to_size(np.asarray(m.vertices), np.asarray(m.faces), max_edge=max_edge)
+    v = v.copy()
+    y, z = v[:, 1], v[:, 2]
+    t = np.clip((z - z_lo) / (0.0 - z_lo), 0.0, 1.0)
+    b = bulge * np.sin(np.pi * t) ** 2
+    a = np.clip((np.abs(y) - 38.0) / 14.0, 0.0, 1.0)
+    a = a * a * (3.0 - 2.0 * a)
+    v[:, 1] = y + np.sign(y) * b * a
+    import fast_simplification
+    out = trimesh.Trimesh(v, f, process=True)
+    out.merge_vertices()
+    for red in (0.8, 0.65, 0.5):                                                              # flat areas collapse again; keep the first watertight result
+        v2, f2 = fast_simplification.simplify(v, np.asarray(f), target_reduction=red, agg=3)
+        t = trimesh.Trimesh(v2, f2, process=True)
+        t.merge_vertices()
+        if t.is_watertight and len(t.split(only_watertight=False)) == 1:
+            return t
     return out
 
 
@@ -239,8 +279,6 @@ def main():
     body = body - Manifold.cube((46.0, 46.0, 90.0), center=True).translate((-278.0, -59.0, 0.0))   # mirrored
     for poly in PANELS:
         body = body - flank_cut(poly, 0.8)
-    for poly in VENTS[:2]:
-        body = body - flank_cut(poly)
     body = body - Manifold.cube((16.0, 30.0, 22.0), center=True).translate((-241.8, 21.0, 0.0))     # drive shaft tunnel through the rear bulkhead
     body = body - Manifold.cube((6.0, 300.0, 6.0), center=True).translate((-241.8, 0.0, -25.0))      # the rear deck passes under the bulkhead
     for y_ in (2.0, 35.0):
@@ -257,6 +295,10 @@ def main():
     m = MB.to_trimesh(body)
     m.merge_vertices()
     m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
+    m = rocker_flare(m)
+    rel = __import__('parts.w3_frame', fromlist=['relief']).relief()                 # the flare moved the skin: cut the tube slots again
+    m = MB.to_trimesh(MB.man(m) - rel)
+    m.merge_vertices()
     m.export(OUT / "body3.stl")
     print("lid3", len(ml.faces), ml.is_watertight, np.round(ml.extents, 1).tolist())
     print("body3", len(m.faces), m.is_watertight, round(m.volume), np.round(m.bounds, 1).tolist())
