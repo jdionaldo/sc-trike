@@ -139,5 +139,5 @@ def build(p):
     from parts import w3_style
     out = []
     for s in (1, -1):
-        out += [w3_style.arm(p, s), w3_style.cover(p, s), w3_style.uplink(p, s), carrier(p, s), knuckle(p, s)]
+        out += [w3_style.arm(p, s), w3_style.cover(p, s), w3_style.uplink(p, s), w3_style.carrier(p, s), w3_style.knuckle(p, s)]
     return out

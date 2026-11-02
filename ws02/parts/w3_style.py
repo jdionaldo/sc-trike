@@ -184,3 +184,61 @@ def wing(p, side):
         m.merge_vertices()
         return m
     return MeshPart("w3_wing_left" if side > 0 else "w3_wing_right", fn)
+
+
+CAR_OUT = [(-10, -3), (-6, -7), (6, -7), (10, -3), (10, 6), (5.5, 26), (4.5, 38), (2.5, 45), (-2.5, 45), (-4.5, 38), (-5.5, 26), (-10, 6)]
+KN_OUT = [(-6, -29), (6, -29), (6, -14), (10, -9), (10, 10), (5, 13.5), (-8, 13.5), (-12, 9), (-12, -8), (-6, -14)]
+
+
+def _cut_edge(body, y, z, s, ang=45.0, size=3.0):
+    """Chamfer: remove a square rotated 45 deg about x, centred on the edge at (y, z) in the assembly frame (side s)."""
+    c = Manifold.cube((30.0, size * 1.414, size * 1.414), center=True).rotate((ang, 0.0, 0.0)).translate((0.0, s * y, z))
+    return body - c
+
+
+def _local_to_print(m, mat):
+    t = MB.to_trimesh(m)
+    t.apply_transform(np.linalg.inv(mat))
+    t.merge_vertices()
+    return t
+
+
+def carrier(p, side):
+    s = side
+    ya, yb = W.CAR_Y
+    def fn():
+        yy = lambda a, b: tuple(sorted((s * a, s * b)))
+        body = MB.prism_xz(CAR_OUT, *yy(ya, yb))
+        tab = MB.prism_xz([(-6, 14), (6, 14), (6, 24), (-6, 24)], *yy(yb - 0.5, W.KN_Y[1] + 4))
+        tab = _cut_edge(tab, W.KN_Y[1] + 4, 14.0, s, size=3.0)                    # chamfered outer lower corner
+        tab = _cut_edge(tab, W.KN_Y[1] + 4, 24.0, s, size=2.0)
+        body = body + tab
+        body = body - _cy(0.0, 0.0, *yy(ya - 0.1, yb + 0.1), 8.15)
+        body = body - _cy(0.0, W.ZU, *yy(ya - 0.1, yb + 0.1), 3.4)
+        kp = Manifold.cylinder(11.0, (W.KP_D + 0.0) / 2 + 0.05, (W.KP_D + 0.0) / 2 + 0.05, 32).translate((0.0, s * W.KP_Y, 13.5))
+        body = body - kp
+        return _local_to_print(body, W.mats(s, ya))
+    return MeshPart("w3_carrier_left" if s > 0 else "w3_carrier_right", fn)
+
+
+def knuckle(p, side):
+    s = side
+    y0, y1 = W.KN_Y[0] + 0.5, W.KN_Y[1]
+    y_in = W.KP_Y + W.ARM_A[1]
+    def fn():
+        yy = lambda a, b: tuple(sorted((s * a, s * b)))
+        body = MB.prism_xz(KN_OUT[:], *yy(y0, y1))
+        beam = MB.prism_xz([(-6, W.ARM_A[2] - 3), (6, W.ARM_A[2] - 3), (6, W.ARM_A[2] + 3), (-6, W.ARM_A[2] + 3)], *yy(y_in - 3.0, y1))
+        beam = _cut_edge(beam, y_in - 3.0, W.ARM_A[2] + 3, s, size=2.5)           # chamfered inner end
+        beam = _cut_edge(beam, y_in - 3.0, W.ARM_A[2] - 3, s, size=2.5)
+        body = body + beam
+        body = body - _cy(0.0, 0.0, *yy(W.KN_Y[0], y1 + 0.1), p.axle_dia + p.clr_slide + 0.6)
+        body = body - Manifold.cylinder(26.0, (W.KP_D + p.clr_slide) / 2, (W.KP_D + p.clr_slide) / 2, 32).translate((0.0, s * W.KP_Y, -12.0))
+        body = body - _cy(W.ARM_A[0], W.ARM_A[2], *yy(y_in - 3.1, y_in + 3.0), p.ball_stud_dia + p.clr_press * 2)
+        km = np.eye(4)
+        if s > 0:
+            km[:3, :3] = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]; km[1, 3] = W.KN_Y[1]
+        else:
+            km[:3, :3] = [[1, 0, 0], [0, 0, 1], [0, -1, 0]]; km[1, 3] = -W.KN_Y[1]
+        return _local_to_print(body, km)
+    return MeshPart("w3_knuckle_left" if s > 0 else "w3_knuckle_right", fn)
