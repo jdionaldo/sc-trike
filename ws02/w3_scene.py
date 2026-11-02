@@ -120,14 +120,6 @@ def scene(phi_deg, steer=None):
         items.append((f"uplink_{s}", load(f"w3_uplink_{'left' if s > 0 else 'right'}", mu), "printed"))
         car = T(kx, 0, kz) @ W.mats(s, W.CAR_Y[0])
         items.append((f"carrier_{s}", load(f"w3_carrier_{'left' if s > 0 else 'right'}", car), "printed"))
-        wm = np.eye(4)
-        wm[:3, :3] = [[1, 0, 0], [0, 0, 1], [0, 1, 0]]                       # print (u, v, w) = (x, z + 4, |y| - 99); flat plate, so the mirror is the same part flipped
-        if s < 0:
-            wm[:3, :3] = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]
-        wm[1, 3] = s * (W.CAR_Y[0] - 4.5)
-        wm[2, 3] = -4.0
-        wing = load("w3_wing_left", T(kx, 0, kz) @ wm)
-        items.append((f"wing_{s}", wing, "printed"))
         km = np.eye(4)
         if s > 0:
             km[:3, :3] = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]; km[1, 3] = W.KN_Y[1]

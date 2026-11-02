@@ -145,4 +145,4 @@ def standoff(p):
 
 def build(p):
     from parts import w3_style
-    return [standoff(p), w3_style.wing(p, 1), w3_style.wing(p, -1), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p)
+    return [standoff(p), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p)

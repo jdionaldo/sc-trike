@@ -174,7 +174,7 @@ WING_T = 4.5                                                       # fender plat
 WING = [(-50, -4), (-34, 16), (-18, 34), (-8, 42), (30, 42), (38, 34), (42, 12), (34, -4)]
 
 
-def wing(p, side):
+def wing_plate(p, side):
     """Wing fender plate on the inboard face of the carrier; print frame u = x, v = z + 4, w = thickness. Crisp angular outline."""
     def fn():
         body = MB.prism_xy([(x, z + 4.0) for x, z in WING], 0.0, WING_T)
@@ -243,3 +243,29 @@ def knuckle(p, side):
             km[:3, :3] = [[1, 0, 0], [0, 0, 1], [0, -1, 0]]; km[1, 3] = -W.KN_Y[1]
         return _local_to_print(body, km)
     return MeshPart("w3_knuckle_left" if s > 0 else "w3_knuckle_right", fn)
+
+
+def wing(p, side):
+    """Tubular wing fender: an angular loop of 4.5 mm tube following the old plate outline, three spokes to a small mount block on the carrier.
+    Same envelope as the plate (w 0..4.5); print frame u = x, v = z + 4, w = thickness."""
+    from parts.w3_frame import tube, ball
+    def fn():
+        r = WING_T / 2
+        pts = [(x, z + 4.0) for x, z in WING]
+        P = lambda q: (q[0], q[1], r)
+        parts = []
+        for a, b in zip(pts, pts[1:] + pts[:1]):
+            parts += [tube(P(a), P(b), r), ball(P(b), r)]
+        for q in (pts[0], pts[3], pts[6]):                                  # spokes: tail, top shoulder, nose from the mount
+            parts.append(tube(P((0.0, 12.0)), P(q), r))
+        mount = MB.prism_xy([(-8.0, -4.0 + 4.0 - 4.0), (8.0, 0.0), (8.0, 28.0), (-8.0, 28.0)], 0.0, WING_T)
+        body = parts[0]
+        for q in parts[1:] + [mount]:
+            body = body + q
+        body = body - _cz(0.0, 4.0, -0.1, WING_T + 0.2, 6.4)
+        for x in (-6.0, 6.0):
+            body = body - _cz(x, 20.0, -0.1, WING_T + 0.2, p.m2_clear)
+        m = MB.to_trimesh(body)
+        m.merge_vertices()
+        return m
+    return MeshPart("w3_wing_left" if side > 0 else "w3_wing_right", fn, walls=False, supports=True)
