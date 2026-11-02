@@ -174,10 +174,21 @@ def _lower_z(x):
     return a[2] + (b[2] - a[2]) * (x - a[0]) / (b[0] - a[0])
 
 
+def _top_z(x):
+    """Blade top-face height at y = 0 (assembly) at chord position x."""
+    a, b = blade_pt(-30.0, 0.0, 5.5), blade_pt(-60.0, 0.0, 5.5)
+    return a[2] + (b[2] - a[2]) * (x - a[0]) / (b[0] - a[0])
+
+
 def _mount_asm():
-    """Assembly-frame wedge: hood-top conforming bottom, blade-lower-face top, +-36 mm wide, plus the two feet down to the pads."""
-    xa, xb = -312.0, -381.0
-    poly = [(xa, hood_top(xa) + 0.4), (xb, hood_top(xb) + 0.4), (xb, _lower_z(xb) + 1.5), (xa, _lower_z(xa) + 1.5)]
+    """Hanger-type mount, one web plate per side at y = +-LEG_Y: it starts thin on the back slope, rises over the blade's leading edge and runs
+    along the blade's TOP face to the trailing edge, so the blade hangs from it; two feet go through slots in the hood onto the frame pads."""
+    x_front, x_foot0 = -300.0, -314.0
+    x_land, x_end = -331.0, -394.0
+    st = 6.0                                                           # strap thickness on top of the blade
+    h = lambda x: hood_top(x) + 0.4
+    poly = [(x_front, h(x_front)), (x_foot0, h(x_foot0)), (x_land, _top_z(x_land) - 1.0), (x_end, _top_z(x_end) - 1.0),
+            (x_end, _top_z(x_end) + st), (x_land - 2.0, _top_z(x_land - 2.0) + st)]
     body = None
     for sg in (1, -1):
         web = MB.prism_xz(poly, sg * LEG_Y - WEB_T / 2, sg * LEG_Y + WEB_T / 2)
@@ -186,8 +197,8 @@ def _mount_asm():
     x0, x1 = FOOT_X
     for sg in (1, -1):
         y0, y1 = sg * LEG_Y - 5.0, sg * LEG_Y + 5.0
-        foot = _box(x0, x1, y0, y1, zf, zf + 0.5)
-        top = _box(x0, x1, y0, y1, hood_top(x1) + 0.2, hood_top(x1) + 2.0)
+        foot = _box(x0, x1, min(y0, y1), max(y0, y1), zf, zf + 0.5)
+        top = _box(x0, x1, min(y0, y1), max(y0, y1), hood_top(x1) + 0.2, hood_top(x1) + 2.0)
         body = body + Manifold.batch_hull([foot, top])
         body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, sg * LEG_Y, zf - 0.1))          # pilot, screw from below through the frame pad
     return body
