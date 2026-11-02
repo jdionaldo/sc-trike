@@ -75,7 +75,7 @@ def test_interior_inside_body(body_built):
 
 def test_mass_plausible(body_built):
     g = A.mass_g(A.assembly(0.0))
-    assert 600.0 < g < 1400.0, g
+    assert 600.0 < g < 1800.0, g
 
 
 def test_strength_factors():

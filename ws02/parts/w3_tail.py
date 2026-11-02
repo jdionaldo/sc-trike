@@ -1,9 +1,9 @@
-"""WS-03 whale tail: a duck-tail wing as wide as the front track (269 mm) over the rear deck, parallel to the hood's top line (the lead edge
-is higher than the tail edge: downforce), with a raised rim, a kicked-up rear lip and underside ribs.  Three printed pieces (centre and two
-outer wings, split at y = +-66); two struts per side from the rear frame node up through the hood skin screw into bosses under the plate.
+"""WS-03 GT wing: a 269 mm blade (as wide as the front track) on two swept-back legs, with big end plates.  The blade follows the FRONT roofline
+(rises toward the rear at the roof's 11.3 deg); the legs start on the hood above the frame's strut pads and sweep rearward to the blade.
 
-Local print frame: u = chord (0 at the front root, negative rearward), v = span (y), plate lower surface at z = 0; the STL is lifted by TZ so the
-underside ribs and bosses stand on the bed.  Placement: translate to the root point and tilt by the hood slope.
+Pieces: blade centre, blade left and right (each with its end plate), leg left and right.  Blade print frame: u = chord (0 at the leading edge,
+negative rearward), v = span (y), w = up from the blade's flat lower face; the STL is lifted by TZ for the end plates' lower part.
+Legs are printed on their side (inner face on the bed) like the arms.
 """
 import math
 
@@ -12,99 +12,135 @@ import trimesh
 from manifold3d import Manifold
 
 import mono_build as MB
-from parts.w3_style import MeshPart, _clean
+from parts.w3_style import MeshPart, _clean, _tb
 
 SPAN = 134.5                       # half span = half the front track (269 / 2)
-CHORD = 110.0                      # root at u = 0, trailing edge at u = -CHORD
-X_ROOT = -262.0                    # assembly x of the root
-GAP = 9.7                          # plate lower surface above the hood top line
-TZ = 6.5                           # STL lift (rib / boss depth)
-PLATE_T, RIM_T, RIM_H, LIP_H = 3.0, 2.4, 7.0, 14.0
-STRUT_X, STRUT_Y = -290.0, 38.0    # strut tops (assembly x, |y|)
+X_LE = -296.0                      # leading edge (assembly x)
+Z_LE = 116.0                       # lower-face height at the leading edge
+CHORD = 72.0
+SLOPE = 0.2                        # the front roofline: z rises 0.2 mm per mm toward the rear
+ALPHA = math.atan(SLOPE)
+PLATE_T = 3.0
 SPLIT = 66.0
+LEG_Y, LEG_T = 38.0, 8.0           # leg centre |y| and thickness
+FOOT_X = (-282.0, -266.0)          # leg foot (assembly x)
+STRUT_XY = (-274.0, 31.0)          # frame strut pad (x, |y|), beside the leg
+TZ = {"center": 3.0, "left": 36.0, "right": 36.0}     # STL lift per piece (end plates hang 34 mm below the blade's lower face)
+LEG_Y0 = LEG_Y - 14.0              # leg print frame: inner face of the foot flange on the bed
 
 
 def hood_top(x):
-    return 97.0 + (97.0 - 83.3) / 89.1 * (x + 259.0)               # hood top line from (-259, 97) to (-348.1, 83.3), extended
+    return 97.0 + (97.0 - 83.3) / 89.1 * (x + 259.0)
 
 
-SLOPE = (97.0 - 83.3) / 89.1                                        # rise toward the front (0.154)
-ALPHA = math.atan(SLOPE)
-
-
-def place_matrix():
-    """Local print frame -> assembly (before the TZ lift)."""
-    z0 = hood_top(X_ROOT) + GAP
-    R = trimesh.transformations.rotation_matrix(-ALPHA, [0, 1, 0])
-    T = np.eye(4); T[:3, 3] = (X_ROOT, 0.0, z0)
-    return T @ R
+def foot_z():
+    return hood_top(STRUT_XY[0]) + 3.5                                # underside of the leg's foot flange
 
 
 def strut_node():
-    """Assembly point under the plate where the strut pad meets the boss (pad top = boss bottom - 0.2)."""
-    u = (STRUT_X - X_ROOT) / math.cos(ALPHA)
-    p = place_matrix() @ np.array([u, 0.0, -6.0, 1.0])
-    return np.array([STRUT_X, STRUT_Y, p[2]])                       # z of the boss bottom at the strut
+    return np.array([STRUT_XY[0], STRUT_XY[1], foot_z()])
 
 
-def _planform():
-    from shapely.geometry import Polygon
-    pts = [(0, 42), (-18, 70), (-34, SPAN), (-CHORD, SPAN), (-CHORD, -SPAN), (-34, -SPAN), (-18, -70), (0, -42)]
-    return Polygon(pts).buffer(-8.0).buffer(8.0)                    # rounded corners
+def place_matrix():
+    R = trimesh.transformations.rotation_matrix(ALPHA, [0, 1, 0])      # z' = -x sin(a) + z cos(a): rises toward the rear
+    T = np.eye(4); T[:3, 3] = (X_LE, 0.0, Z_LE)
+    return T @ R
 
 
-def _prism(poly, z0, z1):
-    return MB.prism_xy(list(poly.exterior.coords)[:-1], z0, z1)
+def blade_pt(u, y, w):
+    p = place_matrix() @ np.array([u, y, w, 1.0])
+    return p[:3]
+
+
+def _u_at(x, w=-3.0):
+    return (x - X_LE + (-w) * math.sin(ALPHA) * -1.0) / math.cos(ALPHA) if False else (x - X_LE - w * math.sin(ALPHA)) / math.cos(ALPHA)
+
+
+LEG_SCREW_X = (-322.0, -340.0)
 
 
 def _box(x0, x1, y0, y1, z0, z1):
     return Manifold.cube((x1 - x0, y1 - y0, z1 - z0), center=False).translate((x0, y0, z0))
 
 
-def _whole(p):
-    pl = _planform()
-    inner = pl.buffer(-RIM_T)
-    body = _prism(pl, 0.0, PLATE_T)
-    rim = _prism(pl, PLATE_T - 0.1, PLATE_T + RIM_H) - _prism(inner, PLATE_T - 0.2, PLATE_T + RIM_H + 1.0)
-    body = body + rim
-    body = body + (_prism(pl, PLATE_T - 0.1, PLATE_T + LIP_H) ^ _box(-CHORD - 1.0, -CHORD + 7.0, -200.0, 200.0, 0.0, 40.0)) - _prism(inner, PLATE_T - 0.2, PLATE_T + LIP_H + 1.0)   # rear lip
-    for y in (-100.0, -66.0, -34.0, 34.0, 66.0, 100.0):                 # chordwise ribs under the plate
-        body = body + (_box(-CHORD, 0.0, y - 1.5, y + 1.5, -5.0, PLATE_T + 0.1) ^ _prism(pl.buffer(-0.2), -6.0, PLATE_T + 1.0))
-    ux = (STRUT_X - X_ROOT) / math.cos(ALPHA)
-    for sg in (1, -1):                                                   # strut bosses
-        body = body + Manifold.cylinder(6.0 + 0.1, 6.0, 6.0, 36).translate((ux, sg * STRUT_Y, -6.0))
-        body = body - Manifold.cylinder(PLATE_T + RIM_H + 14.0, 1.35, 1.35, 24).translate((ux, sg * STRUT_Y, -6.1))        # clearance through the plate
-        body = body - Manifold.cylinder(2.8, 2.6, 2.6, 28).translate((ux, sg * STRUT_Y, PLATE_T - 2.7))                    # counterbore for the head
+def _blade():
+    prof = [(2.0, -3.0), (2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-CHORD, 2.5), (-CHORD, -3.0)]
+    body = MB.prism_xz(prof, -SPAN, SPAN)
+    for sg in (1, -1):                                                    # end plates: swept, 3 mm, mostly below the blade
+        plate = [(8.0, -22.0), (8.0, 20.0), (-24.0, 36.0), (-CHORD - 8.0, 34.0), (-CHORD - 8.0, -34.0), (-46.0, -30.0)]
+        y0, y1 = (SPAN - PLATE_T, SPAN) if sg > 0 else (-SPAN, -SPAN + PLATE_T)
+        body = body + MB.prism_xz(plate, y0, y1)
+    for sg in (1, -1):                                                    # leg screws: clear through the blade, counterbored from the top
+        for x in LEG_SCREW_X:
+            u = _u_at(x)
+            body = body - Manifold.cylinder(14.0, 1.35, 1.35, 24).translate((u, sg * LEG_Y, -6.0))
+            body = body - Manifold.cylinder(3.0, 2.6, 2.6, 28).translate((u, sg * LEG_Y, 3.2))
     return body
 
 
 def _piece(which):
-    body = _whole(None)
+    body = _blade()
     if which == "center":
-        keep = _box(-CHORD - 2.0, 2.0, -SPLIT + 0.025, SPLIT - 0.025, -10.0, 40.0)
+        keep = _box(-200.0, 20.0, -SPLIT + 0.025, SPLIT - 0.025, -60.0, 60.0)
     elif which == "left":
-        keep = _box(-CHORD - 2.0, 2.0, SPLIT + 0.025, 200.0, -10.0, 40.0)
+        keep = _box(-200.0, 20.0, SPLIT + 0.025, 200.0, -60.0, 60.0)
     else:
-        keep = _box(-CHORD - 2.0, 2.0, -200.0, -SPLIT - 0.025, -10.0, 40.0)
+        keep = _box(-200.0, 20.0, -200.0, -SPLIT - 0.025, -60.0, 60.0)
     m = MB.to_trimesh(body ^ keep)
     m.merge_vertices()
     m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
-    m.apply_translation((0.0, 0.0, TZ))
+    m.apply_translation((0.0, 0.0, TZ[which]))
     return _clean(m)
+
+
+def _leg(side):
+    """Swept leg in assembly coordinates (built for side +1, mirrored by sign), foot flange inboard with the screw beside the plate."""
+    s = side
+    zf = foot_z()
+    x0, x1 = FOOT_X
+    top = lambda x: blade_pt(_u_at(x), 0.0, -3.0)[2]
+    tx0, tx1 = LEG_SCREW_X[0] + 12.0, LEG_SCREW_X[1] - 12.0                # leg top spans the two screws
+    poly = [(x1, zf), (x0, zf), (tx1, top(tx1)), (tx0, top(tx0))]
+    ya, yb = LEG_Y - LEG_T / 2, LEG_Y + LEG_T / 2
+    body = MB.prism_xz(poly, min(s * ya, s * yb), max(s * ya, s * yb))
+    fl_y0, fl_y1 = (LEG_Y - 14.0, LEG_Y + LEG_T / 2)
+    body = body + _box(x0, x1, min(s * fl_y0, s * fl_y1), max(s * fl_y0, s * fl_y1), zf, zf + 4.0)
+    sx, sy = STRUT_XY
+    body = body - Manifold.cylinder(8.0, 1.35, 1.35, 24).translate((sx, s * sy, zf - 1.0))               # foot screw, from above
+    body = body - Manifold.cylinder(4.0, 2.6, 2.6, 28).translate((sx, s * sy, zf + 2.0))
+    for x in LEG_SCREW_X:                                                  # pilots for the blade screws, along the blade normal
+        a = blade_pt(_u_at(x), s * LEG_Y, -3.0)
+        n = place_matrix()[:3, :3] @ np.array([0.0, 0.0, 1.0])
+        body = body - _tb(a - n * 8.0, a + n * 0.5, 1.0)
+    return body
+
+
+def _leg_part(side):
+    from parts import w3_front as W
+    from parts.w3_style import _to_print
+    def fn():
+        return _to_print(_leg(side), side, LEG_Y0)
+    return MeshPart("w3_tail_leg_left" if side > 0 else "w3_tail_leg_right", fn, walls=False, supports=True)
 
 
 def build(p):
     return [MeshPart("w3_tail_center", lambda: _piece("center"), walls=False, supports=True),
             MeshPart("w3_tail_left", lambda: _piece("left"), walls=False, supports=True),
-            MeshPart("w3_tail_right", lambda: _piece("right"), walls=False, supports=True)]
+            MeshPart("w3_tail_right", lambda: _piece("right"), walls=False, supports=True),
+            _leg_part(1), _leg_part(-1)]
 
 
 def placed():
+    from parts import w3_front as W
     out = []
     M = place_matrix()
     for n in ("w3_tail_center", "w3_tail_left", "w3_tail_right"):
         m = trimesh.load(f"out/stl/{n}.stl")
-        m.apply_translation((0.0, 0.0, -TZ))
+        m.apply_translation((0.0, 0.0, -TZ[n.split('_')[-1]]))
         m.apply_transform(M)
+        out.append((n, m))
+    for s, n in ((1, "w3_tail_leg_left"), (-1, "w3_tail_leg_right")):
+        m = trimesh.load(f"out/stl/{n}.stl")
+        m.apply_transform(W.mats(s, LEG_Y0))
         out.append((n, m))
     return out

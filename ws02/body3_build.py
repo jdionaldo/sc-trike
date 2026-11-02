@@ -94,26 +94,6 @@ def cyl_m(c, r, h, axis="z"):
 
 PAD_X = (-228.0, -200.0, -168.0)            # rear deck screw stations (match parts/w3_chassis.py)
 SEAM_X = (-270.0, -215.0, -100.0, -20.0)             # seam screws joining the left and right halves
-HEX = lambda cx, cz, r: [(cx + r * np.cos(a), cz + r * np.sin(a)) for a in np.linspace(0, 2 * np.pi, 7)[:-1]]
-
-
-def honeycomb(tri, pitch=5.4, r=2.3):
-    """Hex holes that fit inside a triangle (x, z)."""
-    poly = Polygon(tri).buffer(-1.0)
-    out = []
-    minx, minz, maxx, maxz = poly.bounds
-    row = 0
-    z = minz
-    while z < maxz:
-        x = minx + (pitch / 2 if row % 2 else 0.0)
-        while x < maxx:
-            h = Polygon(HEX(x, z, r))
-            if poly.contains(h):
-                out.append(HEX(x, z, r))
-            x += pitch
-        z += pitch * 0.866
-        row += 1
-    return out
 
 
 def details(body):
@@ -127,9 +107,14 @@ def details(body):
     for x in SEAM_X:                                                       # seam bosses straddling y = 0
         z = top_z(x, WALL) - 6.5
         body = body + cyl_m((x, 0.0, z), 4.0, 14.0, "y") + Manifold.cube((8.0, 14.0, 6.0), center=True).translate((x, 0.0, z + 3.0))
-    body = body - flank_gills([(-241, 22), (-209, 22), (-225, 44)], 4)       # triangular vent: gill louvres, openings facing the rear
-    for zc in (29.5, 33.0, 36.5):                                     # snub nose: cooling slots across the overhanging front face
-        body = body - Manifold.cube((50.0, 28.0, 2.5), center=True).translate((20.0, 0.0, zc))
+    tri = [(-241, 22), (-209, 22), (-225, 44)]                                   # triangular exhaust vent: recessed pocket, slanted slots, covering blades
+    pocket = Polygon(tri).buffer(3.0)
+    body = body - flank_cut(list(pocket.exterior.coords)[:-1], 0.8)
+    cuts, blades = flank_gills(tri, 4)
+    body = body - cuts + blades
+    for zc in (28.8, 32.4, 36.0):                                     # snub nose: louvred intake slots, slanted down and inward to scoop air into the nose
+        quad = [(38.0, zc + 1.0), (38.0, zc - 1.0), (14.0, zc - 1.0 - 7.0), (14.0, zc + 1.0 - 7.0)]
+        body = body - MB.prism_xz(quad, -14.0, 14.0)
     th = NOSE_TH                                                          # the skid plate screws into the frame's nose pads through these holes
     for u_ in (10.0, 28.0):
         for sy in (1, -1):
@@ -154,7 +139,11 @@ def details(body):
     if not os.environ.get("NO_SPINE"):
         body = body + ((MB.prism_xy(spine, -100.0, 200.0) ^ grown) ^ Manifold.cube((600.0, 100.0, 300.0), center=False).translate((-400.0, -50.0, 20.0)))
     # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
-    body = body - roof_gills(-233.0, -209.0, 8.0, 34.0)
+    for s_ in (1, -1):
+        rect = [(-237.0, s_ * 5.0), (-205.0, s_ * 5.0), (-205.0, s_ * 37.0), (-237.0, s_ * 37.0)]
+        body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))                    # shallow pocket so the blades blend into the roof
+    cuts, blades = roof_gills(-233.0, -209.0, 8.0, 34.0)
+    body = body - cuts + blades
     body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()          # slots where frame tubes pass through the skin
     return body
 
@@ -201,40 +190,47 @@ def _flank_y(x, z):
     return min(hw_in(min(max(x, -299.0), 29.0), 0.0), min(68.0, tent))
 
 
-def flank_gills(tri, n, pitch=5.4, slat=2.6, shift=7.0):
-    """Louvred vent on both flanks, n horizontal slats inside a triangle (x, z); each slot is cut slanted so its opening faces the rear."""
+def flank_gills(tri, n, pitch=5.4, slat=2.6, shift=7.0, blade=3.6):
+    """Louvred exhaust on both flanks: n horizontal slots in a triangle (x, z), cut slanted (inner edge forward) so air leaves rearward, each
+    covered by a thin blade that grows out of the skin at the slot's front edge and rises 3 mm at the rear.  Returns (cuts, blades)."""
     poly = Polygon(tri)
     z0 = poly.bounds[1] + 2.0
-    out = None
+    cuts = blades = None
     for k in range(n):
         zc = z0 + k * pitch
         seg = LineString([(-500, zc + slat / 2), (500, zc + slat / 2)]).intersection(poly.buffer(-1.0))
         if seg.is_empty:
             continue
         xa, xb = seg.bounds[0], seg.bounds[2]
-        xm = 0.5 * (xa + xb)
-        ys = _flank_y(xm, zc)
+        ys = _flank_y(0.5 * (xa + xb), zc)
         for s in (1, -1):
             yo, yi = s * (ys + 4.0), s * (ys - 6.0)
-            quad = [(xa, yo), (xb, yo), (xb + shift, yi), (xa + shift, yi)]             # outer edge rearward, inner edge forward
-            cut = MB.prism_xy(quad, zc - slat / 2, zc + slat / 2)
-            out = cut if out is None else out + cut
-    return out
+            cut = MB.prism_xy([(xa, yo), (xb, yo), (xb + shift, yi), (xa + shift, yi)], zc - slat / 2, zc + slat / 2)
+            xf, xr = xa - 1.0, xb + blade
+            bl = MB.prism_xy([(xf, s * (ys - 2.2)), (xf, s * (ys + 0.6)), (xr, s * (ys + 4.2)), (xr, s * (ys + 3.0))], zc - slat / 2 - 0.4, zc + slat / 2 + 0.4)
+            cuts = cut if cuts is None else cuts + cut
+            blades = bl if blades is None else blades + bl
+    return cuts, blades
 
 
-def roof_gills(x0, x1, y0, y1, n=4, slat=3.0, shift=8.0):
-    """Roof vent over the motor: n slats across y, each slot slanted so the opening faces the rear (mirrored left/right)."""
+def roof_gills(x0, x1, y0, y1, n=4, slat=3.0, shift=8.0, blade=3.6):
+    """Roof exhaust over the motor: n slots across y, slanted so the opening faces the rear, each covered by a blade rising 3 mm at the rear
+    (mirrored left/right).  Returns (cuts, blades)."""
     pitch = (x1 - x0 - slat) / (n - 1)
-    out = None
+    cuts = blades = None
     for k in range(n):
         xa = x0 + k * pitch
         zs = top_z(xa + slat / 2, 0.0)
-        quad = [(xa, zs + 4.0), (xa + slat, zs + 4.0), (xa + slat + shift, zs - 6.0), (xa + shift, zs - 6.0)]    # top edge rearward of the bottom edge
+        quad = [(xa, zs + 4.0), (xa + slat, zs + 4.0), (xa + slat + shift, zs - 6.0), (xa + shift, zs - 6.0)]
+        xf, xr = xa - 1.0, xa + slat + blade
+        bq = [(xf, zs - 2.2), (xf, zs + 0.6), (xr, zs + 4.2), (xr, zs + 3.0)]
         for s in (1, -1):
             ya, yb = (y0, y1) if s > 0 else (-y1, -y0)
-            cut = MB.prism_xz(quad, ya, yb)
-            out = cut if out is None else out + cut
-    return out
+            c = MB.prism_xz(quad, ya, yb)
+            bl = MB.prism_xz(bq, ya - 0.4, yb + 0.4)
+            cuts = c if cuts is None else cuts + c
+            blades = bl if blades is None else blades + bl
+    return cuts, blades
 
 
 def rocker_flare(m, bulge=3.5, z_lo=-22.0, max_edge=4.5):
@@ -299,6 +295,7 @@ def main():
     rel = __import__('parts.w3_frame', fromlist=['relief']).relief()                 # the flare moved the skin: cut the tube slots again
     m = MB.to_trimesh(MB.man(m) - rel)
     m.merge_vertices()
+    m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
     m.export(OUT / "body3.stl")
     print("lid3", len(ml.faces), ml.is_watertight, np.round(ml.extents, 1).tolist())
     print("body3", len(m.faces), m.is_watertight, round(m.volume), np.round(m.bounds, 1).tolist())

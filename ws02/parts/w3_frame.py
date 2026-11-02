@@ -75,7 +75,7 @@ def nodes():
         return (px, 22.0, pz)
     from parts.w3_tail import strut_node
     sn = strut_node()
-    return {"WP": (sn[0], sn[1], sn[2] - 4.2), "NA": nose(10.0), "NB": nose(28.0), "FS": (-8.0, 22.0, -19.5), "PE1": (-150.0, Y, -10.0), "PS2": (-135.9, Y, -14.0), "PM": (-86.0, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (PIVOT[0], Y, PIVOT[1]), "FN": (-25.0, Y, 28.0),
+    return {"WP": (sn[0], sn[1], sn[2] - 5.0), "NA": nose(10.0), "NB": nose(28.0), "FS": (-8.0, 22.0, -19.5), "PE1": (-150.0, Y, -10.0), "PS2": (-135.9, Y, -14.0), "PM": (-86.0, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (PIVOT[0], Y, PIVOT[1]), "FN": (-25.0, Y, 28.0),
             "B1": (-200.0, 59.0, -10.0), "R1": (-246.0, 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
             "C100": (hx, 0.0, hz), "C262": (rx, 0.0, rz), "FT": (fx, fy, fz), "C29": (fx, 0.0, fz), "XN": (-221.0, 0.0, 0.5 * (mz + rz) + 0.5 * 0.0 + 0.0),
             "R2m": (rx, -ry, rz), "PHm": (hx, -53.0, PIVOT[1]), "C40": (hx, 0.0, PIVOT[1]), "XH": (hx, 0.0, hz - (30.0 / 83.0) * (hz - PIVOT[1])),
@@ -119,7 +119,7 @@ def frame(relief=False):
             x, y, z = N[k]
             parts.append(_vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d))
         wx, wy, wz = N["WP"]
-        parts.append(_vcyl(wx, wy, wz + 0.8, wz + 2.6, 9.0))                           # whale-tail strut pad (the boss base is tilted with the plate)
+        parts.append(_vcyl(wx, wy, wz + 0.8, wz + 4.8, 9.0))                           # wing-leg strut pad (leg foot flange sits 0.2 above)
         from body3_build import NOSE_TH
         ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
         for k in ("NA", "NB"):                                                         # skid pads: 3 mm discs on the nose-skin inner face
@@ -141,7 +141,7 @@ def frame(relief=False):
         x, y, z = N[k]
         cuts.append(_vcyl(x, y, FOOT_Z - 0.1, FOOT_Z + 2.0, 2.2))                 # self-tapping pilot for the base-plate screw
     wx, wy, wz = N["WP"]
-    cuts.append(_vcyl(wx, wy, wz + 0.5, wz + 3.0, 2.2))                             # pilot for the whale-tail screw
+    cuts.append(_vcyl(wx, wy, wz + 1.2, wz + 5.0, 2.2))                             # pilot for the whale-tail screw
     from body3_build import NOSE_TH
     ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
     for k in ("NA", "NB"):
