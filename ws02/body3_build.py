@@ -230,9 +230,9 @@ def roof_gills(x0, x1, y0, y1, n=4, slat=3.0, shift=8.0, blade=3.6):
         xa = x0 + k * pitch
         zs = top_z(xa + slat / 2, 0.0)
         quad = [(xa, zs + 4.0), (xa + slat, zs + 4.0), (xa + slat + shift, zs - 6.0), (xa + shift, zs - 6.0)]
-        xf, xr = xa - 1.0, xa + slat + blade
+        xf, xr = xa + slat + 1.0, xa - blade                               # +x is forward: the wedge grows out of the roof at its FRONT edge and opens to the rear
         wq = [(xf, zs - 2.2), (xr, zs - 2.2), (xr, zs + 4.2), (xf, zs + 0.6)]
-        cq = [(xa + 0.5, zs - 0.1), (xr + 1.0, zs - 0.1), (xr + 1.0, zs + 3.0), (xa + 0.5, zs + 0.1)]
+        cq = [(xa + slat - 0.5, zs - 0.1), (xr - 1.0, zs - 0.1), (xr - 1.0, zs + 3.0), (xa + slat - 0.5, zs + 0.1)]
         for s in (1, -1):
             ya, yb = (y0, y1) if s > 0 else (-y1, -y0)
             c = MB.prism_xz(quad, ya, yb)

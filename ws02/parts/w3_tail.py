@@ -47,11 +47,6 @@ def place_matrix():
     return T @ R
 
 
-def blade_pt(u, y, w):
-    p = place_matrix() @ np.array([u, y, w, 1.0])
-    return p[:3]
-
-
 def _u_at(x, w=-3.0):
     return (x - X_LE + (-w) * math.sin(ALPHA) * -1.0) / math.cos(ALPHA) if False else (x - X_LE - w * math.sin(ALPHA)) / math.cos(ALPHA)
 
@@ -63,19 +58,55 @@ def _box(x0, x1, y0, y1, z0, z1):
     return Manifold.cube((x1 - x0, y1 - y0, z1 - z0), center=False).translate((x0, y0, z0))
 
 
+ARCH, SWEEP = 12.0, 8.0            # reference wing: the blade arches up toward the centre and its ends sweep rearward
+RIM_FIN = 3.0
+
+
+def _warp_pt(u, y, w):
+    """Local point after the arch/sweep warp."""
+    r = (y / SPAN) ** 2
+    return u - SWEEP * r, y, w + ARCH * (1.0 - r)
+
+
+def blade_pt(u, y, w):                                              # overrides the flat version above: includes the warp
+    p = place_matrix() @ np.array([*_warp_pt(u, y, w), 1.0])
+    return p[:3]
+
+
 def _blade():
     prof = [(2.0, -3.0), (2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-CHORD, 2.5), (-CHORD, -3.0)]
     body = MB.prism_xz(prof, -SPAN, SPAN)
-    for sg in (1, -1):                                                    # end plates: swept, 3 mm, mostly below the blade
-        plate = [(8.0, -22.0), (8.0, 20.0), (-24.0, 36.0), (-CHORD - 8.0, 34.0), (-CHORD - 8.0, -34.0), (-46.0, -30.0)]
-        y0, y1 = (SPAN - PLATE_T, SPAN) if sg > 0 else (-SPAN, -SPAN + PLATE_T)
-        body = body + MB.prism_xz(plate, y0, y1)
-    for sg in (1, -1):                                                    # leg screws: clear through the blade, counterbored from the top
+    # centre hump with a spoon lip, rounded in plan
+    from shapely.geometry import Polygon
+    hump_plan = Polygon([(12.0, -46.0), (12.0, 46.0), (-56.0, 52.0), (-56.0, -52.0)]).buffer(-6.0).buffer(6.0)
+    hump = MB.prism_xz([(12.0, 0.5), (12.0, 7.5), (5.0, 10.5), (-10.0, 10.0), (-56.0, 8.0), (-56.0, 0.5)], -60.0, 60.0) ^ MB.prism_xy(list(hump_plan.exterior.coords)[:-1], -10.0, 40.0)
+    body = body + hump
+    for sg in (1, -1):                                                # small swept end fins, mostly hanging below the blade like the reference
+        fin = [(6.0, -16.0), (6.0, 5.0), (-22.0, 12.0), (-CHORD - 6.0, 14.0), (-CHORD - 6.0, -6.0), (-40.0, -12.0)]
+        y0, y1 = (SPAN - RIM_FIN, SPAN) if sg > 0 else (-SPAN, -SPAN + RIM_FIN)
+        body = body + MB.prism_xz(fin, y0, y1)
+    for sg in (1, -1):                                                # leg screws: clear through the blade, counterbored from the top
         for x in LEG_SCREW_X:
             u = _u_at(x)
-            body = body - Manifold.cylinder(14.0, 1.35, 1.35, 24).translate((u, sg * LEG_Y, -6.0))
-            body = body - Manifold.cylinder(3.0, 2.6, 2.6, 28).translate((u, sg * LEG_Y, 3.2))
-    return body
+            body = body - Manifold.cylinder(18.0, 1.35, 1.35, 24).translate((u, sg * LEG_Y, -6.0))
+            body = body - Manifold.cylinder(3.0, 2.6, 2.6, 28).translate((u, sg * LEG_Y, 7.5))
+    body = body.refine(10)                                            # dense enough to bend smoothly
+    def warp(v):
+        r = (v[1] / SPAN) ** 2
+        return (v[0] - SWEEP * r, v[1], v[2] + ARCH * (1.0 - r))
+    return body.warp(warp)
+
+
+def _decimate(m):
+    """The warp needs a dense mesh; flat areas collapse again.  Keep the first watertight single-body result."""
+    import fast_simplification
+    for red in (0.95, 0.9, 0.8, 0.6):
+        v, f = fast_simplification.simplify(np.asarray(m.vertices), np.asarray(m.faces), target_reduction=red, agg=3)
+        q = trimesh.Trimesh(v, f, process=True)
+        q.merge_vertices()
+        if q.is_watertight and len(q.split(only_watertight=False)) == 1:
+            return q
+    return m
 
 
 def _piece(which):
@@ -89,28 +120,36 @@ def _piece(which):
     m = MB.to_trimesh(body ^ keep)
     m.merge_vertices()
     m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
-    m.apply_translation((0.0, 0.0, TZ[which]))
+    m = _decimate(m)
+    lift = -float(m.bounds[0][2]) + 0.5
+    m.apply_translation((0.0, 0.0, lift))
+    import json, pathlib
+    p = pathlib.Path("out/stl/w3_tail_lift.json")
+    d = json.loads(p.read_text()) if p.exists() else {}
+    d[which] = lift
+    p.write_text(json.dumps(d))
     return _clean(m)
 
 
 def _leg(side):
-    """Swept leg in assembly coordinates (built for side +1, mirrored by sign), foot flange inboard with the screw beside the plate."""
+    """Tapered pylon (convex hull of a foot box and a top box that follows the warped blade underside), foot flange inboard with the screw."""
     s = side
     zf = foot_z()
     x0, x1 = FOOT_X
-    top = lambda x: blade_pt(_u_at(x), 0.0, -3.0)[2]
-    tx0, tx1 = LEG_SCREW_X[0] + 12.0, LEG_SCREW_X[1] - 12.0                # leg top spans the two screws
-    poly = [(x1, zf), (x0, zf), (tx1, top(tx1)), (tx0, top(tx0))]
-    ya, yb = LEG_Y - LEG_T / 2, LEG_Y + LEG_T / 2
-    body = MB.prism_xz(poly, min(s * ya, s * yb), max(s * ya, s * yb))
-    fl_y0, fl_y1 = (LEG_Y - 14.0, LEG_Y + LEG_T / 2)
+    tx0, tx1 = LEG_SCREW_X[0] + 12.0, LEG_SCREW_X[1] - 12.0
+    def top_box(x):
+        a = blade_pt(_u_at(x), s * LEG_Y, -3.0)
+        return _box(x - 1.0, x + 1.0, min(s * (LEG_Y - 3.0), s * (LEG_Y + 3.0)), max(s * (LEG_Y - 3.0), s * (LEG_Y + 3.0)), a[2] - 1.0, a[2] - 0.3)
+    foot = _box(x0, x1, min(s * (LEG_Y - 5.0), s * (LEG_Y + 5.0)), max(s * (LEG_Y - 5.0), s * (LEG_Y + 5.0)), zf, zf + 0.5)
+    body = Manifold.batch_hull([foot, top_box(tx0), top_box(tx1)])
+    fl_y0, fl_y1 = (LEG_Y - 14.0, LEG_Y + 5.0)
     body = body + _box(x0, x1, min(s * fl_y0, s * fl_y1), max(s * fl_y0, s * fl_y1), zf, zf + 4.0)
     sx, sy = STRUT_XY
     body = body - Manifold.cylinder(8.0, 1.35, 1.35, 24).translate((sx, s * sy, zf - 1.0))               # foot screw, from above
     body = body - Manifold.cylinder(4.0, 2.6, 2.6, 28).translate((sx, s * sy, zf + 2.0))
+    n = place_matrix()[:3, :3] @ np.array([0.0, 0.0, 1.0])
     for x in LEG_SCREW_X:                                                  # pilots for the blade screws, along the blade normal
         a = blade_pt(_u_at(x), s * LEG_Y, -3.0)
-        n = place_matrix()[:3, :3] @ np.array([0.0, 0.0, 1.0])
         body = body - _tb(a - n * 8.0, a + n * 0.5, 1.0)
     return body
 
@@ -131,12 +170,14 @@ def build(p):
 
 
 def placed():
+    import json
     from parts import w3_front as W
+    LIFT = json.loads(open('out/stl/w3_tail_lift.json').read())
     out = []
     M = place_matrix()
     for n in ("w3_tail_center", "w3_tail_left", "w3_tail_right"):
         m = trimesh.load(f"out/stl/{n}.stl")
-        m.apply_translation((0.0, 0.0, -TZ[n.split('_')[-1]]))
+        m.apply_translation((0.0, 0.0, -LIFT[n.split('_')[-1]]))
         m.apply_transform(M)
         out.append((n, m))
     for s, n in ((1, "w3_tail_leg_left"), (-1, "w3_tail_leg_right")):
