@@ -8,7 +8,8 @@ upper-link pivot boss; two screws into ears on the front diff case hold it.
 from cad import Part
 from parts.w3_front import YS
 
-DECK_Z = (-26.0, -23.0)
+DECK_Z = (-29.0, -23.0)
+TD = DECK_Z[1] - DECK_Z[0]                                           # base plate thickness
 HALF_W = 33.0
 FRONT_X = (-153.0, -22.0)
 REAR_X = (-296.0, -153.0)
@@ -20,19 +21,19 @@ SLOT_W = 3.4
 
 
 def _slot(part, x0, x1, y):
-    part.box((x0, y - SLOT_W / 2, -1.0), (x1 - x0, SLOT_W, 5.0), op="cut")
+    part.box((x0, y - SLOT_W / 2, -1.0), (x1 - x0, SLOT_W, TD + 2.0), op="cut")
 
 
 def deck(p, name, xr, limit, perimeter):
     """Staircase outline that follows the body's inner plan (3 mm inside the wall), capped at +-limit."""
-    from body3_build import hw_in, PAD_X, POST_XY
+    from body3_build import hw_in, PAD_X
     part = Part(name, "flat", "PETG")
     x0, x1 = xr
     x = x0
     while x < x1 - 1e-6:
         xe = min(x + 4.0, x1)
         w = min(limit if x < -156.0 else min(limit, 52.0), hw_in(0.5 * (x + xe)) - 3.0)
-        part.box((x, -w, 0.0), (xe - x, 2 * w, 3.0))
+        part.box((x, -w, 0.0), (xe - x, 2 * w, TD))
         x = xe
     for bx, by in HOUSING_BOLTS:
         if x0 < bx < x1:
@@ -44,10 +45,15 @@ def deck(p, name, xr, limit, perimeter):
         for px in PAD_X:
             if x0 < px < x1:
                 for sgn in (1, -1):
-                    part.cyl((px, sgn * (hw_in(px) - 7.0), -1.0), p.m2_clear, 5.0, op="cut")
-    elif x0 < POST_XY[0] < x1:                                            # body posts
+                    part.cyl((px, sgn * (hw_in(px) - 7.0), -1.0), p.m2_clear, TD + 2.0, op="cut")
+    import parts.w3_frame as FR
+    if not perimeter:                                                      # outboard tab that carries the strut foot beside the front diff case
         for sgn in (1, -1):
-            part.cyl((POST_XY[0], sgn * POST_XY[1], -1.0), 2.7, 5.0, op="cut")
+            part.box((-140.0, 30.0 if sgn > 0 else -48.0, 0.0), (8.0, 18.0, TD))
+    for fx, fy in FR.feet_xy():                                            # screws up into the frame feet
+        if x0 < fx < x1:
+            part.cyl((fx, fy, -1.0), p.m2_clear + 0.2, TD + 2.0, op="cut")
+            part.cyl((fx, -fy, -1.0), p.m2_clear + 0.2, TD + 2.0, op="cut")
     return part
 
 
@@ -139,4 +145,4 @@ def standoff(p):
 
 def build(p):
     from parts import w3_style
-    return [standoff(p), body_post(p), w3_style.wing(p, 1), w3_style.wing(p, -1), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p)
+    return [standoff(p), w3_style.wing(p, 1), w3_style.wing(p, -1), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p)

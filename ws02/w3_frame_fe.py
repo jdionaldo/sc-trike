@@ -8,20 +8,14 @@ G = E / (2 * (1 + NU)); A = np.pi * R**2; I = np.pi * R**4 / 4; J = 2 * I
 
 
 def graph():
-    (hx, hy, hz), (mx, my, mz), (rx, ry, rz) = F._tab_pos()
-    Y = F.YT
-    N = {"PE1": (-150, Y, -10), "PS2": (-135.9, Y, -14), "PM": (-86, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (-100, Y, 40), "FN": (-25, Y, 28),
-         "B1": (-200, Y, -10), "R1": (-246, 52, -10), "HT": (hx, hy, hz), "PH": (hx, 53, 40), "MU": (mx, my, mz), "R2": (rx, ry, rz), "C100": (hx, 0, hz), "C262": (rx, 0, rz)}
-    E_ = [("PE1", "PS2"), ("PS2", "PM"), ("PM", "PS1"), ("PS2", "PL"), ("PS1", "FN"), ("FN", "PL"), ("PE1", "B1"), ("B1", "R1"), ("R1", "R2"), ("HT", "PH"), ("PH", "PL"),
-          ("HT", "C100"), ("HT", "MU"), ("MU", "R2"), ("R2", "C262")]
+    N = F.nodes()
     nodes, edges = {}, []
+    mir = lambda p: (p[0], -p[1], p[2])
     for k, p in N.items():
         nodes[k + "+"] = np.array(p, float)
-        nodes[k + "-"] = np.array((p[0], -p[1], p[2]), float)
-    for a, b in E_:
-        edges.append((a + "+", b + "+")); edges.append((a + "-", b + "-"))
-    for k in ("C100", "C262"):                                  # centre cross bars are joined at y = 0
-        nodes[k + "-"] = nodes[k + "+"]
+        nodes[k + "-"] = np.array(mir(p), float)
+    for a, b, r, ta, tb in F.EDGES:
+        edges.append((a + "+", b + "+", r)); edges.append((a + "-", b + "-", r))
     return nodes, edges
 
 
@@ -33,7 +27,8 @@ def solve(loads, fixed):
             keys.append(k)
     idx = {k: next(i for i, q in enumerate(keys) if np.allclose(nodes[k], nodes[q])) for k in nodes}
     n = len(keys); K = np.zeros((6 * n, 6 * n))
-    for a, b in edges:
+    for a, b, rr in edges:
+        A = np.pi * rr**2; I = np.pi * rr**4 / 4; J = 2 * I
         pa, pb = nodes[a], nodes[b]; L = np.linalg.norm(pb - pa); ex = (pb - pa) / L
         ref = np.array([0, 0, 1.0]) if abs(ex[2]) < 0.9 else np.array([1.0, 0, 0])
         ey = np.cross(ref, ex); ey /= np.linalg.norm(ey); ez = np.cross(ex, ey)
@@ -68,7 +63,7 @@ if __name__ == "__main__":
         "front-end impact 2 g (20 N aft per pivot pad)": [("PL+", (-20.0, 0, 0)), ("PL-", (-20.0, 0, 0))],
     }
     for name, loads in cases.items():
-        nodes, edges, idx, u, K = solve(loads, os.environ.get("FIX", "R1+,R1-,R2+,R2-").split(","))
+        nodes, edges, idx, u, K = solve(loads, os.environ.get("FIX", "FP1+,FP1-,FPB+,FPB-,FPR+,FPR-,FPF+,FPF-").split(","))
         d = {k: np.linalg.norm(u[6 * idx[k]:6 * idx[k] + 3]) for k in nodes}
         k = max(d, key=d.get)
         print(f"{name}: max tip deflection {d[k]:.2f} mm at {k[:-1]}, pivot pad {d['PL+']:.2f} mm")

@@ -124,10 +124,6 @@ def details(body):
             pad = Manifold.cube((10.0, 9.9, 3.6), center=False).translate((x - 5.0, (h - 9.5) if s > 0 else -(h + 0.4), -23.0))
             body = body + pad
             body = body - cyl_m((x, s * (h - 7.0), -21.0), 0.9, 6.0)
-    zt = top_z(POST_XY[0], WALL)
-    for s in (1, -1):                                                      # roof bosses for the front body posts
-        body = body + cyl_m((POST_XY[0], s * POST_XY[1], 0.5 * (27.0 + zt + 0.4)), 4.5, zt + 0.4 - 27.0)
-        body = body - cyl_m((POST_XY[0], s * POST_XY[1], 33.0), 1.1, 14.0)
     for x in SEAM_X:                                                       # seam bosses straddling y = 0
         z = top_z(x, WALL) - 6.5
         body = body + cyl_m((x, 0.0, z), 4.0, 14.0, "y") + Manifold.cube((8.0, 14.0, 6.0), center=True).translate((x, 0.0, z + 3.0))

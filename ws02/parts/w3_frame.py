@@ -15,10 +15,11 @@ from parts.w3_style import MeshPart
 R = 3.0                      # tube radius (6 mm OD)
 Y0, Y1 = 54.6, 57.6          # ladder pad thickness (outer face of the servos / diff case ears at 54.5)
 YT = 57.6                    # ladder tube centre
-DZ = {"front": 30.0, "rear": 14.0}      # STL z shift per piece (print frame, z min near the bed)
+DZ = {"front": 30.0, "rear": 24.0}      # STL z shift per piece (print frame, z min near the bed)
 XS = -175.0                  # split across x
 HEAD = 3.0                   # screw-head clearance radius
 PIVOT = (-100.0, 40.0)
+FOOT_Z = -23.0               # top of the base plate
 SKIN_TABS = []               # (x, y, z of pad top) filled by build(); used by the body generator
 
 
@@ -57,56 +58,81 @@ def _stadium(x, z0, z1, y0, y1, r):
 
 
 def _tab_pos():
-    """Skin tab stations (x, y, node z): hoop top, mid rail, hood.  Node z = skin underside - 12 (roof), 40.4 (hood)."""
-    return [(-100.0, 30.0, _zt(-100.0) - 12.0), (-180.0, 36.0, _zt(-180.0) - 12.0), (-262.0, 38.0, 40.4)]
+    """Skin tab stations (x, y, node z): front roof, hoop top, mid rail, hood.  Node z = skin underside - 12 (roof), 40.4 (hood)."""
+    return [(-29.0, 16.0, _zt(-29.0) - 12.0), (-100.0, 30.0, _zt(-100.0) - 12.0), (-180.0, 36.0, _zt(-180.0) - 12.0), (-262.0, 38.0, 40.4)]
 
 
-def frame():
-    tabs = _tab_pos()
-    (hx, hy, hz), (mx, my, mz), (rx, ry, rz) = tabs
-    PE1, PS2, PM, PS1 = (-150.0, YT, -10.0), (-135.9, YT, -14.0), (-86.0, YT, -16.5), (-35.5, YT, -18.8)
-    PL = (PIVOT[0], YT, PIVOT[1])
-    FN = (-25.0, YT, 28.0)
-    R1 = (-246.0, 52.0, -10.0)
-    HT, MU, R2 = (hx, hy, hz), (mx, my, mz), (rx, ry, rz)
-    PHe = (hx, 53.0, PIVOT[1])
-    h = Manifold()
+def nodes():
+    """Node coordinates for the +y half (the other half is the mirror image); y = 0 nodes are shared."""
+    (fx, fy, fz), (hx, hy, hz), (mx, my, mz), (rx, ry, rz) = _tab_pos()
+    Y = YT
+    return {"PE1": (-150.0, Y, -10.0), "PS2": (-135.9, Y, -14.0), "PM": (-86.0, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (PIVOT[0], Y, PIVOT[1]), "FN": (-25.0, Y, 28.0),
+            "B1": (-200.0, Y, -10.0), "R1": (-246.0, 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
+            "C100": (hx, 0.0, hz), "C262": (rx, 0.0, rz), "FT": (fx, fy, fz), "C29": (fx, 0.0, fz), "XN": (-221.0, 0.0, 0.5 * (mz + rz) + 0.5 * 0.0 + 0.0),
+            "R2m": (rx, -ry, rz),
+            "FP1": (-135.9, 44.0, -20.0), "FPB": (-200.0, 52.5, -20.0), "FPR": (-250.0, 41.5, -20.0), "FPF": (-35.5, 28.0, -20.0)}
+
+
+# (a, b, tube radius, trim at a, trim at b): angled tubes only; the roof members are thicker (inboard, no clearance problem)
+EDGES = [("PE1", "PS2", 3.0, 0, 0), ("PS2", "PM", 3.0, 0, 0), ("PM", "PS1", 3.0, 0, 0), ("PS2", "PL", 3.0, 0, 6.0), ("PE1", "PL", 3.0, 0, 6.0),
+         ("PS1", "FN", 3.0, 0, 0), ("FN", "PL", 3.0, 0, 6.0),
+         ("PS2", "FP1", 3.0, 0, 0), ("B1", "FPB", 3.0, 0, 0), ("R1", "FPR", 3.0, 0, 0), ("PS1", "FPF", 3.0, 0, 0),
+         ("PE1", "B1", 3.0, 0, 0), ("B1", "R1", 3.0, 0, 0), ("R1", "R2", 3.5, 0, 0),
+         ("HT", "PH", 4.0, 0, 6.0), ("HT", "C100", 4.0, 0, 0), ("HT", "MU", 4.0, 0, 0), ("MU", "R2", 4.0, 0, 0), ("R2", "C262", 4.0, 0, 0),
+         ("MU", "XN", 3.5, 0, 0), ("XN", "R2m", 3.5, 0, 0),
+         ("FT", "C29", 4.0, 0, 0), ("FT", "HT", 4.0, 0, 0), ("FT", "FN", 3.5, 0, 0)]
+BALLS = {"R1": 3.5, "R2": 4.0, "HT": 4.0, "MU": 4.0, "FN": 3.5, "B1": 3.0, "FT": 4.0, "XN": 3.5, "FP1": 3.0, "FPB": 3.0, "FPR": 3.0, "FPF": 3.0}
+FEET = {"FP1": 7.0, "FPB": 9.0, "FPR": 7.6, "FPF": 10.0}      # foot pad diameters, screwed down into the base plate
+
+
+def frame(relief=False):
+    N = nodes()
+    g = 0.8 if relief else 0.0
     parts = []
-    # side ladder pads
-    parts += [_disc(PE1[0], PE1[2], Y0, Y1, 15.0)]
-    parts += [_stadium(PS2[0], -19.0, -9.0, Y0, Y1, 4.5), _stadium(PS1[0], -23.8, -13.8, Y0, Y1, 4.5)]
-    parts += [MB.prism_xz([(-92.0, -29.0), (-79.0, -29.0), (-79.0, -5.0), (-92.0, -5.0)], Y0, Y1)]
-    parts += [_disc(PL[0], PL[2], Y0, Y1, 16.0), _disc(PL[0], PL[2], 46.0, Y0, 16.0)]
-    # ladder tubes (angular fan to the pivot pad)
-    for a, b, ta, tb in ((PE1, PS2, 0, 0), (PS2, PM, 0, 0), (PM, PS1, 0, 0), (PS2, PL, 0, 6.0), (PS1, FN, 0, 0), (FN, PL, 0, 6.0)):
-        parts.append(tube(a, b, R, ta, tb))
-    # lower rail to the rear and the diagonal up to the hood tab
-    B1 = (-200.0, YT, -10.0)
-    parts += [ball(FN), tube(PE1, B1), ball(B1), tube(B1, R1), ball(R1), tube(R1, R2), ball(R2)]
-    # hoop: leg to the pivot pad, shallow arch over the top, rail aft
-    parts += [tube(HT, PHe, R, 0, 6.0), ball(HT), tube(HT, (hx, 0.0, hz)), tube(HT, MU), ball(MU), tube(MU, R2), tube(R2, (rx, 0.0, rz))]
-    # skin tab pads (screw up into the bosses on the skin)
-    for (x, y, z) in tabs:
-        parts.append(_vcyl(x, y, z + 1.0, z + 5.0, 9.0))
-    side = Manifold.batch_boolean(parts, 0) if hasattr(Manifold, "batch_boolean") else None
-    if side is None:
-        side = parts[0]
-        for p in parts[1:]:
-            side = side + p
-    # holes
-    cuts = []
-    for x, z in ((-150.0, -10.0),):
-        cuts.append(_disc(x, z, Y0 - 0.1, Y1 + 4.0, 2.7))
+    for a, b, r, ta, tb in EDGES:
+        parts.append(tube(N[a], N[b], r + g, ta, tb))
+    for k, r in BALLS.items():
+        parts.append(ball(N[k], r + g))
+    if relief:
+        parts.append(_disc(PIVOT[0], PIVOT[1], 45.0, Y0, 17.6))
+    else:
+        PE1, PS2, PM, PS1, PL = N["PE1"], N["PS2"], N["PM"], N["PS1"], N["PL"]
+        parts += [_disc(PE1[0], PE1[2], Y0, Y1, 15.0), _stadium(PS2[0], -19.0, -9.0, Y0, Y1, 4.5), _stadium(PS1[0], -23.8, -13.8, Y0, Y1, 4.5)]
+        parts += [MB.prism_xz([(-92.0, -29.0), (-79.0, -29.0), (-79.0, -5.0), (-92.0, -5.0)], Y0, Y1)]
+        parts += [_disc(PL[0], PL[2], Y0, Y1, 16.0), _disc(PL[0], PL[2], 46.0, Y0, 16.0)]
+        for (x, y, z) in _tab_pos():
+            parts.append(_vcyl(x, y, z + 1.0, z + 5.0, 9.0))
+        for k, d in FEET.items():
+            x, y, z = N[k]
+            parts.append(_vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d))
+    side = parts[0]
+    for p in parts[1:]:
+        side = side + p
+    if relief:
+        return side + side.mirror((0.0, 1.0, 0.0))
+    cuts = [_disc(-150.0, -10.0, Y0 - 0.1, Y1 + 4.0, 2.7)]
     for x, z in ((-135.9, -19.0), (-135.9, -9.0), (-35.5, -23.8), (-35.5, -13.8), (-86.9, -19.0), (-86.5, -9.5), (-84.5, -23.8), (-84.5, -13.8)):
         cuts.append(_disc(x, z, Y0 - 0.1, Y1 + 4.0, 2.4))
         cuts.append(_disc(x, z, Y1, Y1 + 4.0, 2 * HEAD))
-    cuts.append(_disc(PL[0], PL[2], 45.0, Y1 + 0.1, 3.4))
-    for (x, y, z) in tabs:
+    cuts.append(_disc(PIVOT[0], PIVOT[1], 45.0, Y1 + 0.1, 3.4))
+    for (x, y, z) in _tab_pos():
         cuts.append(_vcyl(x, y, z, z + 6.0, 2.7))
+    for k in FEET:
+        x, y, z = N[k]
+        cuts.append(_vcyl(x, y, FOOT_Z - 0.1, FOOT_Z + 2.0, 2.2))                 # self-tapping pilot for the base-plate screw
     for c in cuts:
         side = side - c
-    both = side + side.mirror((0.0, 1.0, 0.0))
-    return both
+    return side + side.mirror((0.0, 1.0, 0.0))
+
+
+def relief():
+    """Tubes and nodes grown by 0.8 mm (no pads, no tab pads): subtracted from the skin where tubes pass through it."""
+    return frame(relief=True)
+
+
+def feet_xy():
+    N = nodes()
+    return [(N[k][0], N[k][1]) for k in FEET]
 
 
 _CACHE = {}
@@ -142,21 +168,3 @@ def placed():
         m.apply_translation((0.0, 0.0, -DZ["front" if n.endswith("front") else "rear"]))
         out.append((n, m))
     return out
-
-
-def relief():
-    """Tubes and nodes grown by 0.8 mm (no pads, no tab pads): subtracted from the skin where tubes pass through it."""
-    tabs = _tab_pos()
-    (hx, hy, hz), (mx, my, mz), (rx, ry, rz) = tabs
-    rr = R + 0.8
-    PE1, PS2, PM, PS1 = (-150.0, YT, -10.0), (-135.9, YT, -14.0), (-86.0, YT, -16.5), (-35.5, YT, -18.8)
-    PL, FN, R1 = (PIVOT[0], YT, PIVOT[1]), (-25.0, YT, 28.0), (-246.0, 52.0, -10.0)
-    HT, MU, R2, PHe = (hx, hy, hz), (mx, my, mz), (rx, ry, rz), (hx, 53.0, PIVOT[1])
-    ts = [tube(PE1, PS2, rr), tube(PS2, PM, rr), tube(PM, PS1, rr), tube(PS2, PL, rr, 0, 6.0), tube(PS1, FN, rr), tube(FN, PL, rr, 0, 6.0),
-          tube(PE1, (-200.0, YT, -10.0), rr), tube((-200.0, YT, -10.0), R1, rr), tube(R1, R2, rr), ball((-200.0, YT, -10.0), rr), tube(HT, PHe, rr, 0, 6.0), tube(HT, (hx, 0.0, hz), rr), tube(HT, MU, rr), tube(MU, R2, rr), tube(R2, (rx, 0.0, rz), rr),
-          ball(R1, rr), ball(R2, rr), ball(HT, rr), ball(MU, rr), ball(FN, rr)]
-    ts.append(_disc(PL[0], PL[2], 45.0, Y0, 17.6))
-    h = ts[0]
-    for t in ts[1:]:
-        h = h + t
-    return h + h.mirror((0.0, 1.0, 0.0))
