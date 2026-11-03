@@ -85,8 +85,13 @@ def skid(p):
     from body3_build import NOSE_TH, NOSE_LOW
     def fn():
         body = _box(0.0, 39.6, -40.0, 40.0, 0.0, 3.0)
-        for v in (-30.0, -18.0, -6.0, 6.0, 18.0, 30.0):
+        for v in (-36.0, -30.0, 30.0, 36.0):                                   # vertical slits at each side
             body = body - _box(6.0, 28.0, v - 1.7, v + 1.7, -1.0, 4.0)
+        clip = _box(6.0, 34.0, -18.0, 18.0, -1.0, 4.0)                          # a big X in the middle
+        ang = math.degrees(math.atan2(17.0, 14.0))
+        for sg in (1, -1):
+            bar = Manifold.cube((60.0, 4.6, 5.0), center=True).rotate((0.0, 0.0, sg * ang)).translate((20.0, 0.0, 1.5))
+            body = body - (bar ^ clip)
         for u in (10.0, 28.0):
             for v in (-22.0, 22.0):
                 body = body - Manifold.cylinder(5.0, p.m2_clear / 2, p.m2_clear / 2, 24).translate((u, v, -1.0))
@@ -98,6 +103,9 @@ def skid(p):
                 tab = tab - Manifold.cylinder(3.2, 1.35, 1.35, 24).translate((x_, sg * y_, DECK_Z[0] - 0.1)) - Manifold.cylinder(1.6, 2.5, 1.35, 24).translate((x_, sg * y_, DECK_Z[0] - 0.1))
         inv = np.linalg.inv(sk)
         body = body + tab.transform(inv[:3, :4])
+        j0 = _box(37.6, 39.6, -33.0, 33.0, 0.0, 3.0)                              # smooth join: hull from the grate's lower end to the tab's near edge
+        j1 = (tab ^ _box(TAB_X[1] - 1.0, TAB_X[1], -33.0, 33.0, DECK_Z[0], DECK_Z[0] + 3.0)).transform(inv[:3, :4])
+        body = body + Manifold.batch_hull([j0, j1])
         m = _clean(MB.to_trimesh(body))
         lift = -float(m.bounds[0][2])
         m.apply_translation((0.0, 0.0, lift))                                   # the tab hangs below the plate in the print frame: lift it onto the bed

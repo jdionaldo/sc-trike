@@ -23,7 +23,7 @@ NOSE_LOW = (-1.0, -26.0)                              # where the nose underside
 NOSE_TH = math.atan2(53.0, 35.0)                      # underside slope (56.6 deg)
 TAIL = [(-299.0, 50.0), (-341.5, 66.4), (-348.1, 83.3)]                # new tail from the owner's markup: underside rising to the tail-light face, then the roof
 SIDE = [(34, 40), (34, 27), NOSE_LOW, (-299, -26)] + TAIL + [(-259, 97)]   # straight roofline, flat vertical nose face, short raked tail
-HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-243, 52), (-262, 43), (-300, 42), (-340, 40), (-348, 38.5)]
+HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-245, 61), (-254, 59), (-258, 57.5), (-266, 47.5), (-280, 43.5), (-300, 42.5), (-340, 40), (-348, 38.5)]
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
 
 
@@ -137,6 +137,8 @@ def details(body):
     body = body - hole + wedge - chan
     for k in range(-4, 5):                                            # nose light bar: a row of 3 mm LED holes (3.2 mm) through the front wall, 7 mm pitch
         body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 30.75))
+    wedge, cav = hood_scoop()
+    body = body + wedge - cav                                         # hood scoop, 50 % of the hood width
     th = NOSE_TH                                                          # the skid plate screws into the frame's nose pads through these holes
     for u_ in (10.0, 28.0):
         for sy in (1, -1):
@@ -251,6 +253,17 @@ def flank_vent(tri, blade=4.5):
     return hole, scoop, chan
 
 
+def hood_scoop(xf=-6.0, xr=-46.0, hw=22.0, h=9.0):
+    """Ram-air scoop on the front hood: a raised wedge (mouth faces forward, height h at the mouth, flush with the hood at the rear), half the hood width
+    (hw each side of centre), with a cavity open at the mouth and a hole through the hood floor.  Returns (wedge, cavity)."""
+    zt = lambda x: top_z(x, 0.0)
+    wedge = MB.prism_xz([(xf, zt(xf) - 1.0), (xf, zt(xf) + h), (xr, zt(xr)), (xr, zt(xr) - 1.0)], -hw, hw)
+    xc = xr + 8.0
+    k = lambda x: h * (x - xr) / (xf - xr)                                         # wedge height above the hood at x
+    cav = MB.prism_xz([(xf + 3.0, zt(xf) - WALL), (xf + 3.0, zt(xf) + k(xf) - WALL), (xc, zt(xc) + k(xc) - WALL), (xc, zt(xc) - WALL)], -(hw - WALL), hw - WALL)
+    return wedge, cav
+
+
 def roof_gills(x0, x1, y0, y1, n=4, slat=3.0, shift=8.0, blade=3.6):
     """Roof exhaust over the motor: n slanted slots across y; each is covered by a wedge that grows out of the roof at its front edge and rises
     3.6 mm at the rear, with closed ends (1.2 mm cheeks): the only opening is a slot in the wedge's rear face.  Returns (cuts, wedges, channels)."""
@@ -290,8 +303,7 @@ def main():
         body = body - MB.prism_xz(wpts, y0, y1)
         y0, y1 = (30.0, 52.0) if s > 0 else (-52.0, -30.0)                    # servo level: leave the upper shoulder as the frame's top beam
         body = body - MB.prism_xz(lpts, y0, y1)
-    body = body - Manifold.cube((46.0, 46.0, 90.0), center=True).translate((-278.0, 59.0, 0.0))    # rear arm leaves the body, left
-    body = body - Manifold.cube((46.0, 46.0, 90.0), center=True).translate((-278.0, -59.0, 0.0))   # mirrored
+    # (the old rear-arm exit windows are gone: the wall is solid and only the arm's own swept volume is carved, in swing_channels)
     body = body - Manifold.cube((16.0, 30.0, 22.0), center=True).translate((-241.8, 21.0, 0.0))     # drive shaft tunnel through the rear bulkhead
     body = body - Manifold.cube((6.0, 300.0, 6.0), center=True).translate((-241.8, 0.0, -25.0))      # the rear deck passes under the bulkhead
     for y_ in (2.0, 35.0):
