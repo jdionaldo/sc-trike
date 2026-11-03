@@ -66,7 +66,7 @@ def _box(x0, x1, y0, y1, z0, z1):
     return Manifold.cube((x1 - x0, y1 - y0, z1 - z0), center=False).translate((x0, y0, z0))
 
 
-ARCH, SWEEP = 12.0, 8.0            # angular dihedral: flat centre |y| <= FLAT, outer panels slope down by ARCH and sweep rearward by SWEEP
+ARCH, SWEEP = 12.0, -8.0           # angular dihedral: flat centre |y| <= FLAT, outer panels slope down by ARCH and sweep FORWARD by 8 mm (negative = forward)
 FLAT = 50.0
 FIN = 3.0
 
