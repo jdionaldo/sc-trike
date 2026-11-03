@@ -11,6 +11,9 @@ DECK_Z = (-29.0, -23.0)
 TD = DECK_Z[1] - DECK_Z[0]                                           # base plate thickness
 FRONT_X = (-153.0, -2.5)
 SERVO_DROP = 3.0                           # the lean servos' bottoms sit at the base plate's underside: their trays hang 3 mm below it (the front deck prints top-down)
+# base plate outline (x, half width), as drawn along the cage: a diagonal out from the nose to the cage's widest tubes, a straight run, then one long diagonal in to the tail;
+# both decks read the same table, so the seam at x -153 is flush
+PLAN = [(-2.5, 36.0), (-34.0, 54.5), (-210.0, 54.5), (-296.0, 37.5)]
 PL = 50.0                                  # grate length along the slope: up to just below the bumper bar
 TAB_X = (-13.0, 0.6)                       # the grate's foot tab (assembly x), lies in a rebate under the front base plate
 TAB_SCREWS = ((-8.0, 26.0), (-3.0, 12.0))  # (x, |y|) countersunk screws from below, into the base plate
@@ -48,22 +51,24 @@ def deck(p, name, xr, limit, perimeter):
     from parts.w3_style import MeshPart, _clean
     x0, x1 = xr
     def fn():
-        xs = list(np.arange(x0, x1, 2.0)) + [x1]
-        up = [(float(x), float(min(33.0 + (limit - 33.0) * min(max((-x - 140.0) / 30.0, 0.0), 1.0), hw_in(min(max(x, -299.0), 29.0)) - 3.0))) for x in xs]   # one smooth width law for both decks: the seam at x -153 is flush
+        xs = sorted(set(list(np.arange(x0, x1, 2.0)) + [x1] + [px for px, _ in PLAN if x0 <= px <= x1]))
+        up = [(float(x), float(np.interp(x, [px for px, _ in reversed(PLAN)], [pw for _, pw in reversed(PLAN)]))) for x in xs]
         pts = up + [(x, -w) for x, w in reversed(up)]
         body = MB.prism_xy(pts, 0.0, TD)
-        if not perimeter:                                                  # outboard tab that carries the strut foot beside the front diff case
-            for sgn in (1, -1):
-                body = body + _box(-140.0, -132.0, 30.0 if sgn > 0 else -48.0, 48.0 if sgn > 0 else -30.0, 0.0, TD)
+        if not perimeter:
             for sgn in (1, -1):                                            # servo trays: floor plates with an inner lip (the frame tubes at |y| 55 are the outer wall) under the lean (z -29 bottom) and steering servos
                 def side(y0, y1):
                     return (y0, y1) if sgn > 0 else (-y1, -y0)
                 for x0_, x1_, zf_, zl_ in ((-79.5, -41.0, -SERVO_DROP, 8.0), (-134.0, -88.0, 0.0, 5.8)):
                     ztop = 0.0 if zf_ < 0 else 4.5
                     body = body + _box(x0_, x1_, *side(31.0, 54.5), zf_, ztop)
-                    body = body + _box(x0_, x1_, *side(31.0, 34.9), zf_, zl_)
+                    body = body + _box(x0_, x1_, *side(31.0, 35.0), zf_, zl_)
         cuts = []
         if not perimeter:
+            for sgn in (1, -1):                                            # servo pockets: the plate steps down to the tray floor under each servo's footprint
+                yy = (35.0, 57.0) if sgn > 0 else (-57.0, -35.0)
+                cuts.append(_box(-81.0, -39.0, yy[0], yy[1], 0.0, TD + 0.1))
+                cuts.append(_box(-134.0, -88.0, yy[0], yy[1], 4.5, TD + 0.1))
             cuts.append(_box(TAB_X[0] - 0.3, x1 + 1.0, -33.2, 33.2, -1.0, 3.2))                               # rebate for the grate's foot tab: continuous underside
             for tx, ty in TAB_SCREWS:
                 for sg in (1, -1):
