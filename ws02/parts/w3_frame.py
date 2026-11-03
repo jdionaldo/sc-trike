@@ -145,7 +145,7 @@ def frame(relief=False):
     for p in parts[1:]:
         side = side + p
     if relief:
-        return side + side.mirror((0.0, 1.0, 0.0)) + shock_tab(True)
+        return side + side.mirror((0.0, 1.0, 0.0))
     cuts = [_disc(-150.0, -10.0, Y0 - 0.1, Y1 + 4.0, 2.7)]
     for x, z in ((-135.9, -19.0), (-135.9, -9.0), (-35.5, -23.8), (-35.5, -13.8), (-86.9, -19.0), (-86.5, -9.5), (-84.5, -23.8), (-84.5, -13.8)):
         cuts.append(_disc(x, z, Y0 - 0.1, Y1 + 4.0, 2.4))
@@ -164,18 +164,16 @@ def frame(relief=False):
     return (side + side.mirror((0.0, 1.0, 0.0))) + shock_tab() - motor_envelope()
 
 
-def shock_tab(relief=False):
-    """Left side only: a stout tube from the rear hoop node R2 out through the skin to a plate with the coilover's upper bolt boss (the tube is the only part inside the skin).
-    The plate and boss lie outside the skin, so the relief is just the grown tube."""
+def shock_tab():
+    """Left side only: the coilover's upper bolt lug, a plate hulled from the eye position back onto the rear hoop's cross tube (R2 - C262), with a boss on its centre side.
+    Inside the skin, so it needs no relief."""
     from parts import w3_shock as SK
     tx, tz = SK.tab_xz()
+    rx, _, rz = nodes()["R2"]
     y0, y1 = SK.PLATE_Y
-    r = SK.TAB_TUBE_R + (RELIEF_G if relief else 0.0)
-    a, e = np.array(nodes()["R2"]), np.array((tx, 0.5 * (y0 + y1), tz))
-    if relief:
-        return tube(a, e, r, 0.0, 1e-6)
-    m = tube(a, e, r, 0.0, 1e-6) + _disc(tx, tz, y0, y1, 2 * SK.LUG_R + 2.0) + _disc(tx, tz, y1 - 0.1, SK.BOSS_Y1, 2 * SK.BOSS_R)
-    return m - _disc(tx, tz, y0 - 0.5, SK.BOSS_Y1 + 0.5, SK.PIN_D)
+    plate = Manifold.batch_hull([_disc(tx, tz, y0, y1, 2 * SK.HOOP_R), _disc(rx, rz, y0, y1, 2 * SK.HOOP_R)])
+    m = plate + _disc(tx, tz, SK.BOSS_Y[0], y0 + 0.1, 2 * SK.BOSS_R)
+    return m - _disc(tx, tz, SK.BOSS_Y[0] - 0.5, y1 + 0.5, SK.PIN_D)
 
 
 def motor_envelope():

@@ -140,10 +140,14 @@ from parts import w3_shock as SK
 _dn, _up = SK.travel_angles()
 lever = min(SK.mount_lever(a_) for a_ in np.linspace(_dn, _up, 15))
 Fshock = N_r * lever
-sig = Fshock * (0.5 * sum(SK.PLATE_Y) + 4.0 - 38.0) / (math.pi * SK.TAB_TUBE_R ** 3 / 4)          # tab tube, cantilever from node R2 (y 38) to the eye plane
-rows.append((f"Rear shock tab tube (13 mm, 46 mm cantilever from the cage), shock force {Fshock:.0f} N at 3 g landing", sf(sig)))
-sig = Fshock * 12.0 / (9.0 * 11.0 ** 2 / 6)                                                        # arm lug pillar, 9 x 11 mm section, 12 mm lever
-rows.append(("Rear shock lug on the swing arm (pillar bending), 3 g landing", sf(sig)))
+arm_y = SK.HOOP_Y - 0.5 * sum(SK.PLATE_Y)                                                           # cross tube length, leg plane to lug plate
+sig = Fshock * arm_y / (math.pi * SK.HOOP_R ** 3 / 4)                                                # cross tube, cantilever from the leg corner
+rows.append((f"Rear shock hoop cross tube (13 mm, {arm_y:.0f} mm cantilever), shock force {Fshock:.0f} N at 3 g landing", sf(sig)))
+Lleg = math.hypot(*(np.array(SK.HOOP_XZ) - np.array([D.XR - 55.0 * 0.94, -17.0])))
+sb, tt = 0.5 * Fshock * Lleg / (math.pi * SK.LEG_R ** 3 / 4), 0.5 * Fshock * arm_y / (math.pi * SK.LEG_R ** 3 / 2)      # two legs share the load
+rows.append((f"Rear shock hoop leg (13 mm, two legs share), bending over {Lleg:.0f} mm plus twist from the {arm_y:.0f} mm cross tube", sf(math.sqrt(sb ** 2 + 3 * tt ** 2))))
+sig = Fshock * 17.0 / (4.5 * 13.0 ** 2 / 6)                                                           # upper lug plate, 4.5 x 13 mm section, 17 mm from the eye to the hoop tube
+rows.append(("Rear shock upper lug plate (bending), 3 g landing", sf(sig)))
 lines = ["# WS-03 strength checks", "",
          f"Loads: 3 g landing, front wheel {N_f:.1f} N, rear wheel {N_r:.1f} N, cornering force 0.6 x load. Beam FE on the real tube graphs (PETG E 1500 MPa), "
          f"design stress 25 MPa. Factor of safety below 2 is flagged.", "",

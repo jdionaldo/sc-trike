@@ -39,7 +39,8 @@ def rear_arm_mats():
     dx, dz = (ax - px) / L, (az - pz) / L
     nx, nz = dz, -dx
     rows = [[dx, nx, 0], [0, 0, 1], [dz, nz, 0]]
-    return rows, (px, 46.0, pz), L
+    from parts import w3_shock as SK
+    return rows, (px, 46.0 - SK.WOFF, pz), L
 
 
 def assembly(phi_deg=0.0, steer=None):

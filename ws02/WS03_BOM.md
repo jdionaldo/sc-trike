@@ -27,8 +27,8 @@ All sizes below are assumptions from the 1/10 and 1/18 RC parts we planned aroun
 | Ball studs / rod ends M2 | 8 | tie rods and lean rods |
 | Steel turnbuckles 3 mm with ball ends, about 105 mm | 2 | steer tie rods (the printed tie rod is only an envelope; printed it buckles at 29 N against a 98 N servo stall) |
 | Kingpins 4 mm steel, about 30 mm | 2 | hang from the carrier tabs |
-| Rear coilover shock, 1/10 aluminium, about 55 mm closed / 80 mm open eye to eye (25 mm stroke), 3 mm eyes, adjustable spring, about 25 g | 1 | `b_rear_shock`, left side, outside the skin. Suggested stock part: a 70 to 80 mm 1/10 crawler/buggy coilover with spring of about 22 mm OD (for example the generic aluminium '70 mm' / '80 mm' class sold by Injora or Yeah Racing; **check the eye-to-eye lengths and the eye width (about 5.5 mm) before buying**, the printed lug and tab are sized to those). A longer shock does not fit; a shorter one bottoms in bump. Spring rate: soft, about 0.3 to 0.5 N/mm at the shock |
-| Turnbolts M3 x 14 with ball ends (or M3 screws, washers, lock nuts) | 2 | lower eye in the arm lug, upper eye in the cage tab; eye sits 0.4 mm off the lug boss (washer) |
+| Rear coilover shock, 1/10 aluminium, about 55 mm closed / 80 mm open eye to eye (25 mm stroke), 3 mm eyes, adjustable spring, about 25 g | 1 | `b_rear_shock`, inside the body over the rear tyre, 12 mm left of the centre line. Suggested stock part: a 70 to 80 mm 1/10 crawler/buggy coilover with spring of about 22 mm OD (for example the generic aluminium '70 mm' / '80 mm' class sold by Injora or Yeah Racing; **check the eye-to-eye lengths and the eye width (about 5.5 mm) before buying**, the printed lug and tab are sized to those). A longer shock does not fit; a shorter one bottoms in bump. Spring rate: soft, about 0.3 to 0.5 N/mm at the shock |
+| Turnbolts M3 x 14 with ball ends (or M3 screws, washers, lock nuts) | 2 | lower eye in the hoop lug, upper eye in the cage lug; each eye sits 0.4 mm off its boss (washer) |
 | Screws M2, M2.5 and heat-set inserts | assorted | pads, ears, deck, housings |
 | Antenna tube | 1 | tail post |
 
@@ -64,11 +64,11 @@ The centre diff stays so the front axle and the rear wheel never fight each othe
 Hobbywing QuicRun Fusion SE (36 x 58.1 mm, 201 g, ESC built in) goes on the side opposite the driveline: shaft line and gear cases are at y +21, so the motor sits at y -21, high (z about 32) at the rear, which brings the sideways centre of gravity from 4.9 mm to about 1.4 mm (centre of gravity left of centre) and the front weight share from 60.6 % to about 59 %. It is also the only position where the fit check (WS03_FIT.md) found room for the can.
 Consequence: the motor pinion can no longer mesh directly with the centre-diff ring (they are 42 mm apart in y), so the reduction needs a cross-over stage (a pinion on a short cross shaft, or two idlers) when the gearbox is redrawn around the stock Axial gears.
 
-## Rear coilover mounts (printed, added 2026-11-03)
+## Rear coilover mounts (printed, hoop version, 2026-11-03)
 
 | part | where | notes |
 |---|---|---|
-| Shock lug (`w3_rear_arm`, same part) | pillar on the swing arm's outer plane at u 50 / v 22 from the pivot, 4.5 mm plate + 4.4 mm boss, 3.2 mm hole along y | PETG, arm prints as before; the lug is one layer stack |
-| Shock tab (`w3_frame_rear`, same part) | 13 mm tube from cage node R2 out through the skin (slot cut by the frame relief and the swing channel) to a plate with a boss and 3.2 mm hole | left side only, PETG; frame piece stays within the bed |
+| Shock hoop (in `w3_rear_arm`, same part) | two 13 mm legs from the arm's outer-plane top rail (u 55 and at the axle) up behind the tyre to a corner at x -440 / z 36 (8 mm over the tyre), then a 13 mm cross tube over the tyre to a lug plate with a bolt boss, 3.2 mm hole along y | PETG; prints with the lower boss on the bed (the arm part is now 66 mm tall in print, supports on); hoop swings with the arm |
+| Shock upper lug (in `w3_frame_rear`, same part) | plate on the rear hoop's cross tube (R2 to C262) with a boss, 3.2 mm hole | left side only, inside the skin |
 
-Eye to eye over the travel (arm angle -12.4 to +15.5 deg, 20 mm droop to 25 mm bump): 79.5 mm at full droop, 71.6 mm at rest, 60.5 mm at full bump, so the shock is about 66 % extended at rest, has 0.5 mm spare at full droop and 5.5 mm before bottoming (`tests/test_w3.py::test_rear_shock_length`).
+The shock sits at y 12, inside the body. Eye to eye over the travel (arm angle -12.4 to +15.5 deg, 20 mm droop to 25 mm bump): 79.5 mm at full droop, 70.9 mm at rest, 60.5 mm at full bump: about 64 % extended at rest, 0.5 mm spare at full droop, 5.5 mm before bottoming (`tests/test_w3.py::test_rear_shock_length`). The skin's floor and rear lip are slotted where the hoop, shock and swinging skin cross (the swing channels), as for the swing arm.

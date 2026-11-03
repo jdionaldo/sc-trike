@@ -64,7 +64,7 @@ def swing_channels(theta_max=THETA_MAX, step=STEP):
     skin leaves open-ended channels the tubes slide out of as the skin swings up."""
     rel = FR.relief() + FR.frame()                               # grown tubes plus the pads, lugs and plates (the real frame solid)
     for n, m in fixed_parts():                                   # inner printed parts the skin's lower rear (below the hinge axis it swings rearward) would also hit
-        if n in ("w3_rbc_upper", "w3_rbc_lower", "w3_deck_front", "b_rear_shaft"):
+        if n in ("w3_rbc_upper", "w3_rbc_lower", "w3_deck_front", "b_rear_shaft", "b_rear_shock"):
             rel = rel + m
     for n, m in fixed_parts():                                   # the rear arm lies against the wall's lower part: carve it (and a 0.4 mm margin) at rest and along the swing
         if n == "w3_rear_arm":
@@ -127,4 +127,8 @@ def rear_travel_channels(up_mm=25.0, down_mm=20.0, margin=3.0):
         for part in (env, arm_env):
             p = rot_pivot(part, float(k))
             acc = p if acc is None else acc + p
+    from parts import w3_shock as SK                                           # the coilover's envelope over the travel (the shock is not rigid with the arm)
+    for k in range(int(a0), int(a1) + 2):
+        sh = SK.shock_manifold(float(k))
+        acc = acc + sh + sh.translate((0, 0, 0.4)) + sh.translate((0, 0, -0.4))
     return acc

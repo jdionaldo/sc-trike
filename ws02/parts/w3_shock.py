@@ -8,14 +8,16 @@ import numpy as np
 from manifold3d import Manifold
 
 LMIN, LMAX = 55.0, 80.0           # purchased shock, eye to eye
-LUG_UV = (50.0, 22.0)             # lower eye in the arm frame: u along the arm from the pivot, v across it (up at rest)
 L_DROOP, L_BUMP = 79.5, 60.5      # eye to eye at 20 mm droop / 25 mm bump: 0.5 mm spare at full extension, 5.5 mm before bottoming
-PLATE_Y = (72.5, 77.0)            # lug / tab plate |y| range
-BOSS_Y1 = 81.4                    # bolt boss end face
-EYE_Y = (81.8, 87.3)              # shock eye (0.4 mm off the boss: a washer)
-SHOCK_Y = 0.5 * sum(EYE_Y)        # shock axis plane
+HOOP_XZ = (-440.0, 36.0)          # hoop top corner (assembly x, z at rest): behind the skin's rear face, 8 mm over the tyre; the lower eye sits here
+HOOP_Y = 70.0                     # the hoop's legs lie in the arm's outer plane (y)
+SHOCK_Y = 12.0                    # shock axis plane: inside the body, 12 mm left of the centre line
+EYE_Y = (SHOCK_Y - 2.75, SHOCK_Y + 2.75)          # 5.5 mm eye
+BOSS_Y = (EYE_Y[1] + 0.4, EYE_Y[1] + 0.4 + 4.4)   # bolt boss (0.4 mm washer gap to the eye)
+PLATE_Y = (BOSS_Y[1], BOSS_Y[1] + 4.5)            # lug plates on the +y side of the bosses; their host tubes come from +y
 LUG_R, BOSS_R, PIN_D = 5.5, 4.6, 3.2
-TAB_TUBE_R = 6.5
+HOOP_R, LEG_R = 6.5, 6.5          # cross tube / legs (13 mm OD)
+WOFF = 46.0 - BOSS_Y[0]           # arm print frame: w = y - (46 - WOFF) = y - BOSS_Y[0], so the lower bolt boss is the lowest layer on the bed
 
 
 def _geom():
@@ -37,9 +39,23 @@ def travel_angles(up_mm=25.0, down_mm=20.0):
 def lug_point(deg=0.0):
     """Lower eye (x, z) with the arm swung `deg` about the pivot."""
     P, d, n, _ = _geom()
-    q = LUG_UV[0] * d + LUG_UV[1] * n
+    q = np.array(HOOP_XZ) - P
     a = math.radians(deg)
     return P + np.array([math.cos(a) * q[0] + math.sin(a) * q[1], -math.sin(a) * q[0] + math.cos(a) * q[1]])
+
+
+def _lug_uv():
+    P, d, n, _ = _geom()
+    q = np.array(HOOP_XZ) - P
+    return float(q @ d), float(q @ n)
+
+
+def hoop_arm_points():
+    """Hoop nodes in the arm print frame (u, v, w): leg feet on the outer plane's top rail (two stations), the top corner B (the lower eye), and the end C of the cross tube."""
+    L = _geom()[3]
+    u, v = _lug_uv()
+    wo = HOOP_Y - (46.0 - WOFF)
+    return {"A1": (55.0, 9.5, wo), "A2": (L - 4.0, 9.5, wo), "B": (u, v, wo), "C": (u, v, 0.5 * (PLATE_Y[0] + PLATE_Y[1]) - BOSS_Y[0])}
 
 
 def _tab():

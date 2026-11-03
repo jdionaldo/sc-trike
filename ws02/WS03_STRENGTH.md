@@ -12,5 +12,6 @@ Loads: 3 g landing, front wheel 14.3 N, rear wheel 18.6 N, cornering force 0.6 x
 | Upper link (6 mm bar), buckling under 16 N | 5.9 | ok |
 | Carrier kingpin cantilever tube (brace ignored), 3 g landing | 7.3 | ok |
 | Knuckle steering V tubes, axial at servo stall | 5.8 | ok |
-| Rear shock tab tube (13 mm, 46 mm cantilever from the cage), shock force 40 N at 3 g landing | 3.3 | ok |
-| Rear shock lug on the swing arm (pillar bending), 3 g landing | 9.4 | ok |
+| Rear shock hoop cross tube (13 mm, 48 mm cantilever), shock force 43 N at 3 g landing | 2.6 | ok |
+| Rear shock hoop leg (13 mm, two legs share), bending over 59 mm plus twist from the 48 mm cross tube | 3.4 | ok |
+| Rear shock upper lug plate (bending), 3 g landing | 4.3 | ok |
