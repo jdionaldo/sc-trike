@@ -186,14 +186,8 @@ def details(body):
     p0, p1 = np.array([bx, bz]) + dvec * 3.0, np.array([cx_, cz_]) - dvec * 3.0
     quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
     body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
-    body = body + windscreen() + canopy_cover()[0]
-    body = body - canopy_cover()[1] - canopy_cut()
-    # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
-    for s_ in (1, -1):
-        rect = [(back(-237.0), s_ * 5.0), (back(-205.0), s_ * 5.0), (back(-205.0), s_ * 37.0), (back(-237.0), s_ * 37.0)]
-        body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))                    # shallow pocket so the blades blend into the roof
-    cuts, wedges, chans = roof_gills(back(-233.0), back(-209.0), 8.0, 34.0)
-    body = body - cuts + wedges - chans
+    body = body - canopy_cut() + canopy_cage()
+    body = body + roof_dam() - roof_dam_cavity()                                # one big air dam over the motor, opening forward
     import parts.w3_frame as _FR                                                           # hinge ears: the skin flips up on a pin through these and the frame's lugs
     for s in (1, -1):
         zt_ = top_z(_FR.HINGE_PIN[0], WALL) + 0.4
@@ -216,7 +210,6 @@ CX_WAIST, CX_K = -211.0, STRETCH / 360.0 + 1.0          # canopy centred at 52 %
 CANOPY_HALF = [(CX_WAIST + (x - -165.0) * CX_K, y) for x, y in [(-198, 18), (-189, 27), (-178, 27), (-165, 17), (-152, 27), (-141, 27), (-132, 18)]]   # hourglass opening (y > 0 side), pinched at the waist
 CX_FRONT, CX_REAR = CANOPY_HALF[-1][0], CANOPY_HALF[0][0]
 RIM = 4.0                                                                  # 45-degree rim chamfer width
-SCREEN = dict(xf=CX_FRONT + 45.0, xr=CX_FRONT, wf=20.0, wr=32.0, h=16.0, top_in=7.0)   # windscreen: raked wedge rising rearward to a header over the canopy front edge
 
 
 def canopy_cut():
@@ -238,31 +231,36 @@ def canopy_cut():
 COVER_H, COVER_IN = 18.0, 9.0          # canopy cover: height over the roof, and how far the top is drawn in (45-degree-ish leaning sides)
 
 
-def canopy_cover():
-    """Covered canopy: a convex, angular hull over the hourglass opening (base ring outside the 45-degree rim, top drawn in), returned as
-    (outer solid, cavity).  The cavity opens down into the cockpit cut, so the cover is a 2.4 mm roof-and-wall shell."""
-    base = MultiPoint(CANOPY_HALF + [(x, -y) for x, y in CANOPY_HALF]).convex_hull
-    def hull(grow, dz):
-        b = base.buffer(RIM + 3.4 + grow, join_style=2)
-        t = base.buffer(RIM + 3.4 + grow - COVER_IN, join_style=2)
-        P = [(x, y, top_z(x, 0.0) - 3.0 - 6.0 * (dz > 0)) for x, y in list(b.exterior.coords)[:-1]]
-        Q = [(x, y, top_z(x, 0.0) + COVER_H - dz) for x, y in list(t.exterior.coords)[:-1]]
-        return Manifold.hull_points(np.array(P + Q, float))
-    return hull(0.0, 0.0), hull(-WALL, WALL)
+def _strut(a, b, w=4.0):
+    """Square-section strut between two points (hull of two small boxes)."""
+    h = w / 2.0
+    pts = [(x + dx, y + dy, z + dz) for (x, y, z) in (a, b) for dx in (-h, h) for dy in (-h, h) for dz in (-h, h)]
+    return Manifold.hull_points(np.array(pts, float))
 
 
-def windscreen():
-    """Raked windscreen: a hollow wedge that starts flush with the hood and rises rearward to a header at the canopy's front edge, narrower at the top
-    (leaning sides).  Its cavity opens down into the shell."""
-    c = SCREEN
-    def hull(m, dz):
-        zf, zr = top_z(c["xf"], 0.0), top_z(c["xr"], 0.0)
-        pts = []
-        for sg in (1, -1):
-            pts += [(c["xf"] - m, sg * (c["wf"] - m), zf - 3.0), (c["xr"] + m, sg * (c["wr"] - m), zr - 3.0),
-                    (c["xr"] + m, sg * (c["wr"] - c["top_in"] - m), zr + c["h"] - dz), (c["xf"] - m, sg * (c["wf"] - 2.0 - m), zf - dz)]
-        return Manifold.hull_points(np.array(pts, float))
-    return hull(0.0, 0.0) - hull(WALL * 1.1, WALL * 1.2)
+CAGE = dict(h=16.0, t=3.0, yr=21.5, ro=34.5)
+
+
+def canopy_cage():
+    """Covered canopy as a cage: a flat roof slab (parallel to the roofline) held by diagonal pillars that run to the roof surface, with open side
+    windows and an open windscreen between the pillars; low rails ring the foot of the screen.  Top view follows the owner's sketch."""
+    c = CAGE
+    zt = lambda x: top_z(x, 0.0)
+    zr = lambda x: zt(x) + c["h"]
+    xa, xb = CX_REAR - 8.0, CX_FRONT - 23.0                                 # roof slab rear and front edges
+    xo_r, xo_f = CX_REAR - 20.0, CX_FRONT                                   # outer feet, rear and front
+    xs_c, xs_b = CX_FRONT + 28.0, CX_FRONT + 21.4                           # windscreen corner and base
+    out = MB.prism_xz([(xa, zr(xa)), (xb, zr(xb)), (xb, zr(xb) + c["t"]), (xa, zr(xa) + c["t"])], -c["yr"] - 2.0, c["yr"] + 2.0)
+    foot = lambda x, y: (x, y, zt(x) - 1.0)
+    for s_ in (1, -1):
+        top = lambda x: (x, s_ * c["yr"], zr(x))
+        for p, q in ((top(xa), foot(xo_r, s_ * c["ro"])), (top(xb), foot(xo_f, s_ * 34.0)), (top(xb), foot(xs_b, s_ * 12.6))):
+            out = out + _strut(p, q)
+        ring = [foot(xo_f, s_ * 34.0), foot(xs_c, s_ * 23.0), foot(xs_b, s_ * 12.6)]       # low rails along the foot of the screen
+        for p, q in zip(ring, ring[1:]):
+            out = out + _strut((p[0], p[1], p[2] + 1.0), (q[0], q[1], q[2] + 1.0), 4.0)
+    out = out + _strut((foot(xs_b, 12.6)[0], 12.6, zt(xs_b)), (xs_b, -12.6, zt(xs_b)), 4.0)
+    return out
 
 
 def front_window():
@@ -311,28 +309,41 @@ def hood_scoop(xf=-36.0, xr=-76.0, hw=22.0, h=10.0, lean=6.0):
     return wedge, cav
 
 
-def roof_gills(x0, x1, y0, y1, n=4, slat=3.0, shift=8.0, blade=3.6):
-    """Roof exhaust over the motor: n slanted slots across y; each is covered by a wedge that grows out of the roof at its front edge and rises
-    3.6 mm at the rear, with closed ends (1.2 mm cheeks): the only opening is a slot in the wedge's rear face.  Returns (cuts, wedges, channels)."""
-    pitch = (x1 - x0 - slat) / (n - 1)
-    cuts = wedges = chans = None
-    for k in range(n):
-        xa = x0 + k * pitch
-        zs = top_z(xa + slat / 2, 0.0)
-        xt, xb = xa - 0.4 * shift, xa + 0.6 * shift                          # the slanted slot crosses the roof surface exactly at [xa, xa + slat]
-        quad = [(xt, zs + 4.0), (xt + slat, zs + 4.0), (xb + slat, zs - 6.0), (xb, zs - 6.0)]
-        xf, xr = xa + slat + 1.0, xa - blade                               # +x is forward: the wedge grows out of the roof at its FRONT edge and opens to the rear
-        wq = [(xf, zs - 2.2), (xr, zs - 2.2), (xr, zs + 4.2), (xf, zs + 0.6)]
-        cq = [(xa + slat - 0.5, zs - 0.1), (xr - 1.0, zs - 0.1), (xr - 1.0, zs + 3.0), (xa + slat - 0.5, zs + 0.1)]
-        for s in (1, -1):
-            ya, yb = (y0, y1) if s > 0 else (-y1, -y0)
-            c = MB.prism_xz(quad, ya + 2.0, yb - 2.0)                         # the skin slot is shorter than the wedge: no slanted slot face shows at the ends
-            w = MB.prism_xz(wq, ya - 0.4, yb + 0.4)
-            ch = MB.prism_xz(cq, ya + 2.5, yb - 2.5)
-            cuts = c if cuts is None else cuts + c
-            wedges = w if wedges is None else wedges + w
-            chans = ch if chans is None else chans + ch
-    return cuts, wedges, chans
+DAM = dict(x_rear=back(-237.0), x_out=-300.0, x_apex=-278.0, y_out=35.0, y_in=8.3, h=10.0)   # roof air dam: funnel in plan (mouth 16.6 wide at the front, widening to y +-35 toward the rear), tallest at the mouth
+
+
+def _dam_plan():
+    d = DAM
+    return [(d["x_apex"], d["y_in"]), (d["x_out"], d["y_out"]), (d["x_rear"], d["y_out"]), (d["x_rear"], -d["y_out"]), (d["x_out"], -d["y_out"]), (d["x_apex"], -d["y_in"])]
+
+
+def _dam_height(x):
+    d = DAM
+    return d["h"] * (x - d["x_rear"]) / (d["x_apex"] - d["x_rear"]) + 0.5
+
+
+def roof_dam():
+    """One big air dam on the roof: a faceted hull that grows out of the roof at the rear and stands tallest at a front mouth (the opening faces forward)."""
+    pts = []
+    for x, y in _dam_plan():
+        zt = top_z(x, 0.0)
+        pts += [(x, y, zt - 1.0), (x, y, zt + _dam_height(x))]
+    return Manifold.hull_points(np.array(pts, float))
+
+
+def roof_dam_cavity():
+    """Cavity of the dam: open through the front mouth, with a window through the roof floor into the shell below (the motor's air path)."""
+    d = DAM
+    plan = Polygon(_dam_plan()).buffer(-WALL, join_style=2)
+    pts = []
+    for x, y in list(plan.exterior.coords)[:-1]:
+        zt = top_z(x, 0.0)
+        pts += [(x, y, zt - 5.0), (x, y, zt + _dam_height(x) - WALL)]
+    xm = d["x_apex"] + 4.0                                                       # out through the front wall
+    for y in (d["y_in"] - WALL, -(d["y_in"] - WALL)):
+        zt = top_z(xm, 0.0)
+        pts += [(xm, y, zt - 5.0), (xm, y, zt + _dam_height(d["x_apex"]) - WALL)]
+    return Manifold.hull_points(np.array(pts, float))
 
 
 def main():
