@@ -129,7 +129,9 @@ def frame(relief=False):
             parts.append(_vcyl(x, y, z + TAB_PAD[0], z + TAB_PAD[1], 9.0))
         for k, d in FEET.items():
             x, y, z = N[k]
-            parts.append(_vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d))
+            disc = _vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d)
+            parts.append(disc)
+            parts.append(Manifold.batch_hull([disc, Manifold.sphere(BALLS.get(k, 4.0), 32).translate((x, y, z))]))      # flared fillet from the node's ball down to the foot disc: no abrupt tube-to-pad step
         parts.append(Manifold.cube((HINGE[0][1] - HINGE[0][0], HINGE_LUG[1] - HINGE_LUG[0], HINGE[1][1] - HINGE[1][0]), center=False).translate((HINGE[0][0], HINGE_LUG[0], HINGE[1][0])))   # hinge lug plate on the bumper cross bar
         _lug = Manifold.cube((HINGE[0][1] - HINGE[0][0], HINGE_LUG[1] - HINGE_LUG[0], 3.0), center=False)
         parts.append(Manifold.batch_hull([_lug.translate((HINGE[0][0], HINGE_LUG[0], HINGE[1][1] - 3.0)), Manifold.cube((17.0, HINGE_LUG[1] - HINGE_LUG[0], 3.0), center=False).translate((HINGE[0][0] - 4.0, HINGE_LUG[0], 21.0))]))   # gusset web: lug plate flared down onto the cross bar

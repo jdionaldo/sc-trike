@@ -14,6 +14,7 @@ from manifold3d import Manifold
 import mono_build as MB
 from parts.w3_style import MeshPart, _clean, _tb
 
+STEP_Y, STEP_DZ, RISER = (92.0,), 6.0, 4.0     # step stations (|y|), height of each step, riser width (an angled step, about 56 degrees)
 SPAN = 134.5                       # half span = half the front track (269 / 2)
 X_LE = -325.0                      # leading edge (assembly x)
 Z_LE = 120.0                       # lower-face height at the leading edge (set below so the blade top lies on the front roofline plane)
@@ -114,18 +115,22 @@ def _blade():
         for u in FORK_SCREW_U:
             centre = centre - Manifold.cylinder(4.0, 1.0, 1.0, 24).translate((u, sg * LEG_Y, -3.0 + CH - 0.1))
     body = centre.translate((0.0, 0.0, ARCH))
-    for sg in (1, -1):
-        y0, y1 = (FLAT - 0.05, SPAN) if sg > 0 else (-SPAN, -FLAT + 0.05)
-        panel = MB.prism_xz(prof, y0, y1)
-        fin = [(8.0, -3.0), (8.0, 3.5), (-30.0, 6.0), (-CHORD - 2.0, 5.0), (-CHORD - 2.0, -28.0), (-40.0, -20.0), (-12.0, -9.0)]   # swept fin that hangs DOWN from the blade's end
-        fy0, fy1 = (SPAN - FIN, SPAN) if sg > 0 else (-SPAN, -SPAN + FIN)
-        panel = panel + MB.prism_xz(fin, fy0, fy1)
-        k = 1.0 / (SPAN - FLAT)
-        # |y|-dependent shear (y>0: t=(y-FLAT)k, y<0: t=(-y-FLAT)k)
-        mat = np.array([[1.0, -sg * SWEEP * k, 0.0, SWEEP * k * FLAT],
-                        [0.0, 1.0, 0.0, 0.0],
-                        [0.0, -sg * ARCH * k, 1.0, ARCH + ARCH * k * FLAT]])
-        body = body + panel.transform(mat)
+    # stepped wing: the centre sits at +ARCH; each outer panel is flat and one STEP lower, joined by an angled riser (a ziggurat, no dihedral slope)
+    k = 1.0 / (SPAN - FLAT)
+    sweep = np.array([[1.0, -SWEEP * k, 0.0, SWEEP * k * FLAT], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0]])
+    slab = lambda y0, y1, z: MB.prism_xz(prof, y0, y1).translate((0.0, 0.0, z))
+    fin = [(8.0, -3.0), (8.0, 3.5), (-30.0, 6.0), (-CHORD - 2.0, 5.0), (-CHORD - 2.0, -28.0), (-40.0, -20.0), (-12.0, -9.0)]   # swept fin that hangs DOWN from the blade's end
+    side = None
+    edges = [FLAT] + list(STEP_Y) + [SPAN]
+    prev = ARCH
+    for j in range(len(edges) - 1):                                          # panel j spans edges[j]..edges[j+1] at ARCH - dz (j + 1); an angled riser joins it to the level before
+        ya, yb, z = edges[j], edges[j + 1], ARCH - STEP_DZ * (j + 1)
+        part = slab(ya + RISER, yb, z) + Manifold.batch_hull([slab(ya - 0.05, ya + 0.01, prev), slab(ya + RISER - 0.01, ya + RISER, z)])
+        side = part if side is None else side + part
+        prev = z
+    side = side + MB.prism_xz(fin, SPAN - FIN, SPAN).translate((0.0, 0.0, prev))
+    side = side.transform(sweep)
+    body = body + side + side.mirror((0.0, 1.0, 0.0))
     return body
 
 

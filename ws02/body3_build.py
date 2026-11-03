@@ -149,8 +149,8 @@ def details(body):
     p0, p1 = np.array([bx, bz]) + dvec * 3.0, np.array([cx_, cz_]) - dvec * 3.0
     quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
     body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
-    canopy = [(-225, -24), (-205, -30), (-150, -30), (-128, -22), (-128, 22), (-150, 30), (-205, 30), (-225, 24)]   # glass canopy, recessed 0.8 for dark paint
-    body = body - (MB.prism_xy(canopy, -100.0, 200.0) - solid(0.8))
+    canopy = [(-198, -20), (-180, -28), (-150, -28), (-132, -20), (-132, 20), (-150, 28), (-180, 28), (-198, 20)]   # open canopy: a real cut through the roof, 45-degree corners
+    body = body - MB.prism_xy(canopy, 45.0, 200.0)
     # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
     for s_ in (1, -1):
         rect = [(-237.0, s_ * 5.0), (-205.0, s_ * 5.0), (-205.0, s_ * 37.0), (-237.0, s_ * 37.0)]

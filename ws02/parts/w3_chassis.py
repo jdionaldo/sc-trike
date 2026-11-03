@@ -21,7 +21,6 @@ REAR_X = (-296.0, -153.0)
 HOUSING_BOLTS = [(-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0),
                  (-201.5, -2.5), (-201.5, 44.5), (-161.5, -2.5), (-161.5, 44.5),
                  (-294.0, 8.5), (-294.0, 33.5), (-247.5, 8.5), (-247.5, 33.5)]
-RAILS = [(-84.0, -14.0, -8.0), (-84.0, -14.0, 8.0), (-170.0, -115.0, -17.0), (-170.0, -115.0, 17.0)]   # (x0, x1, y) long slots for trays
 SLOT_W = 3.4
 
 
@@ -76,9 +75,6 @@ def deck(p, name, xr, limit, perimeter):
         for bx, by in HOUSING_BOLTS:
             if x0 < bx < x1:
                 cuts += _slot(bx - 5.0, bx + 5.0, by)
-        for a, b, y in RAILS:
-            if x0 < (a + b) / 2 < x1:
-                cuts += _slot(max(a, x0 + 4.0), min(b, x1 - 4.0), y)
         for fx, fy in FR.feet_xy():                                        # screws up into the frame feet
             if x0 < fx < x1:
                 cuts += _hole(fx, fy, p.m2_clear + 0.2) + _hole(fx, -fy, p.m2_clear + 0.2)
