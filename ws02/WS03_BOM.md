@@ -49,3 +49,10 @@ Names and part numbers are from the parts list; **dimensions are not in it** and
 | list p.8, p.11 | Bearings 5x11x4, 5x10x4, 5x13x4, 10x15x4, 15x21x4, 4x8x3 | the 5x11x4 seats already in the housings match |
 
 No printed part is cut: housings are drawn around the stock gears and the chassis lengthens as needed.
+
+## Centre differential (kept, decided 2026-11-02)
+
+The centre diff stays so the front axle and the rear wheel never fight each other (front-mean to rear speed mismatch is 0.4 % at 5 deg, 1.4 % at 10 deg and 3.8 % at full lock, plus the 83 mm front / 112 mm rear tyre difference, which a fixed split cannot absorb).
+- Build it from the same Axial 6-Bolt Heavy Duty Gear Set (AXI232003) as the front diff: one stock part number for both diffs.
+- The Axial 6-Bolt Differential Locker (AXI232002) fitted to the centre diff gives a lockable "crawl" mode on demand.
+- Torque split is 50:50 by default; the front/rear speed ratio no longer has to match the tyre diameters.
