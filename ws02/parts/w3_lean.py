@@ -19,11 +19,11 @@ TOP_X = XR + 2.0 + 4.5                 # servo top face (horn plate, then the 4.
 SV_L, SV_W, SV_H, SV_EAR, SV_OFF = 23.0, 12.0, 27.5, 32.0, 4.5   # body along y, along z, along x; ears; shaft offset (body centre at y = -SV_OFF)
 FLANGE_DX = 5.0                        # ear plane below the top face
 TWR_X = (TOP_X + FLANGE_DX - 2.5, TOP_X + FLANGE_DX)       # tower plate, ears sit on its forward face
-TWR_Y = (-26.0, 26.0)
+TWR_Y = (-24.0, 26.0)
+LEG_Y0 = 0.3                          # the plate hangs from one leg on the +y side; below z 12.5 it is open to the battery
 TWR_Z0, TWR_Z1 = -23.0, ZC + 10.0
-FOOT_X = (TWR_X[0], TWR_X[0] + 12.5)
-FEET = [(-74.0, -20.0), (-69.5, -20.0), (-74.0, 20.0), (-69.5, 20.0)]   # M2 screws into the base plate (portal legs straddle the battery)
-BATT_NOTCH = (-13.0, 13.0, -2.0)      # the plate is open under the servo: y range and top z, so the battery (y +-10, up to z -6) slides under
+FOOT_X = (TWR_X[0], TWR_X[0] + 9.0)
+FEET = [(-76.5, 4.0), (-73.0, 4.0), (-76.5, 21.0), (-73.0, 21.0)]   # M2 screws into the base plate (portal legs straddle the battery)
 EAR_Y = (-SV_OFF - 14.0, -SV_OFF + 14.0)
 
 
@@ -61,15 +61,17 @@ def tower(p):
     """Servo tower, assembly frame shifted down by TWR_Z0 so the feet sit on the bed: a plate with the servo window, two gussets and a foot plate."""
     def fn():
         plate = _box(TWR_X[0], TWR_X[1], TWR_Y[0], TWR_Y[1], 0.0, TWR_Z1 - TWR_Z0)
-        foot = _box(FOOT_X[0], FOOT_X[1], TWR_Y[0], TWR_Y[1], 0.0, 4.0)
+        foot = _box(FOOT_X[0], FOOT_X[1], LEG_Y0, TWR_Y[1], 0.0, 4.0)
         body = plate + foot
-        for y0, y1 in ((TWR_Y[0], TWR_Y[0] + 3.0), (TWR_Y[1] - 3.0, TWR_Y[1])):
+        for y0, y1 in ((LEG_Y0, LEG_Y0 + 3.0), (TWR_Y[1] - 3.0, TWR_Y[1])):
             tri = MB.prism_xz([(TWR_X[0], 4.0), (TWR_X[0] + 18.0, 4.0), (TWR_X[0], 26.0)], y0, y1).translate((0.0, 0.0, 0.0))
             body = body + tri
         zc = ZC - TWR_Z0
         win = _box(TWR_X[0] - 1.0, TWR_X[1] + 1.0, -SV_OFF - SV_L / 2 - 0.3, -SV_OFF + SV_L / 2 + 0.3, zc - SV_W / 2 - 0.3, zc + SV_W / 2 + 0.3)
         body = body - win
-        body = body - _box(FOOT_X[0] - 1.0, FOOT_X[1] + 1.0, BATT_NOTCH[0], BATT_NOTCH[1], -1.0, BATT_NOTCH[2] - TWR_Z0)           # portal: legs either side of the battery
+        import layout3wd as LY                                                                           # the plate is open under the servo so the battery (y -37.5..-2.5, up to z 11) slides in
+        (_, _), (by0, by1), (_, bz1) = LY.BATT_BOX
+        body = body - _box(TWR_X[0] - 1.0, TWR_X[1] + 1.0, by0 - 2.8, by1 + 2.8, -1.0, bz1 + 1.5 - TWR_Z0)
         for y in EAR_Y:                                                           # ear screws (M2 self-tapping, from the front)
             body = body - Manifold.cylinder(TWR_X[1] - TWR_X[0] + 2.0, 0.95, 0.95, 20).rotate((0.0, 90.0, 0.0)).translate((TWR_X[0] - 1.0, y, zc))
         for fx, fy in FEET:

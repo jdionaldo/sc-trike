@@ -20,6 +20,7 @@ L = dict(
 )
 
 
+BATT_BOX = ((-77.5, -2.5), (-37.5, -2.5), (-11.0, 14.0))   # 3S 1300 mAh pack 75 x 35 x 25, beside the centre drive shaft (y +21) and under the motor (y -21): centreline free for the lean rocker
 MOTOR_C = (-122.0, -21.0, 41.0)       # motor can centre (x, y, z): most forward spot the fit scan (w3_fit.py) leaves free; x -100 collides with the pivot hoop, servos and diff case
 
 
@@ -68,7 +69,7 @@ def blocks():
     b["motor"] = cyl(MOTOR_C, 18, 58.1, "x")                                # Hobbywing Fusion SE (36 x 58.1, ESC built in) opposite the driveline
     XO_END = -218.0                                                           # cross-over: the motor shaft runs aft above the centre-diff case to a belt pulley behind it
     b["motor_shaft"] = cyl(((MOTOR_C[0] - 29.05 + XO_END) / 2, MOTOR_C[1], MOTOR_C[2]), 2, MOTOR_C[0] - 29.05 - XO_END, "x")
-    b["battery"] = box((-69, -7), (-10, 10), (-20, -6))
+    b["battery"] = box(*BATT_BOX)
     rear_x = -L["wheelbase"]
     rz = L["rear_od"] / 2 - L["tire_od"] / 2 - L["wheelbase"] * np.tan(np.radians(L["rake_deg"]))   # chassis raked nose-down: rear axle lower in the chassis frame
     b["rear_ring"] = cyl((back(-272.0), 21.0, 0), 15, 6, "y")

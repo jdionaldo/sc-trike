@@ -146,6 +146,7 @@ def lean_items(phi, th):
     rk = load("w3_lean_rocker", T(LN.XR - 2.0, 0, LN.ZC) @ Rx(psi, (0.0, 0.0)) @ np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1.0]]))
     out.append(("lean_rocker_c", rk, "printed"))
     out.append(("lean_mount_c", load("w3_lean_tower", T(0, 0, LN.TWR_Z0)), "printed"))
+    out.append(("battery_tray_c", load("w3_battery_tray", T(0, 0, -23.0)), "printed"))
     out.append(("lean_horn_c", trimesh.creation.cylinder(radius=8.0, segment=[[LN.XR + 2.0, 0, LN.ZC], [LN.TOP_X, 0, LN.ZC]], sections=32), "bought"))
     out.append(("lean_servo_c", flat_box((LN.TOP_X + LN.SV_H / 2, -LN.SV_OFF, LN.ZC), (LN.SV_H, LN.SV_L, LN.SV_W)), "bought"))
     out.append(("lean_ears_c", flat_box((LN.TWR_X[1] + 1.25, -LN.SV_OFF, LN.ZC), (2.5, LN.SV_EAR, LN.SV_W)), "bought"))
@@ -209,7 +210,7 @@ def scene(phi_deg, steer=None):
     return items
 
 
-OK_PAIRS = [("lean_rod", "lean_rocker"), ("lean_rod", "lean_horn"), ("lean_rocker", "lean_horn"), ("lean_mount_c", "lean_servo"), ("lean_mount_c", "lean_ears"), ("lean_rocker", "lean_servo"), ("mock_axle", "knuckle"), ("mock_joint", "knuckle"), ("mock_joint", "carrier"), ("mock_hub", "knuckle"), ("mock_rimdisc", "knuckle"), ("mock_tire", "knuckle"), ("mock_rim", "knuckle"), ("wing", "tip_shaft"), ("wing", "carrier"), ("tip_shaft", "carrier"), ("tip_shaft", "knuckle"), ("tip_shaft", "tire"), ("tip_shaft", "arm"), ("tip_shaft", "cover"),
+OK_PAIRS = [("battery_tray", "b_battery"), ("lean_rod", "lean_rocker"), ("lean_rod", "lean_horn"), ("lean_rocker", "lean_horn"), ("lean_mount_c", "lean_servo"), ("lean_mount_c", "lean_ears"), ("lean_rocker", "lean_servo"), ("mock_axle", "knuckle"), ("mock_joint", "knuckle"), ("mock_joint", "carrier"), ("mock_hub", "knuckle"), ("mock_rimdisc", "knuckle"), ("mock_tire", "knuckle"), ("mock_rim", "knuckle"), ("wing", "tip_shaft"), ("wing", "carrier"), ("tip_shaft", "carrier"), ("tip_shaft", "knuckle"), ("tip_shaft", "tire"), ("tip_shaft", "arm"), ("tip_shaft", "cover"),
             ("diff_out", "arm"), ("diff_out", "tub_wall"), ("diff_out", "front_diff"), 
             ("tire", "knuckle"), ("lean_rod", "lean_horn"), ("tie_rod", "steer_horn"), ("lean_rod", "arm"),
             ("tie_rod", "knuckle"), ("tire", "carrier")]

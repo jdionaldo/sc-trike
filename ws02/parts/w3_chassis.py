@@ -73,6 +73,9 @@ def deck(p, name, xr, limit, perimeter):
             from parts import w3_lean as LN
             for fx_, fy_ in LN.FEET:                                       # pilots for the lean tower's feet (M2 self-tapping, from the top)
                 cuts.append(Manifold.cylinder(TD - 1.5, 0.9, 0.9, 20).translate((fx_, fy_, 1.5)))
+            from parts import w3_battery as BT
+            for bx_, by_ in BT.TABS:                                       # pilots for the battery cradle's screw tabs
+                cuts.append(Manifold.cylinder(TD - 1.5, 0.9, 0.9, 20).translate((bx_, by_, 1.5)))
             cuts.append(_box(TAB_X[0] - 0.3, x1 + 1.0, -33.2, 33.2, -1.0, 3.2))                               # rebate for the grate's foot tab: continuous underside
             for tx, ty in TAB_SCREWS:
                 for sg in (1, -1):
