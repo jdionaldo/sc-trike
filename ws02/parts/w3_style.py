@@ -63,12 +63,6 @@ def _cz(u, v, z0, z1, d):
     return Manifold.cylinder(z1 - z0, d / 2, d / 2, 48).translate((u, v, z0))
 
 
-def _cut_edge(body, y, z, s, ang=45.0, size=3.0):
-    """Chamfer: remove a square rotated 45 deg about x, centred on the edge at (y, z) in the assembly frame (side s)."""
-    c = Manifold.cube((30.0, size * 1.414, size * 1.414), center=True).rotate((ang, 0.0, 0.0)).translate((0.0, s * y, z))
-    return body - c
-
-
 def _local_to_print(m, mat):
     t = MB.to_trimesh(m)
     t.apply_transform(np.linalg.inv(mat))

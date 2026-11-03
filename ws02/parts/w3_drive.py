@@ -16,7 +16,6 @@ BORE = 5.4                # 5 mm shaft
 SEAT = 11.15              # 5 x 11 x 4 bearing
 SEAT_D = 4.0
 BOLT = 2.7                # M2.5 clear
-M25 = 2.2                 # M2.5 tap
 
 
 class H:
