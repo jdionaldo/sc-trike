@@ -11,7 +11,7 @@ for part in C.build(P):
     print(part.name, "OK" if not bad else bad)
 man = lambda t: m.Manifold(m.Mesh(vert_properties=np.asarray(t.vertices, np.float32), tri_verts=np.asarray(t.faces, np.uint32)))
 items = {}
-for n in ("w3_deck_front", "w3_deck_rear"):
+for n in ("w3_deck_front", "w3_deck_rear", "w3_deck_tail"):
     t = trimesh.load(f"out/stl/{n}.stl"); t.apply_translation((0, 0, C.DECK_Z[0])); items[n] = t
 import parts.w3_frame as FR
 for n, t in FR.placed():

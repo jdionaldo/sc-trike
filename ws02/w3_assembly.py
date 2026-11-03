@@ -52,7 +52,7 @@ def assembly(phi_deg=0.0, steer=None):
     items += w3_mock.mock(phi_deg, steer)
     for n, mesh in DS.placed():
         items.append((n, mesh, "printed"))
-    for n in ("w3_deck_front", "w3_deck_rear"):
+    for n in ("w3_deck_front", "w3_deck_rear", "w3_deck_tail"):
         items.append((n, _t(f"{STL}/{n}.stl", shift=(0, 0, C.DECK_Z[0] - (C.SERVO_DROP if n == "w3_deck_front" else 0.0))), "printed"))
     import parts.w3_frame as FR
     for n, mesh in FR.placed():

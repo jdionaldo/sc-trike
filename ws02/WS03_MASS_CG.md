@@ -4,25 +4,25 @@ Printed mass = 1.2 mm walls plus 25% infill (15% for the body); bought masses ar
 
 | item | value |
 |---|---|
-| printed_g | 512 |
-| bought_g | 986 |
+| printed_g | 776 |
+| bought_g | 1016 |
 | misc_g | 110.0 |
-| total_g | 1608 |
-| cg_mm | [-141.9, 4.9, 3.4] |
-| front_weight_fraction | 0.606 |
-| cg_height_above_ground_mm | 44.9 |
-| static_roll_angle_deg | 71.5 |
-| rollover_speed_1m_radius_mps | 5.42 |
+| total_g | 1902 |
+| cg_mm | [-190.2, 0.9, 9.1] |
+| front_weight_fraction | 0.577 |
+| cg_height_above_ground_mm | 50.6 |
+| static_roll_angle_deg | 69.4 |
+| rollover_speed_1m_radius_mps | 5.11 |
 
 Heaviest items:
 
+- b_motor: 201 g
 - b_battery: 120 g
 - mock_rear_tire_ring: 95 g
-- b_motor: 62 g
-- b_motor_shaft: 62 g
-- body3_right_rear: 59 g
-- body3_left_rear: 58 g
-- lean_servo_1: 45 g
-- steer_servo_1: 45 g
-- lean_servo_-1: 45 g
-- steer_servo_-1: 45 g
+- body3_rear: 83 g
+- body3_mid: 72 g
+- body3_front: 68 g
+- w3_frame_front: 60 g
+- w3_frame_rear: 54 g
+- w3_tail_main: 53 g
+- w3_deck_front: 48 g

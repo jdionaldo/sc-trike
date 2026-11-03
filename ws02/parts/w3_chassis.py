@@ -18,7 +18,9 @@ PLAN = [(-2.5, 36.0), (-34.0, 54.5), (-210.0, 54.5), (back(-296.0), 37.5)]      
 PL = 50.0                                  # grate length along the slope: up to just below the bumper bar
 TAB_X = (-13.0, 0.6)                       # the grate's foot tab (assembly x), lies in a rebate under the front base plate
 TAB_SCREWS = ((-8.0, 26.0), (-3.0, 12.0))  # (x, |y|) countersunk screws from below, into the base plate
-REAR_X = (back(-296.0), -153.0)
+DECK_SPLIT = -275.0                        # the stretched rear plate exceeds the bed: second piece behind this butt joint
+REAR_X = (DECK_SPLIT, -153.0)
+TAIL_X = (back(-296.0), DECK_SPLIT)
 HOUSING_BOLTS = [(-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0),
                  (-201.5, -2.5), (-201.5, 44.5), (-161.5, -2.5), (-161.5, 44.5),
                  (back(-294.0), 8.5), (back(-294.0), 33.5), (back(-247.5), 8.5), (back(-247.5), 33.5)]
@@ -134,4 +136,4 @@ def standoff(p):
 
 
 def build(p):
-    return [standoff(p), skid(p), deck(p, "w3_deck_front", FRONT_X, 60.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p) + __import__('parts.w3_tail', fromlist=['build']).build(p)
+    return [standoff(p), skid(p), deck(p, "w3_deck_front", FRONT_X, 60.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True), deck(p, "w3_deck_tail", TAIL_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p) + __import__('parts.w3_tail', fromlist=['build']).build(p)
