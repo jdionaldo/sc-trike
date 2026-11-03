@@ -24,7 +24,8 @@ def body_colors(mesh):
 
 def yup_matrix():
     """Level the ground (the chassis is raked 4 deg nose-down), then z-up -> y-up, ground at y = 0, centred in x and z."""
-    gx = np.array([-360.0, 0.0, -25.2])                     # front contact -> rear contact (assembly frame)
+    from w3_stretch import WHEELBASE, RAXLE_Z
+    gx = np.array([-WHEELBASE, 0.0, RAXLE_Z])                     # front contact -> rear contact (assembly frame)
     R1 = trimesh.geometry.align_vectors(gx / np.linalg.norm(gx), [-1.0, 0.0, 0.0])
     Rx = trimesh.transformations.rotation_matrix(-np.pi / 2, [1, 0, 0])
     return Rx @ R1

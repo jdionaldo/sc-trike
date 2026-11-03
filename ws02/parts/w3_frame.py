@@ -12,6 +12,7 @@ from manifold3d import Manifold
 
 import mono_build as MB
 from parts.w3_style import MeshPart
+from w3_stretch import fx, back
 
 R = 3.0                      # tube radius (6 mm OD)
 Y0, Y1 = 54.6, 57.6          # ladder pad thickness (outer face of the servos / diff case ears at 54.5)
@@ -74,7 +75,7 @@ def _stadium(x, z0, z1, y0, y1, r):
 
 def _tab_pos():
     """Skin tab stations (x, y, node z): front roof, hoop top, mid rail, hood.  Node z = skin underside - 13.5 (roof), 39.4 (hood)."""
-    return [(-29.0, 28.0, _zt(-29.0) - 13.5), (-100.0, 30.0, _zt(-100.0) - 13.5), (-180.0, 36.0, _zt(-180.0) - 13.5), (-262.0, 38.0, 39.4)]
+    return [(-29.0, 28.0, _zt(-29.0) - 13.5), (-100.0, 30.0, _zt(-100.0) - 13.5), (-180.0, 36.0, _zt(-180.0) - 13.5), (back(-262.0), 38.0, 39.4)]
 
 
 def nodes():
@@ -87,12 +88,12 @@ def nodes():
         px, pz = NOSE_LOW[0] + u * math.cos(NOSE_TH) + inw[0] * 4.2, NOSE_LOW[1] + u * math.sin(NOSE_TH) + inw[1] * 4.2
         return (px, 22.0, pz)
     return {"BT": (24.0, 28.0, 22.0), "CBT": (24.0, 0.0, 22.0), "NA": nose(10.0), "NB": nose(28.0), "FS": (-8.0, 22.0, -19.5), "PE1": (-150.0, Y, -10.0), "PS2": (-135.9, Y, -14.0), "PM": (-86.0, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (PIVOT[0], Y, PIVOT[1]), "FN": (-25.0, Y, 28.0),
-            "B1": (-200.0, 59.0, -10.0), "R1": (-246.0, 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
-            "C100": (hx, 0.0, hz), "C262": (rx, 0.0, rz), "FT": (fx, fy, fz), "C29": (fx, 0.0, fz), "XN": (-221.0, 0.0, 0.5 * (mz + rz) + 0.5 * 0.0 + 0.0),
+            "B1": (-200.0, 59.0, -10.0), "R1": (back(-246.0), 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
+            "C100": (hx, 0.0, hz), "C262": (rx, 0.0, rz), "FT": (fx, fy, fz), "C29": (fx, 0.0, fz), "XN": (0.5 * (mx + rx), 0.0, 0.5 * (mz + rz) + 0.5 * 0.0 + 0.0),
             "R2m": (rx, -ry, rz), "PHm": (hx, -53.0, PIVOT[1]), "C40": (hx, 0.0, PIVOT[1]), "XH": (hx, 0.0, hz - (30.0 / 83.0) * (hz - PIVOT[1])),
             "HT2": (-135.9, hy + (my - hy) * 0.449, hz + (mz - hz) * 0.449), "K1": (-135.9, 38.5, 25.0),
             "R3": (-200.0, my + (ry - my) * 0.244, mz + (rz - mz) * 0.244), "K2": (-200.0, 52.0, 28.0),
-            "FP1": (-135.9, 44.0, -20.0), "FPB": (-200.0, 52.5, -19.0), "FPR": (-250.0, 41.5, -19.0), "FPF": (-35.5, 28.0, -19.5)}
+            "FP1": (-135.9, 44.0, -20.0), "FPB": (-200.0, 52.5, -19.0), "FPR": (back(-250.0), 41.5, -19.0), "FPF": (-35.5, 28.0, -19.5)}
 
 
 # (a, b, tube radius, trim at a, trim at b): angled tubes only; the roof members are thicker (inboard, no clearance problem)
@@ -160,7 +161,16 @@ def frame(relief=False):
     ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
     for c in cuts:
         side = side - c
-    return side + side.mirror((0.0, 1.0, 0.0))
+    return (side + side.mirror((0.0, 1.0, 0.0))) - motor_envelope()
+
+
+def motor_envelope():
+    """The motor can (36 x 58.1) plus its rear plate, grown 2.5 mm: nothing of the frame runs through it (the left half of the pivot hoop is open there)."""
+    from layout3wd import MOTOR_C
+    x, y, z = MOTOR_C
+    can = Manifold.cylinder(58.1 + 2.5 + 10.5, 18.0 + 2.5, 18.0 + 2.5, 48).rotate((0.0, 90.0, 0.0)).translate((x - 29.05 - 10.5, y, z))
+    plate = Manifold.cube((12.0, 48.0, 34.0), center=False).translate((x - 29.05 - 12.0, y - 24.0, z - 17.0))
+    return can + plate
 
 
 def relief():

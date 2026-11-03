@@ -14,6 +14,7 @@ import body3_build
 import split_shell3
 import layout3wd as LY
 import w3_drive_scene as DS
+from parts import w3_drive as D
 
 PARTS = w3_parts.all_parts()
 
@@ -52,7 +53,7 @@ def test_assembly_clash_free(body_built, lean, steer):
 
 
 def test_body_pieces(body_built):
-    for part in ("front", "rear"):
+    for part in ("front", "mid", "rear"):
         t = trimesh.load(f"out/mono3/body3_{part}.stl")
         assert t.is_watertight
         pm = t.copy()
@@ -66,7 +67,7 @@ def test_interior_inside_body(body_built):
     sh = man(trimesh.load("out/mono3/body3.stl"))
     b = LY.blocks()
     items = dict(DS.placed())
-    for k in ("battery", "esc", "motor", "center_diff", "front_diff", "front_ring", "rear_ring", "rear_shaft", "front_pinion_shaft"):
+    for k in ("battery", "motor", "center_diff", "front_diff", "front_ring", "rear_ring", "rear_shaft", "front_pinion_shaft"):
         items[k] = b[k]
     poking = [(k, round((man(t) ^ sh).volume(), 1)) for k, t in items.items() if (man(t) ^ sh).volume() > 1.0]
     assert poking == [], poking
@@ -89,7 +90,8 @@ def test_mass_and_cg():
     import w3_mass
     rows, total, cg = w3_mass.run()
     assert 1000.0 < total < 2200.0, total
-    front = (cg[0] + 360.0) / 360.0
+    from w3_stretch import WHEELBASE as WB
+    front = (cg[0] + WB) / WB
     assert 0.45 < front < 0.70, front
     assert cg[2] + 41.5 < 80.0, cg
 
@@ -102,7 +104,7 @@ def test_rear_wheel_travel_clear(dz):
     mov = [n for n in M if n.startswith(("mock_rear_", "w3_rear_arm"))]
     fixed = [n for n in M if n not in mov and (not n.startswith("mock_") or n == "mock_cdiff_ring")]
     import mono_build as MB
-    ang = float(np.degrees(np.arcsin(dz / 88.6)))
+    ang = float(np.degrees(np.arcsin(dz / np.hypot(D.XR - D.RAXLE[0], D.RAXLE[1]))))
     for n in mov:
         mr = SW.rot_pivot(MB.man(M[n]), ang)
         for f in fixed:

@@ -7,11 +7,13 @@ Housings are split on the z = 0 plane (every shaft lies in it). The lower half p
 import math
 
 from cad import Part
+from w3_stretch import back, STRETCH, RAXLE_Z
+from layout3wd import MOTOR_C
 
 SY = 21.0                 # shaft line |y| (pinion shaft, centre diff axis, rear shaft)
 XD = -100.0               # front diff axis x (arm pivots)
-XR = -272.0               # rear bevel apex x (rear arm pivot)
-RAXLE = (-360.0, -10.7)   # rear axle (x, z): wheelbase 360, chassis raked 4 deg nose-down
+XR = back(-272.0)               # rear bevel apex x (rear arm pivot)
+RAXLE = (back(-360.0), RAXLE_Z)   # rear axle (x, z): wheelbase 450, chassis raked 4 deg nose-down
 BORE = 5.4                # 5 mm shaft
 SEAT = 11.15              # 5 x 11 x 4 bearing
 SEAT_D = 4.0
@@ -104,32 +106,33 @@ def center_diff_case(p):
 
 
 def rear_bevel_case(p):
-    box = ((-297.0, -244.0), (6.0, 36.0), (-21.0, 21.0))
+    box = ((back(-297.0), back(-244.0)), (6.0, 36.0), (-21.0, 21.0))
 
     def build(h):
         h.cyl_y(XR, (13.0, 29.0), 0.0, 33.6)                               # ring cavity
-        h.cyl_x((XR, -248.0), SY, 0.0, 15.0)                               # pinion tunnel
-        h.cyl_x((-248.1, -244.0), SY, 0.0, SEAT)
-        h.cyl_x((-248.1, -243.9), SY, 0.0, BORE)
+        h.cyl_x((XR, back(-248.0)), SY, 0.0, 15.0)                               # pinion tunnel
+        h.cyl_x((back(-248.1), back(-244.0)), SY, 0.0, SEAT)
+        h.cyl_x((back(-248.1), back(-243.9)), SY, 0.0, BORE)
         h.cyl_y(XR, (5.9, 10.0), 0.0, SEAT)                                # shaft end bearing
         h.cyl_y(XR, (32.0, 36.1), 0.0, SEAT)                               # output bearing
         h.cyl_y(XR, (5.9, 36.1), 0.0, BORE)
-        for x, y in ((-294.0, 8.5), (-294.0, 33.5), (-247.5, 8.5), (-247.5, 33.5)):
+        for x, y in ((back(-294.0), 8.5), (back(-294.0), 33.5), (back(-247.5), 8.5), (back(-247.5), 33.5)):
             h.hole_z(x, y, BOLT)
     return _halves("w3_rbc", box, build)
 
 
 def motor_plate(p):
     """Vertical plate behind the motor with vertical slots (mesh adjustment) and a slotted foot.
-    Print frame: u = y, v = -z, w = -x - 232 (plate thickness up); a proper rotation to the assembly frame."""
+    Print frame: u = y, v = -z, w = -x + MOTOR_C x - 29 (plate thickness up); a proper rotation to the assembly frame."""
     part = Part("w3_motor_plate", "plate on its back", "PETG")
     t = 4.0
-    part.box((-4.0, -38.0, 0.0), (45.0, 30.0, t))                            # plate, y -4..41, z 8..38 (clear of the shaft line and the frame rail)
+    part.box((-41.0, -(MOTOR_C[2] + 15.0), 0.0), (45.0, 30.0, t))            # plate, y -41..4, 30 high around the motor axis
     for dy in (-8.0, 8.0):
         for z in (16.0, 32.0):
-            part.box((SY + dy - 1.7, -z - 4.0, -1.0), (3.4, 8.0, t + 2.0), op="cut")   # motor screw slots, 8 long
-    for y in (2.0, 35.0):                                                    # screws from behind through the body bulkhead
-        part.cyl((y, -27.0, -1.0), 2.2, 3.0, op="cut")
+            part.box((MOTOR_C[1] + dy - 1.7, -(MOTOR_C[2] + z - 24.0) - 4.0, -1.0), (3.4, 8.0, t + 2.0), op="cut")   # motor screw slots, 8 long
+    part.cyl((MOTOR_C[1], -MOTOR_C[2], -1.0), 8.0, t + 2.0, op="cut")          # clearance for the output shaft
+    for y in (-2.0, -35.0):                                                  # screws from behind through the body bulkhead
+        part.cyl((y, -(MOTOR_C[2] + 3.0), -1.0), 2.2, 3.0, op="cut")
     return part
 
 
