@@ -10,7 +10,7 @@ WALL_T = 1.2                        # three perimeters
 INFILL = {"body": 0.15, "default": 0.25}
 BOUGHT = {   # g, assumptions to verify
     "lean_servo": 45, "steer_servo": 45, "b_motor": 201, "b_battery": 120, "mock_receiver": 6,
-    "mock_tire": 38, "mock_rim": 14, "mock_rimdisc": 8, "mock_hub": 6, "mock_axle": 4, "mock_joint": 6,
+    "mock_tire": 95, "mock_rim": 22, "mock_rimdisc": 14, "mock_hub": 10, "mock_axle": 4, "mock_joint": 6,
     "mock_rear_tire_ring": 95, "mock_rear_rim": 22, "mock_rear_rim_disc": 14, "mock_rear_hub": 10, "mock_rear_axle": 12,
     "mock_cdiff_carrier": 38, "mock_cdiff_ring": 12, "mock_motor_pinion": 3, "mock_fdiff_carrier": 28, "mock_bevel_pinion": 4,
     "mock_fpulley": 3, "mock_rear_pulley": 4, "mock_fbelt": 3, "mock_rear_belt": 5, "mock_front_out": 3,

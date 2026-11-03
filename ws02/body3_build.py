@@ -25,7 +25,7 @@ NOSE_TH = math.atan2(53.0, 35.0)                      # underside slope (56.6 de
 TAIL = _pts([(-299.0, 50.0), (-341.5, 66.4), (-348.1, 83.3)])                # new tail from the owner's markup: underside rising to the tail-light face, then the roof
 WHEEL_C, WHEEL_R = (back(-360.0), RAXLE_Z), 62.0                                           # rear tyre (radius 56) plus 6 mm: the skin's rear edge follows this radius over the wheel
 ARC = [(WHEEL_C[0] + WHEEL_R * math.cos(math.radians(a_)), WHEEL_C[1] + WHEEL_R * math.sin(math.radians(a_))) for a_ in (-14, -7, 0, 10, 20, 30, 40, 50, 60, 70)]
-SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(fx(-259.0), 97)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail   # straight roofline, flat vertical nose face, short raked tail
+SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(fx(-259.0), 97), (-70.0, 63.0)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail   # straight roofline, flat vertical nose face, short raked tail
 HALF = _pts([(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-245, 61), (-254, 59), (-258, 57.5), (-266, 47.5), (-280, 43.5), (-300, 42.5), (-340, 40), (-348, 38.5)])
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (51.6, 50), (45.6, 58), (35, 110), (-35, 110), (-45.6, 58), (-51.6, 50), (-68, -9.3)]   # (y, z): flanks lean in toward the roof, with a 45-degree-ish shoulder bevel at z 50..58
 

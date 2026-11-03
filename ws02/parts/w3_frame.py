@@ -161,7 +161,16 @@ def frame(relief=False):
     ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
     for c in cuts:
         side = side - c
-    return side + side.mirror((0.0, 1.0, 0.0))
+    return (side + side.mirror((0.0, 1.0, 0.0))) - motor_envelope()
+
+
+def motor_envelope():
+    """The motor can (36 x 58.1) plus its rear plate, grown 2.5 mm: nothing of the frame runs through it (the left half of the pivot hoop is open there)."""
+    from layout3wd import MOTOR_C
+    x, y, z = MOTOR_C
+    can = Manifold.cylinder(58.1 + 2.5 + 10.5, 18.0 + 2.5, 18.0 + 2.5, 48).rotate((0.0, 90.0, 0.0)).translate((x - 29.05 - 10.5, y, z))
+    plate = Manifold.cube((12.0, 48.0, 34.0), center=False).translate((x - 29.05 - 12.0, y - 24.0, z - 17.0))
+    return can + plate
 
 
 def relief():

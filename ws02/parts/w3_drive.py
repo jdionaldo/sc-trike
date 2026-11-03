@@ -130,6 +130,7 @@ def motor_plate(p):
     for dy in (-8.0, 8.0):
         for z in (16.0, 32.0):
             part.box((MOTOR_C[1] + dy - 1.7, -(MOTOR_C[2] + z - 24.0) - 4.0, -1.0), (3.4, 8.0, t + 2.0), op="cut")   # motor screw slots, 8 long
+    part.cyl((MOTOR_C[1], -MOTOR_C[2], -1.0), 8.0, t + 2.0, op="cut")          # clearance for the output shaft
     for y in (-2.0, -35.0):                                                  # screws from behind through the body bulkhead
         part.cyl((y, -(MOTOR_C[2] + 3.0), -1.0), 2.2, 3.0, op="cut")
     return part
