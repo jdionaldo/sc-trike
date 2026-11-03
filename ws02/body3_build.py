@@ -209,26 +209,23 @@ def details(body):
 CX_WAIST, CX_K = -211.0, STRETCH / 360.0 + 1.0          # canopy centred at 52 % of the stretched body length, 1.25 x its old length
 CANOPY_HALF = [(CX_WAIST + (x - -165.0) * CX_K, y) for x, y in [(-198, 18), (-189, 27), (-178, 27), (-165, 17), (-152, 27), (-141, 27), (-132, 18)]]   # hourglass opening (y > 0 side), pinched at the waist
 CX_FRONT, CX_REAR = CANOPY_HALF[-1][0], CANOPY_HALF[0][0]
-RIM = 4.0                                                                  # 45-degree rim chamfer width
+RIM = 3.0                                                                  # 45-degree rim chamfer width
+
+
+def _cage_feet():
+    """Where the canopy pillars meet the hull (x, |y|): rear outer, front outer, windscreen base; shared by the cut-out and the cage."""
+    return dict(xo_r=CX_REAR - 20.0, yo_r=34.5, xo_f=CX_FRONT, yo_f=34.0, xs_b=CX_FRONT + 21.4, ys_b=12.6, xs_c=CX_FRONT + 28.0, ys_c=23.0)
 
 
 def canopy_cut():
-    """Open canopy: a pinched (hourglass) opening cut through the roof with a 45-degree rim chamfer on the sides and rear (the front edge stays
-    vertical, it is the screen header).  Two convex halves joined at the waist, each a prism plus a chamfer hull following the sloped roof."""
-    pts = CANOPY_HALF + [(x, -y) for x, y in reversed(CANOPY_HALF)]
+    """The opening under the canopy: a convex polygon through the pillar feet (rear outer, front outer, windscreen base), cut through the roof with a 45-degree rim."""
+    f = _cage_feet()
+    pts = [(f["xo_r"], f["yo_r"]), (f["xo_f"], f["yo_f"]), (f["xs_b"], f["ys_b"]), (f["xs_b"], -f["ys_b"]), (f["xo_f"], -f["yo_f"]), (f["xo_r"], -f["yo_r"])]
     cut = MB.prism_xy(pts, 45.0, 200.0)
-    xw = CX_WAIST
-    for x0, x1 in ((CX_REAR, xw), (xw, CX_FRONT)):
-        half = [p for p in pts if x0 - 1e-6 <= p[0] <= x1 + 1e-6]
-        a = MultiPoint(half).convex_hull
-        grown = a.buffer(RIM + 0.5, join_style=2)
-        grown = grown.intersection(Polygon([(-1e3, -1e3), (CX_FRONT, -1e3), (CX_FRONT, 1e3), (-1e3, 1e3)]))   # keep the front edge vertical
-        P = [(x, y, top_z(x, 0.0) - RIM) for x, y in list(a.exterior.coords)[:-1]]
-        Q = [(x, y, top_z(x, 0.0) + 0.5) for x, y in list(grown.exterior.coords)[:-1]]
-        cut = cut + Manifold.hull_points(np.array(P + Q, float))
-    return cut
-
-COVER_H, COVER_IN = 18.0, 9.0          # canopy cover: height over the roof, and how far the top is drawn in (45-degree-ish leaning sides)
+    grown = Polygon(pts).buffer(RIM + 0.5, join_style=2)
+    P = [(x, y, top_z(x, 0.0) - RIM) for x, y in pts]
+    Q = [(x, y, top_z(x, 0.0) + 0.5) for x, y in list(grown.exterior.coords)[:-1]]
+    return cut + Manifold.hull_points(np.array(P + Q, float))
 
 
 def _strut(a, b, w=4.0):
@@ -248,8 +245,8 @@ def canopy_cage():
     zt = lambda x: top_z(x, 0.0)
     zr = lambda x: zt(x) + c["h"]
     xa, xb = CX_REAR - 8.0, CX_FRONT - 23.0                                 # roof slab rear and front edges
-    xo_r, xo_f = CX_REAR - 20.0, CX_FRONT                                   # outer feet, rear and front
-    xs_c, xs_b = CX_FRONT + 28.0, CX_FRONT + 21.4                           # windscreen corner and base
+    f = _cage_feet()
+    xo_r, xo_f, xs_c, xs_b = f["xo_r"], f["xo_f"], f["xs_c"], f["xs_b"]    # outer feet (rear, front), windscreen corner and base
     out = MB.prism_xz([(xa, zr(xa)), (xb, zr(xb)), (xb, zr(xb) + c["t"]), (xa, zr(xa) + c["t"])], -c["yr"] - 2.0, c["yr"] + 2.0)
     foot = lambda x, y: (x, y, zt(x) - 1.0)
     for s_ in (1, -1):
@@ -309,21 +306,21 @@ def hood_scoop(xf=-36.0, xr=-76.0, hw=22.0, h=10.0, lean=6.0):
     return wedge, cav
 
 
-DAM = dict(x_rear=back(-237.0), x_out=-300.0, x_apex=-278.0, y_out=35.0, y_in=8.3, h=10.0)   # roof air dam: funnel in plan (mouth 16.6 wide at the front, widening to y +-35 toward the rear), tallest at the mouth
+DAM = dict(x_mouth=back(-237.0), x_wide=-305.0, x_end=-278.0, y_out=35.0, y_in=8.3, h=10.0)   # roof air dam, reversed: funnel mouth (16.6 wide) at the rear opening backward, widening to y +-35 toward the canopy, tallest at the mouth
 
 
 def _dam_plan():
     d = DAM
-    return [(d["x_apex"], d["y_in"]), (d["x_out"], d["y_out"]), (d["x_rear"], d["y_out"]), (d["x_rear"], -d["y_out"]), (d["x_out"], -d["y_out"]), (d["x_apex"], -d["y_in"])]
+    return [(d["x_mouth"], d["y_in"]), (d["x_wide"], d["y_out"]), (d["x_end"], d["y_out"]), (d["x_end"], -d["y_out"]), (d["x_wide"], -d["y_out"]), (d["x_mouth"], -d["y_in"])]
 
 
 def _dam_height(x):
     d = DAM
-    return d["h"] * (x - d["x_rear"]) / (d["x_apex"] - d["x_rear"]) + 0.5
+    return d["h"] * (d["x_end"] - x) / (d["x_end"] - d["x_mouth"]) + 0.5
 
 
 def roof_dam():
-    """One big air dam on the roof: a faceted hull that grows out of the roof at the rear and stands tallest at a front mouth (the opening faces forward)."""
+    """One big air dam on the roof: a faceted hull that grows out of the roof at the canopy end and stands tallest at a rear mouth (the opening faces backward)."""
     pts = []
     for x, y in _dam_plan():
         zt = top_z(x, 0.0)
@@ -332,17 +329,17 @@ def roof_dam():
 
 
 def roof_dam_cavity():
-    """Cavity of the dam: open through the front mouth, with a window through the roof floor into the shell below (the motor's air path)."""
+    """Cavity of the dam: open through the rear mouth, with a window through the roof floor into the shell below (the motor's air path)."""
     d = DAM
     plan = Polygon(_dam_plan()).buffer(-WALL, join_style=2)
     pts = []
     for x, y in list(plan.exterior.coords)[:-1]:
         zt = top_z(x, 0.0)
         pts += [(x, y, zt - 5.0), (x, y, zt + _dam_height(x) - WALL)]
-    xm = d["x_apex"] + 4.0                                                       # out through the front wall
+    xm = d["x_mouth"] - 4.0                                                      # out through the rear wall
     for y in (d["y_in"] - WALL, -(d["y_in"] - WALL)):
         zt = top_z(xm, 0.0)
-        pts += [(xm, y, zt - 5.0), (xm, y, zt + _dam_height(d["x_apex"]) - WALL)]
+        pts += [(xm, y, zt - 5.0), (xm, y, zt + _dam_height(d["x_mouth"]) - WALL)]
     return Manifold.hull_points(np.array(pts, float))
 
 
