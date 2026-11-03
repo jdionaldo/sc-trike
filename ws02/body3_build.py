@@ -48,8 +48,8 @@ def prism_yz(pts, x0, x1):
     return MB.man(m)
 
 
-SILLS = [dict(b=8.0, z0=-26.0, z1=-8.0), dict(b=4.5, z0=-16.0, z1=8.0)]   # stepped sills: out by b, 45-degree chamfer at the foot, vertical face, angled back into the flank at z1
-FENDER = [(-284.0, 47.0), (-304.0, 58.0), (-346.0, 50.0)]               # rear fender flare: (x, half width) stations; hulled, so plan edges are straight diagonals
+SILLS = [dict(b=7.0, z0=-26.0, z1=4.0)]   # one sill step: 45-degree chamfer at the foot, vertical face, angled back into the flank at z1
+FENDER = [(-284.0, 47.0), (-304.0, 56.0), (-346.0, 56.0)]               # rear fender flare: (x, half width) stations; hulled, so plan edges are straight diagonals
 FENDER_Z = (-20.0, 34.0, 58.0, 9.0)                                      # foot z, start of the top chamfer, top z, chamfer run in y
 
 
@@ -175,8 +175,8 @@ def details(body):
     p0, p1 = np.array([bx, bz]) + dvec * 3.0, np.array([cx_, cz_]) - dvec * 3.0
     quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
     body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
-    body = body + windscreen()
-    body = body - canopy_cut()
+    body = body + windscreen() + canopy_cover()[0]
+    body = body - canopy_cover()[1] - canopy_cut()
     # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
     for s_ in (1, -1):
         rect = [(-237.0, s_ * 5.0), (-205.0, s_ * 5.0), (-205.0, s_ * 37.0), (-237.0, s_ * 37.0)]
@@ -192,7 +192,11 @@ def details(body):
     _tl = __import__('parts.w3_tail', fromlist=['screw_holes'])
     body = body + _tl.screw_bosses() - _tl.screw_holes()                       # wing feet screw onto the hood from inside, so the wing flips up with the skin
     body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()
-    body = body - __import__('w3_swing').rear_travel_channels()                    # wheel arch: the rear tyre and swing arm over their full travel (25 mm up, 20 mm down)
+    _sw = __import__('w3_swing')
+    env = _sw.rear_travel_channels()
+    hp = MultiPoint([(float(x), float(z)) for x, y, z in MB.to_trimesh(env).vertices if abs(y) > 40.0]).convex_hull.simplify(1.0)
+    body = body - MB.prism_xz(list(hp.exterior.coords)[:-1], 30.0, 100.0) - MB.prism_xz(list(hp.exterior.coords)[:-1], -100.0, -30.0)   # one straight-edged trim over the full wheel/arm travel envelope
+    body = body - env                    # wheel arch: the rear tyre and swing arm over their full travel (25 mm up, 20 mm down)
     body = body - __import__('w3_swing').swing_channels()                       # open-ended channels: the frame tubes slide out as the skin swings up on the nose hinge          # slots where frame tubes pass through the skin
     return body
 
@@ -217,6 +221,21 @@ def canopy_cut():
         Q = [(x, y, top_z(x, 0.0) + 0.5) for x, y in list(grown.exterior.coords)[:-1]]
         cut = cut + Manifold.hull_points(np.array(P + Q, float))
     return cut
+
+COVER_H, COVER_IN = 18.0, 9.0          # canopy cover: height over the roof, and how far the top is drawn in (45-degree-ish leaning sides)
+
+
+def canopy_cover():
+    """Covered canopy: a convex, angular hull over the hourglass opening (base ring outside the 45-degree rim, top drawn in), returned as
+    (outer solid, cavity).  The cavity opens down into the cockpit cut, so the cover is a 2.4 mm roof-and-wall shell."""
+    base = MultiPoint(CANOPY_HALF + [(x, -y) for x, y in CANOPY_HALF]).convex_hull
+    def hull(grow, dz):
+        b = base.buffer(RIM + 3.4 + grow, join_style=2)
+        t = base.buffer(RIM + 3.4 + grow - COVER_IN, join_style=2)
+        P = [(x, y, top_z(x, 0.0) - 3.0 - 6.0 * (dz > 0)) for x, y in list(b.exterior.coords)[:-1]]
+        Q = [(x, y, top_z(x, 0.0) + COVER_H - dz) for x, y in list(t.exterior.coords)[:-1]]
+        return Manifold.hull_points(np.array(P + Q, float))
+    return hull(0.0, 0.0), hull(-WALL, WALL)
 
 
 def windscreen():
