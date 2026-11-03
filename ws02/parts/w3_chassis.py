@@ -10,6 +10,7 @@ from manifold3d import Manifold
 DECK_Z = (-29.0, -23.0)
 TD = DECK_Z[1] - DECK_Z[0]                                           # base plate thickness
 FRONT_X = (-153.0, -2.5)
+SERVO_DROP = 3.0                           # the lean servos' bottoms sit at the base plate's underside: their trays hang 3 mm below it (the front deck prints top-down)
 PL = 50.0                                  # grate length along the slope: up to just below the bumper bar
 TAB_X = (-13.0, 0.6)                       # the grate's foot tab (assembly x), lies in a rebate under the front base plate
 TAB_SCREWS = ((-8.0, 26.0), (-3.0, 12.0))  # (x, |y|) countersunk screws from below, into the base plate
@@ -54,6 +55,13 @@ def deck(p, name, xr, limit, perimeter):
         if not perimeter:                                                  # outboard tab that carries the strut foot beside the front diff case
             for sgn in (1, -1):
                 body = body + _box(-140.0, -132.0, 30.0 if sgn > 0 else -48.0, 48.0 if sgn > 0 else -30.0, 0.0, TD)
+            for sgn in (1, -1):                                            # servo trays: floor plates with an inner lip (the frame tubes at |y| 55 are the outer wall) under the lean (z -29 bottom) and steering servos
+                def side(y0, y1):
+                    return (y0, y1) if sgn > 0 else (-y1, -y0)
+                for x0_, x1_, zf_, zl_ in ((-79.5, -41.0, -SERVO_DROP, 8.0), (-134.0, -88.0, 0.0, 5.8)):
+                    ztop = 0.0 if zf_ < 0 else 4.5
+                    body = body + _box(x0_, x1_, *side(31.0, 54.5), zf_, ztop)
+                    body = body + _box(x0_, x1_, *side(31.0, 34.9), zf_, zl_)
         cuts = []
         if not perimeter:
             cuts.append(_box(TAB_X[0] - 0.3, x1 + 1.0, -33.2, 33.2, -1.0, 3.2))                               # rebate for the grate's foot tab: continuous underside
@@ -71,6 +79,8 @@ def deck(p, name, xr, limit, perimeter):
                 cuts += _hole(fx, fy, p.m2_clear + 0.2) + _hole(fx, -fy, p.m2_clear + 0.2)
         for cut in cuts:
             body = body - cut
+        if not perimeter:
+            body = body.translate((0.0, 0.0, SERVO_DROP))                    # keep the mesh above z = 0 (the assembly shifts it back down)
         return _clean(MB.to_trimesh(body))
     return MeshPart(name, fn, walls=True, supports=True)
 

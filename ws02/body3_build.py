@@ -22,7 +22,9 @@ WALL = 2.4
 NOSE_LOW = (-1.0, -26.0)                              # where the nose underside meets the chassis floor
 NOSE_TH = math.atan2(53.0, 35.0)                      # underside slope (56.6 deg)
 TAIL = [(-299.0, 50.0), (-341.5, 66.4), (-348.1, 83.3)]                # new tail from the owner's markup: underside rising to the tail-light face, then the roof
-SIDE = [(34, 40), (34, 27), NOSE_LOW, (-299, -26)] + TAIL + [(-259, 97)]   # straight roofline, flat vertical nose face, short raked tail
+WHEEL_C, WHEEL_R = (-360.0, -11.0), 62.0                                           # rear tyre (radius 56) plus 6 mm: the skin's rear edge follows this radius over the wheel
+ARC = [(WHEEL_C[0] + WHEEL_R * math.cos(math.radians(a_)), WHEEL_C[1] + WHEEL_R * math.sin(math.radians(a_))) for a_ in (-14, -7, 0, 10, 20, 30, 40, 50, 60, 70)]
+SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(-259, 97)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail   # straight roofline, flat vertical nose face, short raked tail
 HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-245, 61), (-254, 59), (-258, 57.5), (-266, 47.5), (-280, 43.5), (-300, 42.5), (-340, 40), (-348, 38.5)]
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
 
@@ -59,13 +61,14 @@ def rocker(inset=0.0):
     """Rocker panels: an angular bulge along the lower flank (peak 5.5 mm out at z -10) that angles back in to the base plate below and blends
     into the flank above.  Built as hulls of cross-sections at the plan's own breakpoints, so the surface is exact and flat-faced."""
     r = ROCK
-    xs = sorted({x for x, _ in HALF if -243.0 < x < -28.0} | {-243.0, -231.0, -42.0, -28.0})
-    def scale(x):
-        return float(np.clip((x + 243.0) / 12.0, 0.0, 1.0) * np.clip((-28.0 - x) / 14.0, 0.0, 1.0))
+    xs = sorted({x for x, _ in HALF if -229.0 < x < -28.0} | {-229.0, -42.0, -28.0})
+    def scale(x):                                                       # full bulge from x -189 forward, tapering to nothing at x -229 (one long smooth face)
+        return float(np.clip((x + 229.0) / 40.0, 0.0, 1.0) * np.clip((-28.0 - x) / 14.0, 0.0, 1.0))
     def pts(x, sgn):
         w0 = min(_plan_hw(x), 68.0) - inset
         bb = r["b"] * scale(x)
-        prof = [(w0 - 10.0, r["zb"]), (w0, r["zb"]), (w0 + bb, r["zp"]), (w0, r["zt"]), (w0 - 10.0, r["zt"])]
+        wt = min(w0, 68.0 - (r["zt"] + 9.3) / 3.615 - inset)             # the flank's own |y| at the blend height: the bulge's top edge lands exactly on it (no ledge)
+        prof = [(wt - 10.0, r["zb"]), (w0, r["zb"]), (w0 + bb, r["zp"]), (wt, r["zt"]), (wt - 10.0, r["zt"])]
         return [(x, sgn * y, z) for y, z in prof]
     out = None
     for a, c in zip(xs, xs[1:]):
@@ -130,11 +133,11 @@ def details(body):
             zb = tz + FR.TAB_BOSS
             body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
             body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
-    tri = [(-254, 8), (-203, 8), (-229, 47)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
+    tri = [(-226, 8), (-190, 8), (-208, 47)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
     hole, wedge, chan = flank_vent(tri)
     body = body - hole + wedge - chan
     for k in (-1, 0, 1):                                              # nose light bar: 3 LED holes (3.2 mm) centred between the hinge ears, 7 mm pitch
-        body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 30.75))
+        body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 33.5))
     wedge, cav = hood_scoop()
     body = body + wedge - cav                                         # hood scoop, 50 % of the hood width
     # tail-light face: a 0.8 mm recess across the short vertical face at the end of the roof (painted red/black)
@@ -203,20 +206,22 @@ def flank_vent(tri, blade=4.5):
     xs = [p[0] for p in tri]
     xf, xr = max(xs) + 1.0, min(xs) - 2.0
     zc = poly.centroid.y
-    xm = 0.5 * (xf + xr)
-    ys = _flank_y(xm, zc)
+    ysf, ysr = _flank_y(xf, zc), _flank_y(xr, zc)
+    yl = lambda x: ysf + (ysr - ysf) * (x - xf) / (xr - xf)                   # the flank's |y| along the vent (the plan is straight across this span)
     inner = list(poly.buffer(-1.2).exterior.coords)[:-1]
     grown = list(poly.buffer(1.0).exterior.coords)[:-1]
     hole = scoop = chan = None
     for s in (1, -1):
         h = _shear_y(MB.prism_xz(inner, 0.0 if s > 0 else -130.0, 130.0 if s > 0 else 0.0), s, zc)
-        ramp = MB.prism_xy([(xf, s * (ys - 2.2)), (xr, s * (ys - 2.2)), (xr, s * (ys + blade)), (xf, s * (ys + 0.6))], zc - 40.0, zc + 40.0)
+        ramp = MB.prism_xy([(xf, s * (yl(xf) - 2.2)), (xr, s * (yl(xr) - 2.2)), (xr, s * (yl(xr) + blade)), (xf, s * (yl(xf) + 0.6))], zc - 40.0, zc + 40.0)
         sc = _shear_y(ramp, s, zc) ^ MB.prism_xz(grown, -200.0, 200.0)
-        cq = MB.prism_xy([(xf - 1.0, s * (ys - 4.0)), (xr + 3.0, s * (ys - 4.0)), (xr + 3.0, s * (ys + blade - 1.3)), (xf - 1.0, s * (ys + 0.3))], zc - 40.0, zc + 40.0)
+        cq = MB.prism_xy([(xf - 1.0, s * (yl(xf - 1.0) - 4.0)), (xr + 3.0, s * (yl(xr + 3.0) - 4.0)), (xr + 3.0, s * (yl(xr + 3.0) + blade - 1.3)), (xf - 1.0, s * (yl(xf - 1.0) + 0.3))], zc - 40.0, zc + 40.0)
         ch = _shear_y(cq, s, zc) ^ MB.prism_xz(inner, -200.0, 200.0)
         # exit: a channel above the skin that runs out through the scoop's rear face, so the vent really opens to the rear
         ext = list(Polygon(inner).union(Polygon([(x - 10.0, z) for x, z in inner])).convex_hull.exterior.coords)[:-1]
-        ex = MB.prism_xy([(xr + 2.0, s * (ys + 0.1)), (xr - 1.0, s * (ys + 0.1)), (xr - 1.0, s * (ys + blade - 1.3)), (xr + 2.0, s * (ys + blade - 1.3))], zc - 40.0, zc + 40.0)
+        xe = xr + 0.7 * (xf - xr)
+        tp = lambda x: 0.6 + (xf - x) / (xf - xr) * (blade - 0.6) - 1.3              # inner roof of the scoop above the flank at x
+        ex = MB.prism_xy([(xr - 1.0, s * (yl(xr - 1.0) + 0.1)), (xe, s * (yl(xe) + 0.1)), (xe, s * (yl(xe) + tp(xe))), (xr - 1.0, s * (yl(xr - 1.0) + tp(xr - 1.0)))], zc - 40.0, zc + 40.0)
         ex = _shear_y(ex, s, zc) ^ MB.prism_xz(ext, -200.0, 200.0)
         ch = ch + ex
         hole = h if hole is None else hole + h
