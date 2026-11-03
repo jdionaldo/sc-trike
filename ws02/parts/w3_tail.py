@@ -31,7 +31,7 @@ FORK_SCREW_U = (-30.0, -46.0, -58.0)      # chord positions of the two screws th
 CH = 2.0                           # channel depth in the blade (top and bottom)
 PR = 3.0                           # prong thickness: CH sits in the channel, the rest stands 1 mm proud of the blade surface
 CLR = 0.15                         # prong-to-channel clearance
-PROF_TOP = [(2.0, -0.5), (-8.0, 0.5), (-35.0, 4.0), (-72.0, 9.0)]      # the top surface curves UP toward the trailing edge
+PROF_TOP = [(2.0, -0.5), (-8.0, 0.7), (-35.0, 4.0), (-55.0, 6.5), (-72.0, 11.5)]      # straight rise (about 7 deg over the blade pitch) then an upturned flick over the last 17 mm
 FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
 FOOT_X = (back(-314.0), back(-300.0))          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
 HOLE_X = back(-307.0)                    # foot screw, from below (the access hole is in the hood underside)
@@ -103,11 +103,11 @@ def topw(u):
 
 
 def _blade():
-    prof = [(2.0, -3.0), (2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-CHORD, 2.5), (-CHORD, -3.0)]
+    prof = [(2.0, -3.0)] + list(PROF_TOP) + [(-CHORD, -3.0)]
     centre = MB.prism_xz(prof, -FLAT, FLAT)                           # plain blade centre (no raised cap)
     # snug channels for the fork prongs (top follows the blade profile, bottom is flat) and blind pilots for the prong screws
     ya, yb = LEG_Y - 5.3, LEG_Y + 5.3
-    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-66.15, topw(-66.15) - CH),
+    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-55.0, topw(-55.0) - CH), (-66.15, topw(-66.15) - CH),
                (-66.15, 30.0), (3.0, 30.0)]
     bot_pts = [(3.0, -3.5), (-66.15, -3.5), (-66.15, -3.0 + CH), (3.0, -3.0 + CH)]
     for sg in (1, -1):
