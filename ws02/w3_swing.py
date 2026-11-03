@@ -89,3 +89,34 @@ def check_fine(body, parts, theta_max=THETA_MAX, step=1.0, names=("w3_frame",)):
                     worst.append((k * step, n, round(v, 1)))
         k += 1
     return worst
+
+
+XP, ZP = -272.0, 0.0              # rear swing-arm pivot (the rear bevel axis)
+
+
+def rot_pivot(m, deg):
+    """Rotate a Manifold about the rear arm pivot (axis along y); positive = the wheel goes up."""
+    a = np.radians(deg)
+    R = np.array([[np.cos(a), 0, np.sin(a)], [0, 1, 0], [-np.sin(a), 0, np.cos(a)]])
+    T = np.array([XP - (R[0, 0] * XP + R[0, 2] * ZP), 0.0, ZP - (R[2, 0] * XP + R[2, 2] * ZP)])
+    return m.transform(np.hstack([R, T[:, None]]))
+
+
+def rear_travel_channels(up_mm=25.0, down_mm=20.0, margin=3.0):
+    """Skin cut-out for the rear wheel's travel: the tyre (grown by `margin`) and the arm swept about the pivot from `down_mm` below to `up_mm` above rest."""
+    import math
+    tc = [m for n, m, k in __import__("w3_assembly").assembly(0.0, 0.0) if n == "mock_rear_tire_ring"][0]
+    cx, cz = 0.5 * (tc.bounds[0][0] + tc.bounds[1][0]), 0.5 * (tc.bounds[0][2] + tc.bounds[1][2])
+    rad = 0.5 * (tc.bounds[1][0] - tc.bounds[0][0]) + margin
+    wid = tc.bounds[1][1] - tc.bounds[0][1] + 2 * margin
+    env = Manifold.cylinder(wid, rad, rad, 64).rotate((-90.0, 0.0, 0.0)).translate((cx, tc.bounds[0][1] - margin, cz))
+    arms = [MB.man(m) for n, m, k in __import__("w3_assembly").assembly(0.0, 0.0) if n == "w3_rear_arm"][0]
+    arm_env = arms + arms.translate((0, 0.4, 0)) + arms.translate((0, -0.4, 0)) + arms.translate((0, 0, 0.4)) + arms.translate((0, 0, -0.4))
+    r_arm = math.hypot(cx - XP, cz - ZP)
+    a0, a1 = -math.degrees(math.asin(down_mm / r_arm)), math.degrees(math.asin(up_mm / r_arm))
+    acc = None
+    for k in range(int(a0), int(a1) + 2):
+        for part in (env, arm_env):
+            p = rot_pivot(part, float(k))
+            acc = p if acc is None else acc + p
+    return acc

@@ -166,6 +166,7 @@ def details(body):
     _tl = __import__('parts.w3_tail', fromlist=['screw_holes'])
     body = body + _tl.screw_bosses() - _tl.screw_holes()                       # wing feet screw onto the hood from inside, so the wing flips up with the skin
     body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()
+    body = body - __import__('w3_swing').rear_travel_channels()                    # wheel arch: the rear tyre and swing arm over their full travel (25 mm up, 20 mm down)
     body = body - __import__('w3_swing').swing_channels()                       # open-ended channels: the frame tubes slide out as the skin swings up on the nose hinge          # slots where frame tubes pass through the skin
     return body
 

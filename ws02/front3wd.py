@@ -2,7 +2,7 @@
 import math, numpy as np
 from scipy.optimize import brentq
 
-R, W, T, LA = 41.5, 24.0, 134.55, 100.0          # tire radius, width, wheel centre half-track, arm length
+R, W, T, LA = 56.0, 62.0, 144.0, 100.0          # tire radius, width, wheel centre half-track, arm length
 P = np.array([-LA, 0.0])                          # arm pivot (x, z); front diff axis
 
 

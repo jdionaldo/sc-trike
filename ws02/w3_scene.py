@@ -17,7 +17,7 @@ from params import P as _P
 RODT = _P.rod_t
 R_H, LR_LEAN = 28.0, None                      # lean horn length
 STEER_MAX = 17.0
-LEAN_MAX = 25.0
+LEAN_MAX = 20.0
 SH_LEAN = np.array([-71.4, -18.8])     # lean horn shaft (x, z), from the horn scan (worst horn angle 29 deg)
 LR = 30.0
 R_S = 12.0

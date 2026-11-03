@@ -32,7 +32,7 @@ def body_built():
     split_shell3.main()
 
 
-@pytest.mark.parametrize("lean,steer", [(0.0, None), (25.0, 17.0), (-25.0, -17.0), (25.0, -17.0), (-25.0, 17.0), (12.0, None)])
+@pytest.mark.parametrize("lean,steer", [(0.0, None), (20.0, 17.0), (-20.0, -17.0), (20.0, -17.0), (-20.0, 17.0), (12.0, None)])
 def test_front_mechanism_clear(lean, steer):
     items = S.scene(lean, steer=steer)
     assert sum(n.startswith("tie_rod") for n, _, _ in items) == 2
@@ -42,11 +42,11 @@ def test_front_mechanism_clear(lean, steer):
 def test_lean_limits():
     import front3wd as F
     import math
-    th = [F.arm_angles(math.radians(p)) for p in np.linspace(-25, 25, 11)]
+    th = [F.arm_angles(math.radians(p)) for p in np.linspace(-20, 20, 11)]
     assert max(abs(a) for pair in th for a in pair) < math.radians(45)
 
 
-@pytest.mark.parametrize("lean,steer", [(0.0, None), (25.0, 17.0), (-25.0, -17.0)])
+@pytest.mark.parametrize("lean,steer", [(0.0, None), (20.0, 17.0), (-20.0, -17.0)])
 def test_assembly_clash_free(body_built, lean, steer):
     assert A.check_global(A.assembly(lean, steer=steer)) == []
 
@@ -92,3 +92,18 @@ def test_mass_and_cg():
     front = (cg[0] + 360.0) / 360.0
     assert 0.45 < front < 0.70, front
     assert cg[2] + 41.5 < 80.0, cg
+
+
+@pytest.mark.parametrize("dz", [-20.0, -10.0, 10.0, 20.0, 25.0])
+def test_rear_wheel_travel_clear(dz):
+    """The rear wheel, rim, hub and swing arm clear every fixed part over 20 mm of droop and 25 mm of bump."""
+    import w3_swing as SW
+    M = {n: m for n, m, k in A.assembly(0.0, 0.0)}
+    mov = [n for n in M if n.startswith(("mock_rear_", "w3_rear_arm"))]
+    fixed = [n for n in M if n not in mov and (not n.startswith("mock_") or n == "mock_cdiff_ring")]
+    import mono_build as MB
+    ang = float(np.degrees(np.arcsin(dz / 88.6)))
+    for n in mov:
+        mr = SW.rot_pivot(MB.man(M[n]), ang)
+        for f in fixed:
+            assert (mr ^ MB.man(M[f])).volume() < 0.5, (n, f, dz)

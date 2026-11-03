@@ -9,9 +9,9 @@ import numpy as np
 import trimesh
 
 L = dict(
-    track=269.1, tire_od=83.0, tire_w=24.0, rear_od=112.0, rear_w=62.0,
+    track=288.0, tire_od=112.0, tire_w=62.0, rear_od=112.0, rear_w=62.0,
     la=100.0,                      # arm length, pivot to knuckle carrier
-    wheelbase=360.0, rake_deg=4.0,
+    wheelbase=360.0, rake_deg=1.7,
     tub_in=48.0, tub_wall=2.0,     # widened tub (inner face, wall)
     arm_y=(50.5, 56.5), horn_y=(57.0, 59.5), servo_y=(28.7, 48.0),
     zu=40.0,                       # upper link height above the lower pin

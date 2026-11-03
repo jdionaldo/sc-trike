@@ -8,7 +8,7 @@ from scipy.spatial import cKDTree
 import w3_assembly as A
 import w3_scene as S
 
-POSES = [(0.0, 0.0), (25.0, 17.0), (-25.0, -17.0)]
+POSES = [(0.0, 0.0), (20.0, 17.0), (-20.0, -17.0)]
 GAP = 0.3                       # flag pairs closer than this (and not declared as mated)
 
 
