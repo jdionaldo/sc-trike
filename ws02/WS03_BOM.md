@@ -56,3 +56,8 @@ The centre diff stays so the front axle and the rear wheel never fight each othe
 - Build it from the same Axial 6-Bolt Heavy Duty Gear Set (AXI232003) as the front diff: one stock part number for both diffs.
 - The Axial 6-Bolt Differential Locker (AXI232002) fitted to the centre diff gives a lockable "crawl" mode on demand.
 - Torque split is 50:50 by default; the front/rear speed ratio no longer has to match the tyre diameters.
+
+## Motor placement (decided 2026-11-02)
+
+Hobbywing QuicRun Fusion SE (36 x 58.1 mm, 201 g, ESC built in) goes on the side opposite the driveline: shaft line and gear cases are at y +21, so the motor sits at y -21, high (z about 32) at the rear, which brings the sideways centre of gravity from 4.9 mm to about 1.4 mm (centre of gravity left of centre) and the front weight share from 60.6 % to about 59 %. It is also the only position where the fit check (WS03_FIT.md) found room for the can.
+Consequence: the motor pinion can no longer mesh directly with the centre-diff ring (they are 42 mm apart in y), so the reduction needs a cross-over stage (a pinion on a short cross shaft, or two idlers) when the gearbox is redrawn around the stock Axial gears.
