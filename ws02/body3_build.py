@@ -27,7 +27,7 @@ WHEEL_C, WHEEL_R = (back(-360.0), RAXLE_Z), 62.0                                
 ARC = [(WHEEL_C[0] + WHEEL_R * math.cos(math.radians(a_)), WHEEL_C[1] + WHEEL_R * math.sin(math.radians(a_))) for a_ in (-14, -7, 0, 10, 20, 30, 40, 50, 60, 70)]
 SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(fx(-259.0), 97)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail   # straight roofline, flat vertical nose face, short raked tail
 HALF = _pts([(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-245, 61), (-254, 59), (-258, 57.5), (-266, 47.5), (-280, 43.5), (-300, 42.5), (-340, 40), (-348, 38.5)])
-SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
+SECTION = [(-68, -40), (68, -40), (68, -9.3), (51.6, 50), (45.6, 58), (35, 110), (-35, 110), (-45.6, 58), (-51.6, 50), (-68, -9.3)]   # (y, z): flanks lean in toward the roof, with a 45-degree-ish shoulder bevel at z 50..58
 
 
 def to_new(pts, kind):
@@ -49,7 +49,9 @@ def prism_yz(pts, x0, x1):
     return MB.man(m)
 
 
-ROCK = dict(zb=-26.0, zp=-10.0, zt=2.0, b=5.5)       # base, peak height, blend-out height above the peak, peak bulge (mm)
+SILLS = [dict(b=8.0, z0=-26.0, z1=-8.0), dict(b=4.5, z0=-16.0, z1=8.0)]   # stepped sills: out by b, 45-degree chamfer at the foot, vertical face, angled back into the flank at z1
+FENDER = [(back(-284.0), 47.0), (back(-304.0), 58.0), (back(-346.0), 50.0)]               # rear fender flare: (x, half width) stations; hulled, so plan edges are straight diagonals
+FENDER_Z = (-20.0, 34.0, 58.0, 9.0)                                      # foot z, start of the top chamfer, top z, chamfer run in y
 
 
 def _plan_hw(x):
@@ -58,25 +60,48 @@ def _plan_hw(x):
     return float(np.interp(x, xs, ys))
 
 
-def rocker(inset=0.0):
-    """Rocker panels: an angular bulge along the lower flank (peak 5.5 mm out at z -10) that angles back in to the base plate below and blends
-    into the flank above.  Built as hulls of cross-sections at the plan's own breakpoints, so the surface is exact and flat-faced."""
-    r = ROCK
-    xs = sorted({x for x, _ in HALF if fx(-229.0) < x < -28.0} | {fx(-229.0), -42.0, -28.0})
-    def scale(x):                                                       # full bulge from x -189 forward, tapering to nothing at x -229 (one long smooth face)
-        return float(np.clip((x - fx(-229.0)) / (40.0 + STRETCH), 0.0, 1.0) * np.clip((-28.0 - x) / 14.0, 0.0, 1.0))
-    def pts(x, sgn):
-        w0 = min(_plan_hw(x), 68.0) - inset
-        bb = r["b"] * scale(x)
-        wt = min(w0, 68.0 - (r["zt"] + 9.3) / 3.615 - inset)             # the flank's own |y| at the blend height: the bulge's top edge lands exactly on it (no ledge)
-        prof = [(wt - 10.0, r["zb"]), (w0, r["zb"]), (w0 + bb, r["zp"]), (wt, r["zt"]), (wt - 10.0, r["zt"])]
-        return [(x, sgn * y, z) for y, z in prof]
+def _hull_sections(xs, polys):
+    """Convex hull between consecutive (y, z) section polygons placed at x stations, mirrored to both flanks."""
     out = None
-    for a, c in zip(xs, xs[1:]):
+    for (xa, pa), (xb, pb) in zip(zip(xs, polys), list(zip(xs, polys))[1:]):
         for sgn in (1, -1):
-            h = Manifold.hull_points(np.array(pts(a, sgn) + pts(c, sgn), float))
+            pts = [(x, sgn * y, z) for x, pl in ((xa, pa), (xb, pb)) for y, z in list(pl.exterior.coords)[:-1]]
+            h = Manifold.hull_points(np.array(pts, float))
             out = h if out is None else out + h
     return out
+
+
+def rocker(inset=0.0):
+    """Stepped, angled sills along the lower flank: two stacked convex layers (a 8 mm foot sill and a 4.5 mm upper step), each a 45-degree
+    chamfer out, a vertical face and an angled return into the flank.  Hulls of cross-sections at the plan's breakpoints: flat faces only."""
+    xs = sorted({x for x, _ in HALF if fx(-229.0) < x < -28.0} | {fx(-229.0), -42.0, -28.0})
+    def scale(x):                                                       # full from x -189 forward, tapering to nothing at x -229 and at the front windows
+        return float(np.clip((x - fx(-229.0)) / (40.0 + STRETCH), 0.0, 1.0) * np.clip((-28.0 - x) / 14.0, 0.0, 1.0))
+    def layers(x):
+        w0 = min(_plan_hw(x), 68.0)
+        res = []
+        for L in SILLS:
+            b = max(L["b"] * scale(x), 0.05)
+            fy = min(w0, 68.0 - (L["z1"] + 9.3) / 3.615)
+            p = Polygon([(w0 - 12.0, L["z0"]), (w0, L["z0"]), (w0 + b, L["z0"] + b), (w0 + b, L["z1"] - b), (fy, L["z1"]), (fy - 12.0, L["z1"])])
+            res.append(p.buffer(-inset, join_style=2) if inset else p)
+        return res
+    out = None
+    for k in range(len(SILLS)):
+        h = _hull_sections(xs, [layers(x)[k] for x in xs])
+        out = h if out is None else out + h
+    return out
+
+
+def fenders(inset=0.0):
+    """Rear fender flare over the wheel arch: a hull between three plan stations, vertical outer face with a 45-degree-ish top chamfer."""
+    zf, zc, zt, run = FENDER_Z
+    polys = []
+    for _, yo in FENDER:
+        zb = zf - (30.0 if inset else 0.0)                                  # the cavity runs out through the bottom: an open skirt, no floor rim
+        p = Polygon([(36.0, zb), (yo, zb), (yo, zc), (yo - run, zt), (36.0, zt)])
+        polys.append(p.buffer(-inset, join_style=2) if inset else p)
+    return _hull_sections([x for x, _ in FENDER], polys)
 
 
 def solid(inset=0.0, belly=False):
@@ -85,8 +110,9 @@ def solid(inset=0.0, belly=False):
     plan_pts = hp + [(x, -y) for x, y in reversed(hp)]
     plan = Polygon(plan_pts).buffer(-inset, join_style=2)
     sec = Polygon(to_new(SECTION, "sec")).buffer(-inset, join_style=2)
-    s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0) ^ prism_yz(list(sec.exterior.coords)[:-1], -500.0, 100.0)
-    s = s + rocker(inset)
+    sidep = MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0)
+    s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ sidep ^ prism_yz(list(sec.exterior.coords)[:-1], -500.0, 100.0)
+    s = s + rocker(inset) + (fenders(inset) ^ sidep)
     if belly:                                        # open belly: remove the floor with a straight prism of the cavity's plan (no stepped sweep: the lower edge stays clean)
         floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((296.2 + STRETCH, 400.0, 100.0), center=False).translate((-296.6 - STRETCH, -200.0, -80.0))
         s = s + floor
@@ -150,8 +176,8 @@ def details(body):
     p0, p1 = np.array([bx, bz]) + dvec * 3.0, np.array([cx_, cz_]) - dvec * 3.0
     quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
     body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
-    canopy = [(-198, -20), (-180, -28), (-150, -28), (-132, -20), (-132, 20), (-150, 28), (-180, 28), (-198, 20)]   # open canopy: a real cut through the roof, 45-degree corners
-    body = body - MB.prism_xy(canopy, 45.0, 200.0)
+    body = body + windscreen()
+    body = body - canopy_cut()
     # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
     for s_ in (1, -1):
         rect = [(back(-237.0), s_ * 5.0), (back(-205.0), s_ * 5.0), (back(-205.0), s_ * 37.0), (back(-237.0), s_ * 37.0)]
@@ -171,6 +197,41 @@ def details(body):
     body = body - __import__('w3_swing').swing_channels()                       # open-ended channels: the frame tubes slide out as the skin swings up on the nose hinge          # slots where frame tubes pass through the skin
     return body
 
+
+CANOPY_HALF = [(-198, 18), (-189, 27), (-178, 27), (-165, 17), (-152, 27), (-141, 27), (-132, 18)]   # hourglass opening (y > 0 side), pinched at x -165
+RIM = 4.0                                                                  # 45-degree rim chamfer width
+SCREEN = dict(xf=-96.0, xr=-132.0, wf=20.0, wr=32.0, h=16.0, top_in=7.0)   # windscreen: raked wedge rising rearward to a header over the canopy front edge
+
+
+def canopy_cut():
+    """Open canopy: a pinched (hourglass) opening cut through the roof with a 45-degree rim chamfer on the sides and rear (the front edge stays
+    vertical, it is the screen header).  Two convex halves joined at the waist, each a prism plus a chamfer hull following the sloped roof."""
+    pts = CANOPY_HALF + [(x, -y) for x, y in reversed(CANOPY_HALF)]
+    cut = MB.prism_xy(pts, 45.0, 200.0)
+    xw = -165.0
+    for x0, x1 in ((-198.0, xw), (xw, -132.0)):
+        half = [p for p in pts if x0 - 1e-6 <= p[0] <= x1 + 1e-6]
+        a = MultiPoint(half).convex_hull
+        grown = a.buffer(RIM + 0.5, join_style=2)
+        grown = grown.intersection(Polygon([(-1e3, -1e3), (-132.0, -1e3), (-132.0, 1e3), (-1e3, 1e3)]))   # keep the front edge vertical
+        P = [(x, y, top_z(x, 0.0) - RIM) for x, y in list(a.exterior.coords)[:-1]]
+        Q = [(x, y, top_z(x, 0.0) + 0.5) for x, y in list(grown.exterior.coords)[:-1]]
+        cut = cut + Manifold.hull_points(np.array(P + Q, float))
+    return cut
+
+
+def windscreen():
+    """Raked windscreen: a hollow wedge that starts flush with the hood and rises rearward to a header at the canopy's front edge, narrower at the top
+    (leaning sides).  Its cavity opens down into the shell."""
+    c = SCREEN
+    def hull(m, dz):
+        zf, zr = top_z(c["xf"], 0.0), top_z(c["xr"], 0.0)
+        pts = []
+        for sg in (1, -1):
+            pts += [(c["xf"] - m, sg * (c["wf"] - m), zf - 3.0), (c["xr"] + m, sg * (c["wr"] - m), zr - 3.0),
+                    (c["xr"] + m, sg * (c["wr"] - c["top_in"] - m), zr + c["h"] - dz), (c["xf"] - m, sg * (c["wf"] - 2.0 - m), zf - dz)]
+        return Manifold.hull_points(np.array(pts, float))
+    return hull(0.0, 0.0) - hull(WALL * 1.1, WALL * 1.2)
 
 
 def front_window():
