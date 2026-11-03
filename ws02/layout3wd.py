@@ -66,7 +66,8 @@ def blocks():
     b["center_diff"] = cyl((-180.0, 21.0, 0), 19, 30, "x")
     b["rear_shaft"] = cyl((-231.0 - STRETCH / 2, 21.0, 0), 2.5, 52 + STRETCH, "x")      # x -205 .. back(-257): 142 mm, from the centre diff to the rear bevel
     b["motor"] = cyl(MOTOR_C, 18, 58.1, "x")                                # Hobbywing Fusion SE (36 x 58.1, ESC built in) opposite the driveline
-    b["motor_shaft"] = cyl((MOTOR_C[0] - 29.05 - 8.0, MOTOR_C[1], MOTOR_C[2]), 2, 16, "x")      # output shaft leaves the rear face; the cross-over stage to the centre diff is still to be drawn
+    XO_END = -218.0                                                           # cross-over: the motor shaft runs aft above the centre-diff case to a belt pulley behind it
+    b["motor_shaft"] = cyl(((MOTOR_C[0] - 29.05 + XO_END) / 2, MOTOR_C[1], MOTOR_C[2]), 2, MOTOR_C[0] - 29.05 - XO_END, "x")
     b["battery"] = box((-69, -7), (-10, 10), (-20, -6))
     rear_x = -L["wheelbase"]
     rz = L["rear_od"] / 2 - L["tire_od"] / 2 - L["wheelbase"] * np.tan(np.radians(L["rake_deg"]))   # chassis raked nose-down: rear axle lower in the chassis frame

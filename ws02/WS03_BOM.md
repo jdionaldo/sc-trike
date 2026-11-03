@@ -66,7 +66,11 @@ The centre diff stays so the front axle and the rear wheel never fight each othe
 ## Motor placement (decided 2026-11-02)
 
 Hobbywing QuicRun Fusion SE (36 x 58.1 mm, 201 g, ESC built in) goes on the side opposite the driveline: shaft line and gear cases are at y +21, so the motor sits at y -21, high (z about 32) at the rear, which brings the sideways centre of gravity from 4.9 mm to about 1.4 mm (centre of gravity left of centre) and the front weight share from 60.6 % to about 59 %. It is also the only position where the fit check (WS03_FIT.md) found room for the can.
-Consequence: the motor pinion can no longer mesh directly with the centre-diff ring (they are 42 mm apart in y), so the reduction needs a cross-over stage (a pinion on a short cross shaft, or two idlers) when the gearbox is redrawn around the stock Axial gears.
+Consequence: the motor pinion can no longer mesh directly with the centre-diff ring (they are 42 mm apart in y), so the reduction needs a cross-over stage: see 'Belt cross-over' above (belt and countershaft).
+
+### Belt cross-over (2026-11-03)
+
+The motor (y -21, z 41) cannot mesh the centre-diff ring (axis y 21, z 0) directly: 58.7 mm apart, with the diff cases filling z < 22 from x -205 to -80, so no spur idler fits. Instead the motor shaft runs aft above the case (x -151 to -218, 4 mm, needs a bearing block on the cage: not yet drawn) to a 16T GT2 pulley at x -213; a 6 mm GT2 belt (about 190 mm, to be matched to the pulley pair) runs to a 40T pulley on a countershaft at y 21, z 24 (4 mm shaft, x -218..-197) whose 15T pinion meshes the ring. Ratio 2.5 : 1 from the pulleys; the stock pinion/ring then add 3 : 1. Buy: 16T and 40T GT2 pulleys (5 mm / 4 mm bore as fitted), one GT2 belt, two 4 mm bearings. Added mass about 24 g behind the CG: front share 62.6 %.
 
 ### Motor moved aft (2026-11-03)
 

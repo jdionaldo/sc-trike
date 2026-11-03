@@ -45,6 +45,21 @@ def static_drivetrain():
     it.append(("mock_cdiff_carrier", _cx(-181.0, SY, 0.0, 17.5, 36.0), "bought"))
     it.append(("mock_cdiff_ring", _cx(-196.0, SY, 0.0, 19.0, 6.0), "bought"))
     it.append(("mock_motor_pinion", _cx(-193.0, SY, 24.0, 6.4, 8.0), "bought"))
+    # cross-over from the motor shaft (y -21, z 41) to the pinion countershaft (y 21, z 24): 16T / 40T GT2 pulleys and a 6 mm belt behind the centre-diff case
+    from shapely.geometry import Point
+    from shapely.ops import unary_union
+    import trimesh as _tm
+    xp_, r_m, r_c, bw = -213.0, 5.1, 12.7, 6.0
+    c_m, c_c = np.array([-21.0, 41.0]), np.array([SY, 24.0])
+    hull = lambda r: unary_union([Point(*c_m).buffer(r, 48), Point(*c_c).buffer(r + (r_c - r_m), 48)]).convex_hull if False else unary_union([Point(*c_m).buffer(r_m + r, 48), Point(*c_c).buffer(r_c + r, 48)]).convex_hull
+    ring = hull(1.5).difference(hull(0.0))
+    bm = _tm.creation.extrude_polygon(ring, bw)
+    bm.apply_transform(np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1.0]]))
+    bm.apply_translation((xp_ - bw / 2, 0, 0))
+    it.append(("mock_xover_belt", bm, "bought"))
+    it.append(("mock_xover_pulley_m", _cx(xp_, -21.0, 41.0, r_m + 1.2, 7.0), "bought"))
+    it.append(("mock_xover_pulley_c", _cx(xp_, SY, 24.0, r_c + 1.2, 7.0), "bought"))
+    it.append(("mock_xover_shaft", _cx(-207.5, SY, 24.0, 2.0, 21.0), "bought"))
     it.append(("mock_front_out", _cx(-160.5, SY, 0.0, 2.5, 9.0), "bought"))
     # front diff carrier (the ring is in the layout blocks) and the bevel pinion on the front pinion shaft
     it.append(("mock_fdiff_carrier", _cy(D.XD, 0.0, 0.0, 16.0, 34.0), "bought"))
