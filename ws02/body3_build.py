@@ -28,7 +28,7 @@ PEAK = (fx(-237.0), 100.4)                             # roof peak, moved forwar
 ARC = [(WHEEL_C[0] + WHEEL_R * math.cos(math.radians(a_)), WHEEL_C[1] + WHEEL_R * math.sin(math.radians(a_))) for a_ in (-14, -7, 0, 10, 20, 30, 40, 50, 60, 70)]
 SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [PEAK, (-70.0, 63.0)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail   # straight roofline, flat vertical nose face, short raked tail
 HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-122, 66), (-176, 86), (-293, 70), (-365, 76.5), (-382, 49), (-400, 44), (-438, 38.5)]   # plan: a side pod swelling to y 86 at x -176, tapering to the rear arch (traced from the owner's markup)
-SECTION = [(-90, -40), (90, -40), (90, -16), (68, -9.3), (51.6, 50), (45.6, 58), (35, 110), (-35, 110), (-45.6, 58), (-51.6, 50), (-68, -9.3), (-90, -16)]   # (y, z): flanks lean in toward the roof, with a 45-degree-ish shoulder bevel at z 50..58
+SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]   # (y, z): flanks lean in toward the roof, with a 45-degree-ish shoulder bevel at z 50..58
 
 
 def to_new(pts, kind):
@@ -71,6 +71,40 @@ def _hull_sections(xs, polys):
     return out
 
 
+POD = [(-122.0, 68.0, -9.3), (-176.0, 86.0, -9.0), (-293.0, 70.0, -11.0), (-365.0, 76.5, -15.0), (-382.0, 62.0, -15.0)]   # side pod stations (x, outer |y|, top z): the waist line peaks at x -176, flares out at the rear and tapers down
+SHOULDER = dict(stations=[(-440.0, 1.0), (-300.0, 1.0), (-120.0, 0.25)], z0=50.0, z1=58.0, depth=6.0)   # shoulder crease: full at the rear, tapering to nothing toward the front
+
+
+def _tent_y(z):
+    return 68.0 - (max(z, -9.3) + 9.3) / 3.615
+
+
+def pods(inset=0.0):
+    """Side pods below the shoulder: hull between stations of a (y, z) profile with a vertical outer face and an angled top returning into the flank."""
+    polys = []
+    for _, yo, zt in POD:
+        yf = _tent_y(zt)
+        zb = -26.0 - (30.0 if inset else 0.0)
+        p = Polygon([(30.0, zb), (max(yo, yf + 0.5), zb), (max(yo, yf + 0.5), zt - 6.0), (yf, zt), (30.0, zt)])
+        polys.append(p.buffer(-inset, join_style=2) if inset else p)
+    return _hull_sections([x for x, _, _ in POD], polys)
+
+
+def shoulder_cut(inset=0.0):
+    """The shoulder crease: the thin triangle between the plain flank tent and a bevelled one, hulled between stations so it tapers out toward the front."""
+    tent = Polygon(to_new(SECTION, "sec")).buffer(-inset, join_style=2)
+    S = SHOULDER
+    polys = []
+    for _, k in S["stations"]:
+        ap = _tent_y(S["z1"]) - S["depth"] * k
+        bev = Polygon([(-68, -40), (68, -40), (68, -9.3), (_tent_y(S["z0"]), S["z0"]), (ap, S["z1"]), (35, 110), (-35, 110), (-ap, S["z1"]), (-_tent_y(S["z0"]), S["z0"]), (-68, -9.3)]).buffer(-inset, join_style=2)
+        d = tent.difference(bev)
+        d = max([g for g in d.geoms if g.geom_type == "Polygon" and g.centroid.x > 0.0], key=lambda g: g.area) if hasattr(d, "geoms") else d                      # drop numerical slivers
+        pts = [c for c in d.buffer(0.3, join_style=2).exterior.coords if c[0] > 0.0]               # a hair past the tent: no coplanar faces
+        polys.append(MultiPoint(pts).convex_hull)
+    return _hull_sections([x for x, _ in S["stations"]], polys)
+
+
 def fenders(inset=0.0):
     """Rear fender flare over the wheel arch: a hull between three plan stations, vertical outer face with a 45-degree-ish top chamfer."""
     zf, zc, zt, run = FENDER_Z
@@ -90,7 +124,7 @@ def solid(inset=0.0, belly=False):
     sec = Polygon(to_new(SECTION, "sec")).buffer(-inset, join_style=2)
     sidep = MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0)
     s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ sidep ^ prism_yz(list(sec.exterior.coords)[:-1], -500.0, 100.0)
-    s = s + (fenders(inset) ^ sidep)
+    s = s - shoulder_cut(inset) + ((fenders(inset) + pods(inset)) ^ sidep)
     if belly:                                        # open belly: remove the floor with a straight prism of the cavity's plan (no stepped sweep: the lower edge stays clean)
         floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((296.2 + STRETCH, 400.0, 100.0), center=False).translate((-296.6 - STRETCH, -200.0, -80.0))
         s = s + floor
@@ -138,6 +172,7 @@ def details(body):
             zb = tz + FR.TAB_BOSS
             body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
             body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
+    body = body - louvers()
     for k in (-1, 0, 1):                                              # nose light bar: 3 LED holes (3.2 mm) centred between the hinge ears, 7 mm pitch
         body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 33.5))
     wedge, cav = hood_scoop()
@@ -240,6 +275,27 @@ def front_window():
                 pts += [(float(x), float(z)) for x, y, z in m.vertices[::7]]
     hull = MultiPoint(pts).convex_hull.buffer(5.5, join_style=2).simplify(2.0)
     return hull
+
+
+LOUVER = dict(x_top=(-192.0, -136.0), x_bot=(-178.0, -150.0), z0=8.0, z1=40.0, n=5, slat=3.0, tilt=0.6)   # louvered flank intake: a trapezoid that narrows downward, angled slots
+
+
+def louvers():
+    """Louvered air intake on each flank: n angled slots cut through the skin inside a trapezoid that tapers downward."""
+    c = LOUVER
+    pitch = (c["z1"] - c["z0"]) / c["n"]
+    xl = lambda z: np.interp(z, [c["z0"], c["z1"]], [c["x_bot"][0], c["x_top"][0]])
+    xr = lambda z: np.interp(z, [c["z0"], c["z1"]], [c["x_bot"][1], c["x_top"][1]])
+    out = None
+    for k in range(c["n"]):
+        za, zb = c["z0"] + k * pitch, c["z0"] + (k + 1) * pitch - c["slat"]
+        slot = MB.prism_xz([(xl(za), za), (xr(za), za), (xr(zb), zb), (xl(zb), zb)], 0.0, 100.0)
+        mat = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, -c["tilt"], 1.0, c["tilt"] * 60.0]])
+        slot = slot.transform(mat)
+        out = slot if out is None else out + slot
+    band = prism_yz([(_tent_y(0.0) - 6.0, 0.0), (_tent_y(0.0) + 2.0, 0.0), (_tent_y(60.0) + 2.0, 60.0), (_tent_y(60.0) - 6.0, 60.0)], -300.0, 0.0)
+    out = out ^ band
+    return out + out.mirror((0.0, 1.0, 0.0))
 
 
 def hood_scoop(xf=-36.0, xr=-76.0, hw=22.0, h=10.0, lean=6.0):

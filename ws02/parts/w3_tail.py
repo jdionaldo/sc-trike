@@ -13,7 +13,7 @@ from manifold3d import Manifold
 
 import mono_build as MB
 from parts.w3_style import MeshPart, _clean, _tb
-from w3_stretch import back, fx
+from w3_stretch import back, fx, STRETCH
 
 STEP_Y, STEP_DZ, RISER = (92.0,), 6.0, 4.0     # step stations (|y|), height of each step, riser width (an angled step, about 56 degrees)
 SPAN = 134.5                       # half span = half the front track (269 / 2)
@@ -21,7 +21,7 @@ X_LE = back(-325.0)                      # leading edge (assembly x)
 Z_LE = 120.0                       # lower-face height at the leading edge (set below so the blade top lies on the front roofline plane)
 CHORD = 72.0
 ROOF_P = (33.7, 40.4)              # front roofline: z = 40.4 + ROOF_K * (33.7 - x), from the nose top to the roof peak
-ROOF_K = (97.0 - 40.4) / (33.7 - fx(-259.0))
+ROOF_K = (97.0 - 40.4) / (33.7 + 259.0)           # the pre-stretch roof slope: the wing keeps its old pitch and height
 SLOPE = ROOF_K                     # the blade lies in the front roofline's plane
 ALPHA = math.atan(SLOPE)
 SPLIT = 66.0
@@ -31,7 +31,7 @@ FORK_SCREW_U = (-30.0, -46.0, -58.0)      # chord positions of the two screws th
 CH = 2.0                           # channel depth in the blade (top and bottom)
 PR = 3.0                           # prong thickness: CH sits in the channel, the rest stands 1 mm proud of the blade surface
 CLR = 0.15                         # prong-to-channel clearance
-PROF_TOP = [(2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-72.0, 2.5)]
+PROF_TOP = [(2.0, -0.5), (-8.0, 0.5), (-35.0, 4.0), (-72.0, 9.0)]      # the top surface curves UP toward the trailing edge
 FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
 FOOT_X = (back(-314.0), back(-300.0))          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
 HOLE_X = back(-307.0)                    # foot screw, from below (the access hole is in the hood underside)
@@ -41,8 +41,8 @@ TZ = {"center": 3.0, "left": 36.0, "right": 36.0}     # STL lift per piece (end 
 
 def _z_le_from_roof():
     """Z_LE such that the blade's top surface at the centre of the chord lies on the roofline plane extended rearward."""
-    u, w = -35.0, 5.5 + 12.0                                       # mid-chord top of the blade at y = 0 (profile top 5.5 + arch 12)
-    x = X_LE + u * math.cos(ALPHA) + w * math.sin(ALPHA)
+    u, w = -35.0, 4.0 + 12.0                                       # mid-chord top of the blade at y = 0 (profile top 5.5 + arch 12)
+    x = X_LE + u * math.cos(ALPHA) + w * math.sin(ALPHA) + STRETCH           # evaluated at the pre-stretch x: same height as before the stretch
     z_roof = ROOF_P[1] + ROOF_K * (ROOF_P[0] - x)
     return z_roof - (-u * math.sin(ALPHA) + w * math.cos(ALPHA))
 
