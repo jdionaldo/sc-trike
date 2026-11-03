@@ -31,7 +31,7 @@ FORK_SCREW_U = (-30.0, -46.0, -58.0)      # chord positions of the two screws th
 CH = 2.0                           # channel depth in the blade (top and bottom)
 PR = 3.0                           # prong thickness: CH sits in the channel, the rest stands 1 mm proud of the blade surface
 CLR = 0.15                         # prong-to-channel clearance
-PROF_TOP = [(2.0, -0.5), (-8.0, 0.7), (-35.0, 4.0), (-55.0, 6.5), (-72.0, 11.5)]      # straight rise (about 7 deg over the blade pitch) then an upturned flick over the last 17 mm
+PROF_TOP = [(2.0, -0.5), (-55.0, 6.5), (-72.0, 11.5)]      # straight rise (about 7 deg over the blade pitch) then an upturned flick over the last 17 mm
 FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
 FOOT_X = (back(-314.0), back(-300.0))          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
 HOLE_X = back(-307.0)                    # foot screw, from below (the access hole is in the hood underside)
@@ -108,7 +108,7 @@ def botw(u):
     return topw(u) - T_BLADE
 
 
-ST = [3.0, -8.0, -35.0, -55.0, -66.15]      # chord stations the channels and prongs follow
+ST = [3.0, -55.0, -66.15]      # chord stations the channels and prongs follow
 
 
 def _blade():
@@ -116,8 +116,7 @@ def _blade():
     centre = MB.prism_xz(prof, -FLAT, FLAT)                           # plain blade centre (no raised cap)
     # snug channels for the fork prongs (top follows the blade profile, bottom is flat) and blind pilots for the prong screws
     ya, yb = LEG_Y - 5.3, LEG_Y + 5.3
-    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-55.0, topw(-55.0) - CH), (-66.15, topw(-66.15) - CH),
-               (-66.15, 30.0), (3.0, 30.0)]
+    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH)] + [(u, topw(u) - CH) for u in ST[1:]] + [(-66.15, 30.0), (3.0, 30.0)]
     bot_pts = [(u, botw(u) - 0.5) for u in ST] + [(u, botw(u) + CH) for u in reversed(ST)]
     for sg in (1, -1):
         y0, y1 = (ya, yb) if sg > 0 else (-yb, -ya)
@@ -203,7 +202,7 @@ def _hanger_left():
     A = lambda u, y, w: (Mc @ np.array([u, y, w, 1.0]))[:3]
     y0f, y1f = LEG_Y - 5.0, LEG_Y + 5.0
     c = CLR
-    us = [2.0, -8.0, -35.0, -66.0]
+    us = [2.0, -55.0, -66.0]
     pd = PR - CH
     fl = lambda u: topw(u) - CH + c
     w_a, w_b = topw(-8.0) + pd, topw(2.0) + pd

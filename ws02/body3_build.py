@@ -172,7 +172,8 @@ def details(body):
             zb = tz + FR.TAB_BOSS
             body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
             body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
-    body = body - louvers()
+    scoop, cavity = flank_intake()
+    body = body + scoop - cavity
     for k in (-1, 0, 1):                                              # nose light bar: 3 LED holes (3.2 mm) centred between the hinge ears, 7 mm pitch
         body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 33.5))
     wedge, cav = hood_scoop()
@@ -187,7 +188,12 @@ def details(body):
     quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
     body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
     body = body - canopy_cut() + canopy_cage()
-    body = body + roof_dam() - roof_dam_cavity()                                # one big air dam over the motor, opening forward
+    # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
+    for s_ in (1, -1):
+        rect = [(back(-237.0), s_ * 5.0), (back(-205.0), s_ * 5.0), (back(-205.0), s_ * 37.0), (back(-237.0), s_ * 37.0)]
+        body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))                    # shallow pocket so the blades blend into the roof
+    cuts, wedges, chans = roof_gills(back(-233.0), back(-209.0), 8.0, 34.0)
+    body = body - cuts + wedges - chans
     import parts.w3_frame as _FR                                                           # hinge ears: the skin flips up on a pin through these and the frame's lugs
     for s in (1, -1):
         zt_ = top_z(_FR.HINGE_PIN[0], WALL) + 0.4
@@ -272,25 +278,39 @@ def front_window():
     return hull
 
 
-LOUVER = dict(x_top=(-192.0, -136.0), x_bot=(-178.0, -150.0), z0=8.0, z1=40.0, n=5, slat=3.0, tilt=0.6)   # louvered flank intake: a trapezoid that narrows downward, angled slots
+INTAKE = dict(x_rear=-205.0, x_front=-140.0, z_top=40.0, z_bot=8.0, x_bot_in=14.0, h=9.0)   # flank air intake: trapezoid narrowing downward, grows out of the flank at its rear edge, mouth opens forward
 
 
-def louvers():
-    """Louvered air intake on each flank: n angled slots cut through the skin inside a trapezoid that tapers downward."""
-    c = LOUVER
-    pitch = (c["z1"] - c["z0"]) / c["n"]
-    xl = lambda z: np.interp(z, [c["z0"], c["z1"]], [c["x_bot"][0], c["x_top"][0]])
-    xr = lambda z: np.interp(z, [c["z0"], c["z1"]], [c["x_bot"][1], c["x_top"][1]])
-    out = None
-    for k in range(c["n"]):
-        za, zb = c["z0"] + k * pitch, c["z0"] + (k + 1) * pitch - c["slat"]
-        slot = MB.prism_xz([(xl(za), za), (xr(za), za), (xr(zb), zb), (xl(zb), zb)], 0.0, 100.0)
-        mat = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, -c["tilt"], 1.0, c["tilt"] * 60.0]])
-        slot = slot.transform(mat)
-        out = slot if out is None else out + slot
-    band = prism_yz([(_tent_y(0.0) - 6.0, 0.0), (_tent_y(0.0) + 2.0, 0.0), (_tent_y(60.0) + 2.0, 60.0), (_tent_y(60.0) - 6.0, 60.0)], -300.0, 0.0)
-    out = out ^ band
-    return out + out.mirror((0.0, 1.0, 0.0))
+def _intake_poly(inset=0.0):
+    c = INTAKE
+    poly = Polygon([(c["x_rear"], c["z_top"]), (c["x_front"], c["z_top"]), (c["x_front"] - c["x_bot_in"], c["z_bot"]), (c["x_rear"] + c["x_bot_in"], c["z_bot"])])
+    return poly.buffer(-inset, join_style=2) if inset else poly
+
+
+def _intake_h(x):
+    c = INTAKE
+    return c["h"] * (x - c["x_rear"]) / (c["x_front"] - c["x_rear"])
+
+
+def flank_intake():
+    """One big air intake per flank: a faceted scoop that is flush with the flank at its rear edge and stands c.h out at the front, where the mouth
+    opens forward; its cavity cuts through the flank into the shell.  Returns (scoop, cavity)."""
+    out = cav = None
+    outer, inner = _intake_poly(0.0), _intake_poly(WALL)
+    for s_ in (1, -1):
+        po = []
+        for x, z in list(outer.exterior.coords)[:-1]:
+            po += [(x, s_ * (_tent_y(z) - 1.0), z), (x, s_ * (_tent_y(z) + _intake_h(x)), z)]
+        pc = []
+        for x, z in list(inner.exterior.coords)[:-1]:
+            pc += [(x, s_ * (_tent_y(z) - 6.0), z), (x, s_ * (_tent_y(z) + _intake_h(x) - WALL), z)]
+        for x, z in list(inner.exterior.coords)[:-1]:                      # out through the front wall
+            if x > INTAKE["x_front"] - INTAKE["x_bot_in"] - 1.0:
+                pc += [(x + 5.0, s_ * (_tent_y(z) - 6.0), z), (x + 5.0, s_ * (_tent_y(z) + INTAKE["h"] - WALL), z)]
+        o, c_ = Manifold.hull_points(np.array(po, float)), Manifold.hull_points(np.array(pc, float))
+        out = o if out is None else out + o
+        cav = c_ if cav is None else cav + c_
+    return out, cav
 
 
 def hood_scoop(xf=-36.0, xr=-76.0, hw=22.0, h=10.0, lean=6.0):
@@ -306,41 +326,28 @@ def hood_scoop(xf=-36.0, xr=-76.0, hw=22.0, h=10.0, lean=6.0):
     return wedge, cav
 
 
-DAM = dict(x_mouth=back(-237.0), x_wide=-305.0, x_end=-278.0, y_out=35.0, y_in=8.3, h=10.0)   # roof air dam, reversed: funnel mouth (16.6 wide) at the rear opening backward, widening to y +-35 toward the canopy, tallest at the mouth
-
-
-def _dam_plan():
-    d = DAM
-    return [(d["x_mouth"], d["y_in"]), (d["x_wide"], d["y_out"]), (d["x_end"], d["y_out"]), (d["x_end"], -d["y_out"]), (d["x_wide"], -d["y_out"]), (d["x_mouth"], -d["y_in"])]
-
-
-def _dam_height(x):
-    d = DAM
-    return d["h"] * (d["x_end"] - x) / (d["x_end"] - d["x_mouth"]) + 0.5
-
-
-def roof_dam():
-    """One big air dam on the roof: a faceted hull that grows out of the roof at the canopy end and stands tallest at a rear mouth (the opening faces backward)."""
-    pts = []
-    for x, y in _dam_plan():
-        zt = top_z(x, 0.0)
-        pts += [(x, y, zt - 1.0), (x, y, zt + _dam_height(x))]
-    return Manifold.hull_points(np.array(pts, float))
-
-
-def roof_dam_cavity():
-    """Cavity of the dam: open through the rear mouth, with a window through the roof floor into the shell below (the motor's air path)."""
-    d = DAM
-    plan = Polygon(_dam_plan()).buffer(-WALL, join_style=2)
-    pts = []
-    for x, y in list(plan.exterior.coords)[:-1]:
-        zt = top_z(x, 0.0)
-        pts += [(x, y, zt - 5.0), (x, y, zt + _dam_height(x) - WALL)]
-    xm = d["x_mouth"] - 4.0                                                      # out through the rear wall
-    for y in (d["y_in"] - WALL, -(d["y_in"] - WALL)):
-        zt = top_z(xm, 0.0)
-        pts += [(xm, y, zt - 5.0), (xm, y, zt + _dam_height(d["x_mouth"]) - WALL)]
-    return Manifold.hull_points(np.array(pts, float))
+def roof_gills(x0, x1, y0, y1, n=4, slat=3.0, shift=8.0, blade=3.6):
+    """Roof exhaust over the motor: n slanted slots across y; each is covered by a wedge that grows out of the roof at its front edge and rises
+    3.6 mm at the rear, with closed ends (1.2 mm cheeks): the only opening is a slot in the wedge's rear face.  Returns (cuts, wedges, channels)."""
+    pitch = (x1 - x0 - slat) / (n - 1)
+    cuts = wedges = chans = None
+    for k in range(n):
+        xa = x0 + k * pitch
+        zs = top_z(xa + slat / 2, 0.0)
+        xt, xb = xa - 0.4 * shift, xa + 0.6 * shift                          # the slanted slot crosses the roof surface exactly at [xa, xa + slat]
+        quad = [(xt, zs + 4.0), (xt + slat, zs + 4.0), (xb + slat, zs - 6.0), (xb, zs - 6.0)]
+        xf, xr = xa + slat + 1.0, xa - blade                               # +x is forward: the wedge grows out of the roof at its FRONT edge and opens to the rear
+        wq = [(xf, zs - 2.2), (xr, zs - 2.2), (xr, zs + 4.2), (xf, zs + 0.6)]
+        cq = [(xa + slat - 0.5, zs - 0.1), (xr - 1.0, zs - 0.1), (xr - 1.0, zs + 3.0), (xa + slat - 0.5, zs + 0.1)]
+        for s in (1, -1):
+            ya, yb = (y0, y1) if s > 0 else (-y1, -y0)
+            c = MB.prism_xz(quad, ya + 2.0, yb - 2.0)                         # the skin slot is shorter than the wedge: no slanted slot face shows at the ends
+            w = MB.prism_xz(wq, ya - 0.4, yb + 0.4)
+            ch = MB.prism_xz(cq, ya + 2.5, yb - 2.5)
+            cuts = c if cuts is None else cuts + c
+            wedges = w if wedges is None else wedges + w
+            chans = ch if chans is None else chans + ch
+    return cuts, wedges, chans
 
 
 def main():
