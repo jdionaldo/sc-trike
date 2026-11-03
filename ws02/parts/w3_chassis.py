@@ -9,8 +9,8 @@ from manifold3d import Manifold
 
 DECK_Z = (-29.0, -23.0)
 TD = DECK_Z[1] - DECK_Z[0]                                           # base plate thickness
-HALF_W = 33.0
 FRONT_X = (-153.0, -2.5)
+PL = 50.0                                  # grate length along the slope: up to just below the bumper bar
 TAB_X = (-13.0, 0.6)                       # the grate's foot tab (assembly x), lies in a rebate under the front base plate
 TAB_SCREWS = ((-8.0, 26.0), (-3.0, 12.0))  # (x, |y|) countersunk screws from below, into the base plate
 REAR_X = (-296.0, -153.0)
@@ -48,7 +48,7 @@ def deck(p, name, xr, limit, perimeter):
     x0, x1 = xr
     def fn():
         xs = list(np.arange(x0, x1, 2.0)) + [x1]
-        up = [(float(x), float(min(limit if x < -156.0 else min(limit, 52.0), hw_in(min(max(x, -299.0), 29.0)) - 3.0))) for x in xs]
+        up = [(float(x), float(min(33.0 + (limit - 33.0) * min(max((-x - 140.0) / 30.0, 0.0), 1.0), hw_in(min(max(x, -299.0), 29.0)) - 3.0))) for x in xs]   # one smooth width law for both decks: the seam at x -153 is flush
         pts = up + [(x, -w) for x, w in reversed(up)]
         body = MB.prism_xy(pts, 0.0, TD)
         if not perimeter:                                                  # outboard tab that carries the strut foot beside the front diff case
@@ -84,7 +84,8 @@ def skid(p):
     from parts.w3_style import MeshPart, _clean
     from body3_build import NOSE_TH, NOSE_LOW
     def fn():
-        body = _box(0.0, 39.6, -40.0, 40.0, 0.0, 3.0)
+        body = _box(0.0, PL, -40.0, 40.0, 0.0, 3.0)
+        body = body - MB.prism_xz([(PL - 2.0, 3.1), (PL + 0.1, 3.1), (PL + 0.1, 0.9)], -41.0, 41.0).rotate((0.0, 0.0, 0.0))          # 2 mm chamfer on the top edge
         for v in (-36.0, -30.0, 30.0, 36.0):                                   # vertical slits at each side
             body = body - _box(6.0, 28.0, v - 1.7, v + 1.7, -1.0, 4.0)
         clip = _box(6.0, 34.0, -18.0, 18.0, -1.0, 4.0)                          # a big X in the middle
@@ -92,9 +93,6 @@ def skid(p):
         for sg in (1, -1):
             bar = Manifold.cube((60.0, 4.6, 5.0), center=True).rotate((0.0, 0.0, sg * ang)).translate((20.0, 0.0, 1.5))
             body = body - (bar ^ clip)
-        for u in (10.0, 28.0):
-            for v in (-22.0, 22.0):
-                body = body - Manifold.cylinder(5.0, p.m2_clear / 2, p.m2_clear / 2, 24).translate((u, v, -1.0))
         # foot tab in assembly coordinates (x -13 .. +0.6, z -29 .. -26), then into the print frame
         sk = np.array([[math.cos(NOSE_TH), 0, math.sin(NOSE_TH), NOSE_LOW[0]], [0, -1, 0, 0], [math.sin(NOSE_TH), 0, -math.cos(NOSE_TH), NOSE_LOW[1]], [0, 0, 0, 1.0]])
         tab = _box(TAB_X[0], TAB_X[1], -33.0, 33.0, DECK_Z[0], DECK_Z[0] + 3.0)
@@ -103,7 +101,7 @@ def skid(p):
                 tab = tab - Manifold.cylinder(3.2, 1.35, 1.35, 24).translate((x_, sg * y_, DECK_Z[0] - 0.1)) - Manifold.cylinder(1.6, 2.5, 1.35, 24).translate((x_, sg * y_, DECK_Z[0] - 0.1))
         inv = np.linalg.inv(sk)
         body = body + tab.transform(inv[:3, :4])
-        j0 = _box(37.6, 39.6, -33.0, 33.0, 0.0, 3.0)                              # smooth join: hull from the grate's lower end to the tab's near edge
+        j0 = _box(0.0, 2.0, -33.0, 33.0, 0.0, 3.0)                              # smooth join: hull from the grate's lower end to the tab's near edge
         j1 = (tab ^ _box(TAB_X[1] - 1.0, TAB_X[1], -33.0, 33.0, DECK_Z[0], DECK_Z[0] + 3.0)).transform(inv[:3, :4])
         body = body + Manifold.batch_hull([j0, j1])
         m = _clean(MB.to_trimesh(body))
@@ -124,4 +122,4 @@ def standoff(p):
 
 
 def build(p):
-    return [standoff(p), skid(p), deck(p, "w3_deck_front", FRONT_X, 33.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p) + __import__('parts.w3_tail', fromlist=['build']).build(p)
+    return [standoff(p), skid(p), deck(p, "w3_deck_front", FRONT_X, 60.0, False), deck(p, "w3_deck_rear", REAR_X, 60.0, True)] + __import__('parts.w3_frame', fromlist=['build']).build(p) + __import__('parts.w3_tail', fromlist=['build']).build(p)

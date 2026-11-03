@@ -12,16 +12,11 @@ def body_colors(mesh):
     c = mesh.triangles_center
     n = mesh.face_normals
     cols = np.tile(np.array(RED + [255], np.uint8), (len(c), 1))
-    canopy = Polygon(B.PANELS and [(-225, -24), (-205, -30), (-150, -30), (-128, -22), (-128, 22), (-150, 30), (-205, 30), (-225, 24)])
+    canopy = Polygon([(-225, -24), (-205, -30), (-150, -30), (-128, -22), (-128, 22), (-150, 30), (-205, 30), (-225, 24)])
     top = n[:, 2] > 0.3
     for i in np.where(top)[0]:
         if canopy.contains(Point(c[i, 0], c[i, 1])) and c[i, 2] > 40:
             cols[i] = BLACK + [255]
-    for poly in B.PANELS:
-        pg = Polygon(poly)
-        for i in np.where(np.abs(n[:, 1]) > 0.7)[0]:
-            if pg.contains(Point(c[i, 0], c[i, 2])) and abs(c[i, 1]) > 30:
-                cols[i] = BLACK + [255]
     low = (c[:, 2] < -11) & (c[:, 2] > -27) & (np.abs(c[:, 1]) > 60) & (c[:, 0] < -120) & (c[:, 0] > -241)      # rocker armor band
     cols[low] = GREY + [255]
     return cols

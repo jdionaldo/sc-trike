@@ -22,12 +22,9 @@ ROOF_P = (33.7, 40.4)              # front roofline: z = 40.4 + ROOF_K * (33.7 -
 ROOF_K = (97.0 - 40.4) / (33.7 + 259.0)
 SLOPE = ROOF_K                     # the blade lies in the front roofline's plane
 ALPHA = math.atan(SLOPE)
-COS_A = math.cos(ALPHA)
-PLATE_T = 3.0
 SPLIT = 66.0
 ARCH = 12.0
-LEG_Y, LEG_T = 28.0, 8.0           # foot centre |y| (kept inside the narrow hood)
-WEB_T = 6.0                        # thickness of the hanger web plate (at y = +-LEG_Y)
+LEG_Y = 28.0           # foot centre |y| (kept inside the narrow hood)
 FORK_SCREW_U = (-30.0, -46.0, -58.0)      # chord positions of the two screws through each fork's lower prong into the blade
 CH = 2.0                           # channel depth in the blade (top and bottom)
 PR = 3.0                           # prong thickness: CH sits in the channel, the rest stands 1 mm proud of the blade surface
@@ -36,9 +33,7 @@ PROF_TOP = [(2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-72.0, 2.5)]
 FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
 FOOT_X = (-314.0, -300.0)          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
 HOLE_X = -307.0                    # foot screw, from below (the access hole is in the hood underside)
-STRUT_XY = (-296.0, 28.0)          # frame strut node (x, |y|); the pad plate extends rearward to the screw
 TZ = {"center": 3.0, "left": 36.0, "right": 36.0}     # STL lift per piece (end plates hang 34 mm below the blade's lower face)
-LEG_Y0 = 14.0                      # leg print frame: inner face of the top flange on the bed
 
 
 
@@ -61,26 +56,10 @@ def foot_z():
     return hood_top(HOLE_X) - 6.0                                     # leg foot underside = pad top, 3.6 mm below the inner skin
 
 
-def strut_node():
-    return np.array([STRUT_XY[0], STRUT_XY[1], foot_z()])
-
-
-def flange_screws():
-    """Blade-underside pilots / leg flange holes: (u, y) pairs, beside the leg so the heads are reachable from below."""
-    return [(_u_at(x), y) for x in LEG_SCREW_X for y in (LEG_Y - 8.5, LEG_Y + 8.5)]
-
-
 def place_matrix():
     R = trimesh.transformations.rotation_matrix(ALPHA, [0, 1, 0])      # z' = -x sin(a) + z cos(a): rises toward the rear
     T = np.eye(4); T[:3, 3] = (X_LE, 0.0, Z_LE)
     return T @ R
-
-
-def _u_at(x, w=-3.0):
-    return (x - X_LE + (-w) * math.sin(ALPHA) * -1.0) / math.cos(ALPHA) if False else (x - X_LE - w * math.sin(ALPHA)) / math.cos(ALPHA)
-
-
-LEG_SCREW_X = (-351.0, -369.0)
 
 
 def _box(x0, x1, y0, y1, z0, z1):

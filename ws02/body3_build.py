@@ -119,8 +119,6 @@ def cyl_m(c, r, h, axis="z"):
     return m.translate(c)
 
 
-PAD_X = (-228.0, -200.0, -168.0)            # rear deck screw stations (match parts/w3_chassis.py)
-SEAM_X = (-270.0, -215.0, -100.0, -20.0)             # seam screws joining the left and right halves
 
 
 def details(body):
@@ -135,17 +133,10 @@ def details(body):
     tri = [(-254, 8), (-203, 8), (-229, 47)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
     hole, wedge, chan = flank_vent(tri)
     body = body - hole + wedge - chan
-    for k in range(-4, 5):                                            # nose light bar: a row of 3 mm LED holes (3.2 mm) through the front wall, 7 mm pitch
+    for k in (-1, 0, 1):                                              # nose light bar: 3 LED holes (3.2 mm) centred between the hinge ears, 7 mm pitch
         body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 30.75))
     wedge, cav = hood_scoop()
     body = body + wedge - cav                                         # hood scoop, 50 % of the hood width
-    th = NOSE_TH                                                          # the skid plate screws into the frame's nose pads through these holes
-    for u_ in (10.0, 28.0):
-        for sy in (1, -1):
-            ox, oz = NOSE_LOW[0] + u_ * math.cos(th), NOSE_LOW[1] + u_ * math.sin(th)
-            nx, nz = -math.sin(th), math.cos(th)
-            hole = Manifold.cylinder(8.0, 1.35, 1.35, 24, True).rotate((0.0, -math.degrees(th), 0.0)).translate((ox + nx * 1.2, sy * 22.0, oz + nz * 1.2))
-            body = body - hole
     # tail-light face: a 0.8 mm recess across the short vertical face at the end of the roof (painted red/black)
     (bx, bz), (cx_, cz_) = TAIL[2], TAIL[1]
     dvec = np.array([cx_ - bx, cz_ - bz]); dvec /= np.linalg.norm(dvec)
@@ -187,25 +178,6 @@ def front_window():
                 pts += [(float(x), float(z)) for x, y, z in m.vertices[::7]]
     hull = MultiPoint(pts).convex_hull.buffer(5.5, join_style=2).simplify(2.0)
     return hull
-
-
-# styling in the new frame (x, z): recessed painted panels (0.8 mm) and through vents on both flanks, as in the references
-PANELS = [  # recessed
-    [(-232, -15), (-132, -18), (-124, -6), (-232, 2)],                          # low sill panel
-    [(-205, 6), (-152, 6), (-130, 24), (-152, 46), (-205, 38)],               # big diagonal panel behind the arm window
-]
-
-
-def flank_cut(poly, depth=None):
-    """Region of an (x, z) polygon extruded across the flank: recessed (outside the inset skin) or through."""
-    out = None
-    for s in (1, -1):
-        y0, y1 = (20.0, 120.0) if s > 0 else (-120.0, -20.0)
-        p = MB.prism_xz(poly, y0, y1)
-        if depth is not None:
-            p = p - solid(depth)
-        out = p if out is None else out + p
-    return out
 
 
 TENT_K = 68.0, -9.3, 3.615           # flank tent: y = 68 - (z + 9.3) / 3.615 above z -9.3
@@ -253,14 +225,16 @@ def flank_vent(tri, blade=4.5):
     return hole, scoop, chan
 
 
-def hood_scoop(xf=-6.0, xr=-46.0, hw=22.0, h=9.0):
-    """Ram-air scoop on the front hood: a raised wedge (mouth faces forward, height h at the mouth, flush with the hood at the rear), half the hood width
-    (hw each side of centre), with a cavity open at the mouth and a hole through the hood floor.  Returns (wedge, cavity)."""
+def hood_scoop(xf=-36.0, xr=-76.0, hw=22.0, h=10.0, lean=6.0):
+    """Ram-air scoop on the hood: a raised wedge (height h at the mouth, flush with the hood at the rear), half the hood width, whose front wall leans
+    forward by `lean` (a parallelogram, not a 90 degree bend).  The cavity opens through the leaning front wall and has a hole through the hood floor."""
     zt = lambda x: top_z(x, 0.0)
-    wedge = MB.prism_xz([(xf, zt(xf) - 1.0), (xf, zt(xf) + h), (xr, zt(xr)), (xr, zt(xr) - 1.0)], -hw, hw)
+    xt = xf + lean
+    wedge = MB.prism_xz([(xf, zt(xf) - 1.0), (xt, zt(xt) + h), (xr, zt(xr)), (xr, zt(xr) - 1.0)], -hw, hw)
+    sl = (zt(xt) + h - zt(xr)) / (xt - xr)
+    tl = lambda x: zt(xr) + sl * (x - xr)                                               # the wedge's top line, extended
     xc = xr + 8.0
-    k = lambda x: h * (x - xr) / (xf - xr)                                         # wedge height above the hood at x
-    cav = MB.prism_xz([(xf + 3.0, zt(xf) - WALL), (xf + 3.0, zt(xf) + k(xf) - WALL), (xc, zt(xc) + k(xc) - WALL), (xc, zt(xc) - WALL)], -(hw - WALL), hw - WALL)
+    cav = MB.prism_xz([(xf - 2.0, zt(xf - 2.0) - WALL - 2.0), (xt + 2.0, tl(xt + 2.0) - WALL), (xc, tl(xc) - WALL), (xc, zt(xc) - WALL - 2.0)], -(hw - WALL), hw - WALL)
     return wedge, cav
 
 
@@ -304,10 +278,6 @@ def main():
         y0, y1 = (30.0, 52.0) if s > 0 else (-52.0, -30.0)                    # servo level: leave the upper shoulder as the frame's top beam
         body = body - MB.prism_xz(lpts, y0, y1)
     # (the old rear-arm exit windows are gone: the wall is solid and only the arm's own swept volume is carved, in swing_channels)
-    body = body - Manifold.cube((16.0, 30.0, 22.0), center=True).translate((-241.8, 21.0, 0.0))     # drive shaft tunnel through the rear bulkhead
-    body = body - Manifold.cube((6.0, 300.0, 6.0), center=True).translate((-241.8, 0.0, -25.0))      # the rear deck passes under the bulkhead
-    for y_ in (2.0, 35.0):
-        body = body - cyl_m((-241.8, y_, 27.0), 1.35, 6.0, 'x')                                       # screws that hold the motor plate
     body = details(body)
     m = MB.to_trimesh(body)
     m.merge_vertices()
