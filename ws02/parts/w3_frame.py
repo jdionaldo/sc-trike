@@ -145,7 +145,7 @@ def frame(relief=False):
     for p in parts[1:]:
         side = side + p
     if relief:
-        return side + side.mirror((0.0, 1.0, 0.0))
+        return side + side.mirror((0.0, 1.0, 0.0)) + shock_tab(True)
     cuts = [_disc(-150.0, -10.0, Y0 - 0.1, Y1 + 4.0, 2.7)]
     for x, z in ((-135.9, -19.0), (-135.9, -9.0), (-35.5, -23.8), (-35.5, -13.8), (-86.9, -19.0), (-86.5, -9.5), (-84.5, -23.8), (-84.5, -13.8)):
         cuts.append(_disc(x, z, Y0 - 0.1, Y1 + 4.0, 2.4))
@@ -161,7 +161,21 @@ def frame(relief=False):
     ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
     for c in cuts:
         side = side - c
-    return (side + side.mirror((0.0, 1.0, 0.0))) - motor_envelope()
+    return (side + side.mirror((0.0, 1.0, 0.0))) + shock_tab() - motor_envelope()
+
+
+def shock_tab(relief=False):
+    """Left side only: a stout tube from the rear hoop node R2 out through the skin to a plate with the coilover's upper bolt boss (the tube is the only part inside the skin).
+    The plate and boss lie outside the skin, so the relief is just the grown tube."""
+    from parts import w3_shock as SK
+    tx, tz = SK.tab_xz()
+    y0, y1 = SK.PLATE_Y
+    r = SK.TAB_TUBE_R + (RELIEF_G if relief else 0.0)
+    a, e = np.array(nodes()["R2"]), np.array((tx, 0.5 * (y0 + y1), tz))
+    if relief:
+        return tube(a, e, r, 0.0, 1e-6)
+    m = tube(a, e, r, 0.0, 1e-6) + _disc(tx, tz, y0, y1, 2 * SK.LUG_R + 2.0) + _disc(tx, tz, y1 - 0.1, SK.BOSS_Y1, 2 * SK.BOSS_R)
+    return m - _disc(tx, tz, y0 - 0.5, SK.BOSS_Y1 + 0.5, SK.PIN_D)
 
 
 def motor_envelope():

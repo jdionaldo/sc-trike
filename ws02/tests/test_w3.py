@@ -102,10 +102,41 @@ def test_rear_wheel_travel_clear(dz):
     import w3_swing as SW
     M = {n: m for n, m, k in A.assembly(0.0, 0.0)}
     mov = [n for n in M if n.startswith(("mock_rear_", "w3_rear_arm"))]
-    fixed = [n for n in M if n not in mov and (not n.startswith("mock_") or n == "mock_cdiff_ring")]
+    fixed = [n for n in M if n not in mov and n != "b_rear_shock" and (not n.startswith("mock_") or n == "mock_cdiff_ring")]      # the shock follows the arm: test_rear_shock_clear sweeps it
     import mono_build as MB
     ang = float(np.degrees(np.arcsin(dz / np.hypot(D.XR - D.RAXLE[0], D.RAXLE[1]))))
     for n in mov:
         mr = SW.rot_pivot(MB.man(M[n]), ang)
         for f in fixed:
             assert (mr ^ MB.man(M[f])).volume() < 0.5, (n, f, dz)
+
+
+def _shock_angle(dz):
+    return float(np.degrees(np.arcsin(dz / np.hypot(D.XR - D.RAXLE[0], D.RAXLE[1]))))
+
+
+def test_rear_shock_length():
+    """Eye to eye stays inside the 55..80 mm stroke over 20 mm droop to 25 mm bump, about 2/3 extended at rest."""
+    from parts import w3_shock as SK
+    ls = {dz: SK.eye_to_eye(_shock_angle(dz)) for dz in np.linspace(-20.0, 25.0, 46)}
+    lmin, lmax, rest = min(ls.values()), max(ls.values()), SK.eye_to_eye(0.0)
+    print(f"shock eye to eye: min {lmin:.1f} (bump), rest {rest:.1f}, max {lmax:.1f} (droop)")
+    assert SK.LMIN + 3.0 <= lmin and lmax <= SK.LMAX - 0.2, (lmin, lmax)
+    assert 0.6 <= (rest - SK.LMIN) / (SK.LMAX - SK.LMIN) <= 0.75, rest
+
+
+@pytest.mark.parametrize("dz", [-20.0, -10.0, 0.0, 10.0, 20.0, 25.0])
+def test_rear_shock_clear(dz, body_built):
+    """The coilover (envelope with the spring as a solid cylinder) touches nothing but its two bolt bosses' faces, over the whole travel; the lug and tab are fixed to the arm / frame."""
+    import w3_swing as SW
+    import mono_build as MB
+    from parts import w3_shock as SK
+    ang = _shock_angle(dz)
+    M = {n: m for n, m, k in A.assembly(0.0, 0.0)}
+    shock = SK.shock_manifold(ang)
+    for n, mesh in M.items():
+        if n == "b_rear_shock":
+            continue
+        mv = n.startswith(("mock_rear_", "w3_rear_arm"))
+        part = SW.rot_pivot(MB.man(mesh), ang) if mv else MB.man(mesh)
+        assert (shock ^ part).volume() < 0.5, (n, dz)

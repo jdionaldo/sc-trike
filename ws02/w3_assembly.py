@@ -80,6 +80,9 @@ def assembly(phi_deg=0.0, steer=None):
     b = LY.blocks()
     for k in ("battery", "motor", "front_ring", "rear_ring", "rear_shaft", "front_pinion_shaft", "motor_shaft"):
         items.append((f"b_{k}", b[k], "bought"))
+    import mono_build as MB
+    from parts import w3_shock as SK
+    items.append(("b_rear_shock", MB.to_trimesh(SK.shock_manifold(0.0)), "bought"))     # stock 1/10 coilover, left side, at rest
     return items
 
 

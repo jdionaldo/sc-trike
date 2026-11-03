@@ -15,7 +15,7 @@ BOUGHT = {   # g, assumptions to verify
     "mock_cdiff_carrier": 38, "mock_cdiff_ring": 12, "mock_motor_pinion": 3, "mock_fdiff_carrier": 28, "mock_bevel_pinion": 4,
     "mock_fpulley": 3, "mock_rear_pulley": 4, "mock_fbelt": 3, "mock_rear_belt": 5, "mock_front_out": 3,
     "b_front_ring": 8, "b_rear_ring": 8, "b_rear_shaft": 22, "b_front_pinion_shaft": 5, "b_motor_shaft": 2,
-    "diff_out": 6, "tip_shaft": 5, "lean_horn": 4, "steer_horn": 3,
+    "b_rear_shock": 25, "diff_out": 6, "tip_shaft": 5, "lean_horn": 4, "steer_horn": 3,
 }
 MISC_G = 110.0                      # screws, inserts, bearings, pins, wiring (placed at the centroid)
 

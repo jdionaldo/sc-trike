@@ -259,7 +259,13 @@ def rear_arm(p):
                     parts += [_tb((u, sgn * V, w), (u, sgn * 16.0, w), 4.0), _ball((u, sgn * 16.0, w), 4.0)]
                 parts.append(_tb((u, sgn * 16.0, wi), (u, sgn * 16.0, wo), 4.0))
         parts += [_cz(0.0, 0.0, 0.0, 7.6, 20.0), _cz(L, 0.0, 0.0, 7.6, 26.0), _cz(0.0, 0.0, wo - 4.4, wo + 4.7, 24.0), _cz(L, 0.0, wo - 4.4, wo + 4.7, 28.0)]    # hubs
+        from parts import w3_shock as SK                                         # coilover lug: a pillar on the outer plane (prints as one layer stack), bolt boss on its end
+        lu, lv = SK.LUG_UV
+        w0, w1, w2 = 22.0, SK.PLATE_Y[1] - 46.0, SK.BOSS_Y1 - 46.0
+        parts.append(Manifold.batch_hull([_cz(lu, lv, w0, w1, 2 * SK.LUG_R), Manifold.cube((26.0, 7.0, w1 - w0), center=False).translate((lu - 13.0, 6.0, w0))]))
+        parts.append(_cz(lu, lv, w1 - 0.1, w2, 2 * SK.BOSS_R))
         body = _join(parts)
+        body = body - _cz(lu, lv, w0 - 1.0, w2 + 1.0, SK.PIN_D)
         body = body - _cz(0.0, 0.0, -0.1, D.SEAT_D, D.SEAT) - _cz(0.0, 0.0, -0.1, wo + 4.9, D.BORE)
         body = body - _cz(L, 0.0, -0.1, 5.1, 16.15) - _cz(L, 0.0, -0.1, wo + 4.9, 8.4)
         body = body - _cz(0.0, 0.0, wo + 4.8 - D.SEAT_D, wo + 4.8, D.SEAT) - _cz(L, 0.0, wo + 4.8 - 5.1, wo + 4.8, 16.15)                                       # outer seats

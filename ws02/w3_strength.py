@@ -134,6 +134,16 @@ rows.append(("Carrier kingpin cantilever tube (brace ignored), 3 g landing", sf(
 sinA = 7.0 / math.hypot(7.0, 16.0)
 sig = (Fs / (2 * sinA)) / (math.pi * 3 ** 2)
 rows.append(("Knuckle steering V tubes, axial at servo stall", sf(sig)))
+
+# ---- rear coilover mounts: 3 g wheel load times the worst (smallest) wheel-travel / shock-stroke ratio over the travel ----
+from parts import w3_shock as SK
+_dn, _up = SK.travel_angles()
+lever = min(SK.mount_lever(a_) for a_ in np.linspace(_dn, _up, 15))
+Fshock = N_r * lever
+sig = Fshock * (0.5 * sum(SK.PLATE_Y) + 4.0 - 38.0) / (math.pi * SK.TAB_TUBE_R ** 3 / 4)          # tab tube, cantilever from node R2 (y 38) to the eye plane
+rows.append((f"Rear shock tab tube (13 mm, 46 mm cantilever from the cage), shock force {Fshock:.0f} N at 3 g landing", sf(sig)))
+sig = Fshock * 12.0 / (9.0 * 11.0 ** 2 / 6)                                                        # arm lug pillar, 9 x 11 mm section, 12 mm lever
+rows.append(("Rear shock lug on the swing arm (pillar bending), 3 g landing", sf(sig)))
 lines = ["# WS-03 strength checks", "",
          f"Loads: 3 g landing, front wheel {N_f:.1f} N, rear wheel {N_r:.1f} N, cornering force 0.6 x load. Beam FE on the real tube graphs (PETG E 1500 MPa), "
          f"design stress 25 MPa. Factor of safety below 2 is flagged.", "",
