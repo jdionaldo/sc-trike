@@ -4,15 +4,15 @@ Printed mass = 1.2 mm walls plus 25% infill (15% for the body); bought masses ar
 
 | item | value |
 |---|---|
-| printed_g | 777 |
-| bought_g | 1191 |
+| printed_g | 785 |
+| bought_g | 1160 |
 | misc_g | 110.0 |
-| total_g | 2078 |
-| cg_mm | [-164.4, 2.1, 10.6] |
-| front_weight_fraction | 0.635 |
-| cg_height_above_ground_mm | 52.1 |
-| static_roll_angle_deg | 68.9 |
-| rollover_speed_1m_radius_mps | 5.04 |
+| total_g | 2055 |
+| cg_mm | [-167.8, 1.9, 12.7] |
+| front_weight_fraction | 0.627 |
+| cg_height_above_ground_mm | 54.2 |
+| static_roll_angle_deg | 68.1 |
+| rollover_speed_1m_radius_mps | 4.93 |
 
 Heaviest items:
 
@@ -25,4 +25,4 @@ Heaviest items:
 - body3_mid: 73 g
 - body3_front: 71 g
 - w3_frame_rear: 57 g
-- w3_frame_front: 54 g
+- lean_servo_c: 55 g

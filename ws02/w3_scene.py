@@ -11,6 +11,7 @@ from scipy.optimize import brentq
 import front3wd as F
 import layout3wd as LY
 from parts import w3_front as W
+from parts import w3_lean as LN
 
 STL = Path("out/stl")
 from params import P as _P
@@ -49,6 +50,14 @@ def Ry(theta, about):
     m = np.eye(4)
     m[:3, :3] = [[c, 0, -s], [0, 1, 0], [s, 0, c]]
     return T(about[0], 0, about[1]) @ m @ T(-about[0], 0, -about[1])
+
+
+def Rx(a, about):
+    """Rotate in the y-z plane by a (up positive on +y) about the point (y, z)."""
+    c, s = math.cos(a), math.sin(a)
+    m = np.eye(4)
+    m[:3, :3] = [[1, 0, 0], [0, c, -s], [0, s, c]]
+    return T(0, about[0], about[1]) @ m @ T(0, -about[0], -about[1])
 
 
 def Rz(a, about):
@@ -100,6 +109,51 @@ def tip_at(shaft, r, psi, rest, sign=1.0):
     return shaft + r * np.array([-math.sin(q) * sign, math.cos(q)])
 
 
+def ball_rod(p0, p1, r=1.5, rb=3.2):
+    """Turnbuckle with a ball link at each end (bought): a rod between two joint centres."""
+    p0, p1 = np.asarray(p0, float), np.asarray(p1, float)
+    m = trimesh.creation.cylinder(radius=r, segment=[p0, p1], sections=16)
+    for c in (p0, p1):
+        b = trimesh.creation.icosphere(subdivisions=2, radius=rb)
+        b.apply_translation(c)
+        m = trimesh.util.concatenate([m, b])
+    return m
+
+
+def lean_psi(th, phi_deg=0.0):
+    """Servo angle (rad) that holds both rod lengths for arm angles th = {1: left, -1: right}: the least-error root near the linear guess."""
+    lugs = {}
+    a = math.atan2(W.LUG[1], W.LUG[0]); rho = math.hypot(*W.LUG)
+    for s, t in th.items():
+        lugs[s] = np.array([F.P[0] + rho * math.cos(a + t), s * (55.0 + W.YS), F.P[1] + rho * math.sin(a + t)])
+    guess = -math.radians(1.175) * phi_deg
+    best = None
+    for psi in np.linspace(-0.55, 0.55, 1101):
+        (yl, zl), (yr, zr) = LN.tips(psi)
+        e = max(abs(np.linalg.norm(lugs[1] - [LN.XR, yl, zl]) - LN.ROD_L), abs(np.linalg.norm(lugs[-1] - [LN.XR, yr, zr]) - LN.ROD_L))
+        sc = e + 0.02 * abs(psi - guess)
+        if best is None or sc < best[0]:
+            best = (sc, psi, e)
+    return best[1], best[2], lugs
+
+
+def lean_items(phi, th):
+    """One lean servo on the centreline, its horn, the V rocker and the two ball-link rods."""
+    psi, err, lugs = lean_psi(th, math.degrees(phi))
+    (yl, zl), (yr, zr) = LN.tips(psi)
+    ax = np.array([LN.XR, 0.0, LN.ZC])
+    out = []
+    rk = load("w3_lean_rocker", T(LN.XR - 2.0, 0, LN.ZC) @ Rx(psi, (0.0, 0.0)) @ np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1.0]]))
+    out.append(("lean_rocker_c", rk, "printed"))
+    out.append(("lean_mount_c", load("w3_lean_tower", T(0, 0, LN.TWR_Z0)), "printed"))
+    out.append(("lean_horn_c", trimesh.creation.cylinder(radius=8.0, segment=[[LN.XR + 2.0, 0, LN.ZC], [LN.TOP_X, 0, LN.ZC]], sections=32), "bought"))
+    out.append(("lean_servo_c", flat_box((LN.TOP_X + LN.SV_H / 2, -LN.SV_OFF, LN.ZC), (LN.SV_H, LN.SV_L, LN.SV_W)), "bought"))
+    out.append(("lean_ears_c", flat_box((LN.TWR_X[1] + 1.25, -LN.SV_OFF, LN.ZC), (2.5, LN.SV_EAR, LN.SV_W)), "bought"))
+    out.append(("lean_rod_1", ball_rod([LN.XR, yl, zl], lugs[1]), "bought"))
+    out.append(("lean_rod_-1", ball_rod([LN.XR, yr, zr], lugs[-1]), "bought"))
+    return out
+
+
 def scene(phi_deg, steer=None):
     phi = math.radians(phi_deg)
     th = dict(zip((1, -1), F.arm_angles(phi)))
@@ -131,16 +185,6 @@ def scene(phi_deg, steer=None):
         wheel = LY.cyl((0, s * (F.T), 0), F.R, F.W, "y")
         wheel.apply_transform(T(kx, 0, kz) @ Rz(delta, (0.0, s * W.KP_Y)))
         items.append((f"tire_{s}", wheel, "bought"))
-        # lean servo, horn and rod (horn angle solved for this arm angle)
-        a = math.atan2(W.LUG[1], W.LUG[0]); rho = math.hypot(*W.LUG)
-        lug = F.P + rho * np.array([math.cos(a + t), math.sin(a + t)])
-        f = lambda psi: np.linalg.norm(tip_at(SH_LEAN, R_H, psi, rest) - lug) - lr
-        psi = solve_psi(f)
-        tip = tip_at(SH_LEAN, R_H, psi, rest)
-        yh = (s * HORN_Y[0], s * HORN_Y[1]) if s > 0 else (s * HORN_Y[1], s * HORN_Y[0])
-        items.append((f"lean_horn_{s}", horn_mesh(SH_LEAN, tip, tuple(sorted((s * HORN_Y[0], s * HORN_Y[1])))), "bought"))
-        items.append((f"lean_servo_{s}", flat_box(((SH_LEAN[0] + 11.4), s * (SERVO_Y[0] + SERVO_Y[1]) / 2, SH_LEAN[1]),
-                                                  (40.0, SERVO_Y[1] - SERVO_Y[0], 20.0)), "bought"))
         # steer: tie rod from the knuckle arm point to the steer horn tip
         kp = np.array([kx, s * W.KP_Y, kz])
         a_pt = kp + Rz(delta, (0, 0))[:3, :3] @ np.array([W.ARM_A[0], s * W.ARM_A[1], W.ARM_A[2]])
@@ -160,12 +204,12 @@ def scene(phi_deg, steer=None):
         items.append((f"tip_shaft_{s}", LY.cyl((kx, s * (86.0 + W.YS / 2), kz), 2.0, 74.0 - W.YS, "y"), "bought"))
         if not math.isnan(ps):
             items.append((f"tie_rod_{s}", rod_mesh("w3_tie_rod", [ts[0], s * tip_y, ts[1]], [a_pt[0], a_pt[1], a_pt[2]], (0, 0, 1)), "printed"))
-        items.append((f"lean_rod_{s}", rod_mesh("w3_lean_rod", [tip[0], s * (55.0 + W.YS), tip[1]], [lug[0], s * (55.0 + W.YS), lug[1]], (0, 1, 0)), "printed"))
     items.append(("front_diff", LY.cyl((F.P[0], 0, 0), 19, 38, "y"), "bought"))
+    items += lean_items(phi, th)
     return items
 
 
-OK_PAIRS = [("mock_axle", "knuckle"), ("mock_joint", "knuckle"), ("mock_joint", "carrier"), ("mock_hub", "knuckle"), ("mock_rimdisc", "knuckle"), ("mock_tire", "knuckle"), ("mock_rim", "knuckle"), ("wing", "tip_shaft"), ("wing", "carrier"), ("tip_shaft", "carrier"), ("tip_shaft", "knuckle"), ("tip_shaft", "tire"), ("tip_shaft", "arm"), ("tip_shaft", "cover"),
+OK_PAIRS = [("lean_rod", "lean_rocker"), ("lean_rod", "lean_horn"), ("lean_rocker", "lean_horn"), ("lean_mount_c", "lean_servo"), ("lean_mount_c", "lean_ears"), ("lean_rocker", "lean_servo"), ("mock_axle", "knuckle"), ("mock_joint", "knuckle"), ("mock_joint", "carrier"), ("mock_hub", "knuckle"), ("mock_rimdisc", "knuckle"), ("mock_tire", "knuckle"), ("mock_rim", "knuckle"), ("wing", "tip_shaft"), ("wing", "carrier"), ("tip_shaft", "carrier"), ("tip_shaft", "knuckle"), ("tip_shaft", "tire"), ("tip_shaft", "arm"), ("tip_shaft", "cover"),
             ("diff_out", "arm"), ("diff_out", "tub_wall"), ("diff_out", "front_diff"), 
             ("tire", "knuckle"), ("lean_rod", "lean_horn"), ("tie_rod", "steer_horn"), ("lean_rod", "arm"),
             ("tie_rod", "knuckle"), ("tire", "carrier")]

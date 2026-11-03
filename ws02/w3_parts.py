@@ -2,7 +2,7 @@
 import math
 import numpy as np
 from params import P
-from parts import w3_front, w3_drive, w3_chassis, lean_linkage
+from parts import w3_front, w3_drive, w3_chassis, lean_linkage, w3_lean
 import w3_scene as S
 
 
@@ -25,5 +25,5 @@ def tube_rod(name, length, boss):
 def all_parts():
     lt = float(np.linalg.norm(np.array([S.W.ARM_A[0], S.W.KP_Y + S.W.ARM_A[1], S.W.ARM_A[2]])
                               - np.array([S.I0[0], 56.0 + S.W.YS, S.I0[1]])))
-    rods = [tube_rod("w3_tie_rod", lt, P.rod_boss), tube_rod("w3_lean_rod", S.LR, P.rod_boss)]
+    rods = [tube_rod("w3_tie_rod", lt, P.rod_boss)] + w3_lean.build(P)
     return w3_front.build(P) + rods + w3_drive.build(P) + w3_chassis.build(P)

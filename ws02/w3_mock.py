@@ -51,7 +51,7 @@ def static_drivetrain():
     it.append(("mock_bevel_pinion_f", _cx(-119.0, SY, 0.0, 6.5, 8.0), "bought"))
     it.append(("mock_bevel_pinion_r", _cx(back(-257.0), SY, 0.0, 6.5, 8.0), "bought"))
     # receiver in the nose bay beside the battery
-    it.append(("mock_receiver", LY.box((-75.0, -51.0), (12.0, 27.0), (-20.0, -11.0)), "bought"))
+    it.append(("mock_receiver", LY.box((-56.0, -32.0), (12.0, 27.0), (-14.0, -5.0)), "bought"))
     # rear wheel: tire ring, rim barrel, outer disc, hub and 8 mm axle; one-sided arm with the belt on the left
     ax, az = D.RAXLE
     it.append(("mock_rear_axle", _cy(ax, 26.0, az, 4.0, 100.0), "bought"))

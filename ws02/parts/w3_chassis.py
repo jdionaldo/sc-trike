@@ -11,7 +11,7 @@ from manifold3d import Manifold
 DECK_Z = (-29.0, -23.0)
 TD = DECK_Z[1] - DECK_Z[0]                                           # base plate thickness
 FRONT_X = (-153.0, -2.5)
-SERVO_DROP = 3.0                           # the lean servos' bottoms sit at the base plate's underside: their trays hang 3 mm below it (the front deck prints top-down)
+SERVO_DROP = 0.0                           # the lean servos' bottoms sit at the base plate's underside: their trays hang 3 mm below it (the front deck prints top-down)
 # base plate outline (x, half width), as drawn along the cage: a diagonal out from the nose to the cage's widest tubes, a straight run, then one long diagonal in to the tail;
 # both decks read the same table, so the seam at x -153 is flush
 PLAN = [(-2.5, 36.0), (-34.0, 54.5), (-210.0, 54.5), (back(-296.0), 37.5)]       # the last diagonal runs from the cage's widest tubes to the tail (stretched 90 mm)
@@ -61,7 +61,7 @@ def deck(p, name, xr, limit, perimeter):
             for sgn in (1, -1):                                            # servo trays: floor plates with an inner lip (the frame tubes at |y| 55 are the outer wall) under the lean (z -29 bottom) and steering servos
                 def side(y0, y1):
                     return (y0, y1) if sgn > 0 else (-y1, -y0)
-                for x0_, x1_, zf_, zl_ in ((-79.5, -41.0, -SERVO_DROP, 8.0), (-134.0, -88.0, 0.0, 5.8)):
+                for x0_, x1_, zf_, zl_ in ((-134.0, -88.0, 0.0, 5.8),):
                     ztop = 0.0 if zf_ < 0 else 4.5
                     body = body + _box(x0_, x1_, *side(31.0, 54.5), zf_, ztop)
                     body = body + _box(x0_, x1_, *side(31.0, 35.0), zf_, zl_)
@@ -69,8 +69,10 @@ def deck(p, name, xr, limit, perimeter):
         if not perimeter:
             for sgn in (1, -1):                                            # servo pockets: the plate steps down to the tray floor under each servo's footprint
                 yy = (35.0, 57.0) if sgn > 0 else (-57.0, -35.0)
-                cuts.append(_box(-81.0, -39.0, yy[0], yy[1], 0.0, TD + 0.1))
                 cuts.append(_box(-134.0, -88.0, yy[0], yy[1], 4.5, TD + 0.1))
+            from parts import w3_lean as LN
+            for fx_, fy_ in LN.FEET:                                       # pilots for the lean tower's feet (M2 self-tapping, from the top)
+                cuts.append(Manifold.cylinder(TD - 1.5, 0.9, 0.9, 20).translate((fx_, fy_, 1.5)))
             cuts.append(_box(TAB_X[0] - 0.3, x1 + 1.0, -33.2, 33.2, -1.0, 3.2))                               # rebate for the grate's foot tab: continuous underside
             for tx, ty in TAB_SCREWS:
                 for sg in (1, -1):

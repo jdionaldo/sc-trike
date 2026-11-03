@@ -20,7 +20,7 @@ L = dict(
 )
 
 
-MOTOR_C = (-100.0, -21.0, 41.0)       # motor can centre (x, y, z): most forward spot the fit scan (w3_fit.py) leaves free; x -100 collides with the pivot hoop, servos and diff case
+MOTOR_C = (-122.0, -21.0, 41.0)       # motor can centre (x, y, z): most forward spot the fit scan (w3_fit.py) leaves free; x -100 collides with the pivot hoop, servos and diff case
 
 
 def box(x, y, z):
@@ -67,7 +67,7 @@ def blocks():
     b["rear_shaft"] = cyl((-231.0 - STRETCH / 2, 21.0, 0), 2.5, 52 + STRETCH, "x")      # x -205 .. back(-257): 142 mm, from the centre diff to the rear bevel
     b["motor"] = cyl(MOTOR_C, 18, 58.1, "x")                                # Hobbywing Fusion SE (36 x 58.1, ESC built in) opposite the driveline
     b["motor_shaft"] = cyl((MOTOR_C[0] - 29.05 - 8.0, MOTOR_C[1], MOTOR_C[2]), 2, 16, "x")      # output shaft leaves the rear face; the cross-over stage to the centre diff is still to be drawn
-    b["battery"] = box((-79, -17), (-10, 10), (-20, -6))
+    b["battery"] = box((-69, -7), (-10, 10), (-20, -6))
     rear_x = -L["wheelbase"]
     rz = L["rear_od"] / 2 - L["tire_od"] / 2 - L["wheelbase"] * np.tan(np.radians(L["rake_deg"]))   # chassis raked nose-down: rear axle lower in the chassis frame
     b["rear_ring"] = cyl((back(-272.0), 21.0, 0), 15, 6, "y")

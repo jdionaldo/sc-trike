@@ -4,8 +4,10 @@ All sizes below are assumptions from the 1/10 and 1/18 RC parts we planned aroun
 
 | item | qty | notes |
 |---|---|---|
-| Servo, 12 kg short body 40 x 20 x 19.3 | 4 | lean x2, steer x2; 49 mm flange screw spacing assumed, 120 deg travel assumed |
-| Servo horn, 28 mm (lean) and 12 mm (steer) | 2 + 2 | aluminium horns, M2 ball studs |
+| Servo, Injora INJS15 23 x 12 x 27.5 (32 over the ears), 17.7 kg.cm at 7.4 V | 1 | lean (single, on the centreline, shaft aft); ear hole pitch 28 mm, shaft offset 4.5 mm, flange 5 mm below the top face are read off the drawing: verify |
+| Servo, 12 kg short body 40 x 20 x 19.3 | 2 | steer x2 (one per side at x -100, unchanged); a single central steering servo was ruled out, see WS03_LEAN.md |
+| Servo horn 25T, aluminium, small round (lean) | 1 | the printed V rocker screws to it with 4 x M2 (the horn sits on the 4.5 mm spline stub; the rocker is 4 mm thick, so no standoff is needed) |
+| Servo horn, 12 mm (steer) | 2 | aluminium horns, M2 ball studs |
 | Motor 2830 about 1400 KV, 3.17 mm shaft | 1 | 16 mm mounting pattern |
 | ESC 60 A, 46 x 38 x 33 | 1 | sits above the battery |
 | LiPo 2S/3S about 62 x 20 x 14 | 1 | in the nose bay |
@@ -25,6 +27,8 @@ All sizes below are assumptions from the 1/10 and 1/18 RC parts we planned aroun
 | Axle 8 mm (rear), 4 mm (front, tip shafts) | 1 + 4 | |
 | Pins 3 mm steel (kingpins, link pivots) | 8 | |
 | Ball studs / rod ends M2 | 8 | tie rods and lean rods |
+| Turnbuckle rods with ball links, 61 mm centre to centre (M2 ball links) | 2 | lean rods from the rocker tips to the arm lugs (3D, not in one plane) |
+| Screws M2 self-tapping | 8 | lean tower feet (4) and servo ears (4) |
 | Steel turnbuckles 3 mm with ball ends, about 105 mm | 2 | steer tie rods (the printed tie rod is only an envelope; printed it buckles at 29 N against a 98 N servo stall) |
 | Kingpins 4 mm steel, about 30 mm | 2 | hang from the carrier tabs |
 | Rear coilover shock, 1/10 aluminium, about 55 mm closed / 80 mm open eye to eye (25 mm stroke), 3 mm eyes, adjustable spring, about 25 g | 1 | `b_rear_shock`, left side, outside the skin. Suggested stock part: a 70 to 80 mm 1/10 crawler/buggy coilover with spring of about 22 mm OD (for example the generic aluminium '70 mm' / '80 mm' class sold by Injora or Yeah Racing; **check the eye-to-eye lengths and the eye width (about 5.5 mm) before buying**, the printed lug and tab are sized to those). A longer shock does not fit; a shorter one bottoms in bump. Spring rate: soft, about 0.3 to 0.5 N/mm at the shock |
@@ -63,6 +67,10 @@ The centre diff stays so the front axle and the rear wheel never fight each othe
 
 Hobbywing QuicRun Fusion SE (36 x 58.1 mm, 201 g, ESC built in) goes on the side opposite the driveline: shaft line and gear cases are at y +21, so the motor sits at y -21, high (z about 32) at the rear, which brings the sideways centre of gravity from 4.9 mm to about 1.4 mm (centre of gravity left of centre) and the front weight share from 60.6 % to about 59 %. It is also the only position where the fit check (WS03_FIT.md) found room for the can.
 Consequence: the motor pinion can no longer mesh directly with the centre-diff ring (they are 42 mm apart in y), so the reduction needs a cross-over stage (a pinion on a short cross shaft, or two idlers) when the gearbox is redrawn around the stock Axial gears.
+
+### Motor moved aft (2026-11-03)
+
+For the single central lean servo the motor moved 22 mm aft: the can now spans x -151..-93 (y -21, z 41), shaft end at x -167. The cross-over stage to the centre-diff ring (x -199..-193, pinion mock at x -197..-189, y 14..27) now has 30 mm to cover along x instead of 52, and 42 mm in y. Front weight share 62.7 % (was 64.1 %), CG x -167.8. The battery slid 10 mm forward (x -69..-7) and the receiver went to x -56..-32 to make room for the lean tower.
 
 ## Rear coilover mounts (printed, added 2026-11-03)
 
