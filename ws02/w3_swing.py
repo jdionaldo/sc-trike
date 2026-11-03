@@ -21,10 +21,10 @@ def rot(m, deg):
 
 
 def load_body():
-    bodies = [MB.man(trimesh.load(f"out/mono3/body3_{p}.stl")) for p in ("front", "rear")]
+    bodies = [MB.man(trimesh.load(f"out/mono3/body3_{p}.stl")) for p in ("front", "mid", "rear")]
     import w3_assembly as A
     wing = [MB.man(m) for n, m, k in A.assembly(0.0, 0.0) if n.startswith("w3_tail")]
-    out = bodies[0] + bodies[1]
+    out = bodies[0] + bodies[1] + bodies[2]
     for w in wing:
         out = out + w
     return out
@@ -91,7 +91,8 @@ def check_fine(body, parts, theta_max=THETA_MAX, step=1.0, names=("w3_frame",)):
     return worst
 
 
-XP, ZP = -272.0, 0.0              # rear swing-arm pivot (the rear bevel axis)
+from parts.w3_drive import XR as XP          # rear pivot (stretched)
+ZP = 0.0              # rear swing-arm pivot (the rear bevel axis)
 
 
 def rot_pivot(m, deg):

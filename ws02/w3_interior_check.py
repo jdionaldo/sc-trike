@@ -5,7 +5,7 @@ man = lambda t: m.Manifold(m.Mesh(vert_properties=np.asarray(t.vertices, np.floa
 sh = man(trimesh.load("out/mono3/body3.stl"))
 b = LY.blocks()
 items = dict(DS.placed())
-for k in ("battery", "esc", "motor", "center_diff", "front_diff", "front_ring", "rear_ring", "rear_shaft", "front_pinion_shaft"):
+for k in ("battery", "motor", "center_diff", "front_diff", "front_ring", "rear_ring", "rear_shaft", "front_pinion_shaft"):
     items[k] = b[k]
 bad = []
 for k, t in items.items():

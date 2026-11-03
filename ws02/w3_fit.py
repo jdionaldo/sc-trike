@@ -43,7 +43,7 @@ def run():
         "3S 1300 mAh 75x35x25": (lambda x, y, z: box(x, x + 75, y - 17.5, y + 17.5, z, z + 25), np.arange(-160, 10, 4.0), [0.0], [-22.0, -18.0, -14.0]),
         "3S 2200 mAh 105x35x25": (lambda x, y, z: box(x, x + 105, y - 17.5, y + 17.5, z, z + 25), np.arange(-200, 10, 4.0), [0.0], [-22.0, -18.0, -14.0]),
         "receiver 30x20x10": (lambda x, y, z: box(x, x + 30, y - 10, y + 10, z, z + 10), np.arange(-200, 20, 5.0), [0.0, 15.0, -15.0], [-22.0, -10.0, 5.0, 20.0]),
-        "Fusion SE motor 36x58 (axis x)": (lambda x, y, z: Manifold.cylinder(58.1, 18, 18, 48).rotate((0, 90, 0)).translate((x, y, z)), np.arange(-290, -150, 4.0), [-21.0, 0.0, 21.0], [8.0, 16.0, 24.0, 32.0]),
+        "Fusion SE motor 36x58 (axis x)": (lambda x, y, z: Manifold.cylinder(58.1, 18, 18, 48).rotate((0, 90, 0)).translate((x, y, z)), np.arange(-340, -150, 4.0), [-21.0, 0.0, 21.0], [8.0, 16.0, 24.0, 32.0]),
         "INJS15 servo 23x27.5x12 (axis y)": (lambda x, y, z: box(x, x + 32, y, y + 27.5, z, z + 12), np.arange(-60, 20, 4.0), [-14.0, 0.0], [-22.0, -14.0, -6.0]),
     }
     for name, (mk, xs, ys, zs) in cases.items():

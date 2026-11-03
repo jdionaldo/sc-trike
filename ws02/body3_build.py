@@ -12,6 +12,7 @@ from manifold3d import Manifold
 from shapely.geometry import MultiPoint, Polygon
 
 import mono_build as MB
+from w3_stretch import fx, back, pts as _pts, STRETCH, RAXLE_Z
 
 OUT = Path("out/mono3")
 KX, KY, DZ, XOFF = 1.0, 1.0, 0.0, 0.0           # the profile below is already in the assembly frame
@@ -21,11 +22,11 @@ WALL = 2.4
 # with a scoop, open tail underside above the gearbox; wide mid body, narrow tail
 NOSE_LOW = (-1.0, -26.0)                              # where the nose underside meets the chassis floor
 NOSE_TH = math.atan2(53.0, 35.0)                      # underside slope (56.6 deg)
-TAIL = [(-299.0, 50.0), (-341.5, 66.4), (-348.1, 83.3)]                # new tail from the owner's markup: underside rising to the tail-light face, then the roof
-WHEEL_C, WHEEL_R = (-360.0, -11.0), 62.0                                           # rear tyre (radius 56) plus 6 mm: the skin's rear edge follows this radius over the wheel
+TAIL = _pts([(-299.0, 50.0), (-341.5, 66.4), (-348.1, 83.3)])                # new tail from the owner's markup: underside rising to the tail-light face, then the roof
+WHEEL_C, WHEEL_R = (back(-360.0), RAXLE_Z), 62.0                                           # rear tyre (radius 56) plus 6 mm: the skin's rear edge follows this radius over the wheel
 ARC = [(WHEEL_C[0] + WHEEL_R * math.cos(math.radians(a_)), WHEEL_C[1] + WHEEL_R * math.sin(math.radians(a_))) for a_ in (-14, -7, 0, 10, 20, 30, 40, 50, 60, 70)]
-SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(-259, 97)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail   # straight roofline, flat vertical nose face, short raked tail
-HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-245, 61), (-254, 59), (-258, 57.5), (-266, 47.5), (-280, 43.5), (-300, 42.5), (-340, 40), (-348, 38.5)]
+SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(fx(-259.0), 97)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail   # straight roofline, flat vertical nose face, short raked tail
+HALF = _pts([(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-245, 61), (-254, 59), (-258, 57.5), (-266, 47.5), (-280, 43.5), (-300, 42.5), (-340, 40), (-348, 38.5)])
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]           # (y, z): flanks lean in toward the roof
 
 
@@ -61,9 +62,9 @@ def rocker(inset=0.0):
     """Rocker panels: an angular bulge along the lower flank (peak 5.5 mm out at z -10) that angles back in to the base plate below and blends
     into the flank above.  Built as hulls of cross-sections at the plan's own breakpoints, so the surface is exact and flat-faced."""
     r = ROCK
-    xs = sorted({x for x, _ in HALF if -229.0 < x < -28.0} | {-229.0, -42.0, -28.0})
+    xs = sorted({x for x, _ in HALF if fx(-229.0) < x < -28.0} | {fx(-229.0), -42.0, -28.0})
     def scale(x):                                                       # full bulge from x -189 forward, tapering to nothing at x -229 (one long smooth face)
-        return float(np.clip((x + 229.0) / 40.0, 0.0, 1.0) * np.clip((-28.0 - x) / 14.0, 0.0, 1.0))
+        return float(np.clip((x - fx(-229.0)) / (40.0 + STRETCH), 0.0, 1.0) * np.clip((-28.0 - x) / 14.0, 0.0, 1.0))
     def pts(x, sgn):
         w0 = min(_plan_hw(x), 68.0) - inset
         bb = r["b"] * scale(x)
@@ -84,10 +85,10 @@ def solid(inset=0.0, belly=False):
     plan_pts = hp + [(x, -y) for x, y in reversed(hp)]
     plan = Polygon(plan_pts).buffer(-inset, join_style=2)
     sec = Polygon(to_new(SECTION, "sec")).buffer(-inset, join_style=2)
-    s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0) ^ prism_yz(list(sec.exterior.coords)[:-1], -400.0, 100.0)
+    s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0) ^ prism_yz(list(sec.exterior.coords)[:-1], -500.0, 100.0)
     s = s + rocker(inset)
     if belly:                                        # open belly: remove the floor with a straight prism of the cavity's plan (no stepped sweep: the lower edge stays clean)
-        floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((296.2, 400.0, 100.0), center=False).translate((-296.6, -200.0, -80.0))
+        floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((296.2 + STRETCH, 400.0, 100.0), center=False).translate((-296.6 - STRETCH, -200.0, -80.0))
         s = s + floor
     return s
 
@@ -133,7 +134,7 @@ def details(body):
             zb = tz + FR.TAB_BOSS
             body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
             body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
-    tri = [(-226, 8), (-190, 8), (-208, 47)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
+    tri = [(back(-226.0), 8), (back(-190.0), 8), (back(-208.0), 47)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
     hole, wedge, chan = flank_vent(tri)
     body = body - hole + wedge - chan
     for k in (-1, 0, 1):                                              # nose light bar: 3 LED holes (3.2 mm) centred between the hinge ears, 7 mm pitch
@@ -153,9 +154,9 @@ def details(body):
     body = body - MB.prism_xy(canopy, 45.0, 200.0)
     # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
     for s_ in (1, -1):
-        rect = [(-237.0, s_ * 5.0), (-205.0, s_ * 5.0), (-205.0, s_ * 37.0), (-237.0, s_ * 37.0)]
+        rect = [(back(-237.0), s_ * 5.0), (back(-205.0), s_ * 5.0), (back(-205.0), s_ * 37.0), (back(-237.0), s_ * 37.0)]
         body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))                    # shallow pocket so the blades blend into the roof
-    cuts, wedges, chans = roof_gills(-233.0, -209.0, 8.0, 34.0)
+    cuts, wedges, chans = roof_gills(back(-233.0), back(-209.0), 8.0, 34.0)
     body = body - cuts + wedges - chans
     import parts.w3_frame as _FR                                                           # hinge ears: the skin flips up on a pin through these and the frame's lugs
     for s in (1, -1):
@@ -190,7 +191,7 @@ TENT_K = 68.0, -9.3, 3.615           # flank tent: y = 68 - (z + 9.3) / 3.615 ab
 def _flank_y(x, z):
     """Skin outer surface |y| at (x, z): the smaller of the plan half width and the tent."""
     tent = TENT_K[0] - (z - TENT_K[1]) / TENT_K[2]
-    return min(hw_in(min(max(x, -299.0), 29.0), 0.0), min(68.0, tent))
+    return min(hw_in(min(max(x, fx(-299.0)), 29.0), 0.0), min(68.0, tent))
 
 
 def _shear_y(m, s, zc):

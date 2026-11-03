@@ -12,7 +12,7 @@ for n in names:
     if os.path.exists(f):
         t = trimesh.load(f)
         rows.append((n, np.round(t.extents, 1).tolist(), abs(t.volume) / 1000.0))
-for n in [f"body3_{p}" for p in ("front", "rear")]:
+for n in [f"body3_{p}" for p in ("front", "mid", "rear")]:
     f = f"out/mono3/{n}.stl"
     if os.path.exists(f):
         t = trimesh.load(f)
@@ -28,7 +28,7 @@ for n, ext, v in rows:
     lines.append(f"| {n}{' x' + str(k) if k > 1 else ''} | {ext[0]} x {ext[1]} x {ext[2]} | {v:.1f} | {v * dens * k:.0f} |")
 lines += ["", f"Printed total (solid, one set; left/right pairs listed separately): about {tot:.0f} g.", "",
           "## Design numbers", "",
-          f"- Front track {2 * S.F.T:.0f} mm (wheel centres), wheelbase 360 mm, front tires 83 x 24, rear 112 x 62.",
+          f"- Front track {2 * S.F.T:.0f} mm (wheel centres), wheelbase 450 mm, front tires 83 x 24, rear 112 x 62.",
           "- Lean limit 25 deg, arm length 100 mm, arm swing about 40 deg, steering +-17 deg (radio mix), 4 servos (lean and steer per front wheel).",
           "- Chassis raked 4 deg nose-down; shaft line at the front axle height, y +21.",
           "- Gearing: motor 15T to centre diff ring 45T (3:1), bevel 12T/30T (2.5:1) at both ends, front belt 20T to 16T, rear belt 20T to 22T.",

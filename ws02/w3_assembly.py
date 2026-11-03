@@ -1,6 +1,7 @@
 """WS-03 full assembly: every printed and bought part placed for a lean/steer pose, with a global interference check,
 bed fit of every printed part and a mass estimate. Frame: x forward, y left, z up, z = 0 at the front axle height."""
 import math
+import os
 import itertools
 import numpy as np
 import trimesh
@@ -62,7 +63,7 @@ def assembly(phi_deg=0.0, steer=None):
     for s_ in (1, -1):                                                       # upper-link standoff on the pivot pin, between the wall and the link
         rows = [[1, 0, 0], [0, 0, 1], [0, -1, 0]] if s_ > 0 else [[1, 0, 0], [0, 0, -1], [0, 1, 0]]
         items.append((f"w3_uplink_standoff_{s_}", _t(f"{STL}/w3_uplink_standoff.stl", M(rows, (-100.0, s_ * 57.6, 40.0))), "printed"))
-    mp = M([[0, 0, -1], [1, 0, 0], [0, -1, 0]], (-236.0, 0, 0))
+    mp = M([[0, 0, -1], [1, 0, 0], [0, -1, 0]], (LY.MOTOR_C[0] - 29.05, 0, 0))
     items.append(("w3_motor_plate", _t(f"{STL}/w3_motor_plate.stl", mp), "printed"))
     from body3_build import NOSE_TH as th, NOSE_LOW
     sk = M([[math.cos(th), 0, math.sin(th)], [0, -1, 0], [math.sin(th), 0, -math.cos(th)]], (NOSE_LOW[0], 0.0, NOSE_LOW[1]))
@@ -73,10 +74,11 @@ def assembly(phi_deg=0.0, steer=None):
     items.append(("w3_skid", sm, "printed"))
     rows, t0, L = rear_arm_mats()
     items.append(("w3_rear_arm", _t(f"{STL}/w3_rear_arm.stl", M(rows, t0)), "printed"))
-    for part in ("front", "rear"):
-        items.append((f"body3_{part}", _t(f"{MONO}/body3_{part}.stl"), "printed"))
+    for part in ("front", "mid", "rear"):
+        if os.path.exists(f"{MONO}/body3_{part}.stl"):                          # absent while the body is being rebuilt (the body build itself calls the assembly)
+            items.append((f"body3_{part}", _t(f"{MONO}/body3_{part}.stl"), "printed"))
     b = LY.blocks()
-    for k in ("battery", "esc", "motor", "front_ring", "rear_ring", "rear_shaft", "front_pinion_shaft", "motor_shaft"):
+    for k in ("battery", "motor", "front_ring", "rear_ring", "rear_shaft", "front_pinion_shaft", "motor_shaft"):
         items.append((f"b_{k}", b[k], "bought"))
     return items
 

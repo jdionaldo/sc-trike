@@ -13,14 +13,15 @@ from manifold3d import Manifold
 
 import mono_build as MB
 from parts.w3_style import MeshPart, _clean, _tb
+from w3_stretch import back, fx
 
 STEP_Y, STEP_DZ, RISER = (92.0,), 6.0, 4.0     # step stations (|y|), height of each step, riser width (an angled step, about 56 degrees)
 SPAN = 134.5                       # half span = half the front track (269 / 2)
-X_LE = -325.0                      # leading edge (assembly x)
+X_LE = back(-325.0)                      # leading edge (assembly x)
 Z_LE = 120.0                       # lower-face height at the leading edge (set below so the blade top lies on the front roofline plane)
 CHORD = 72.0
 ROOF_P = (33.7, 40.4)              # front roofline: z = 40.4 + ROOF_K * (33.7 - x), from the nose top to the roof peak
-ROOF_K = (97.0 - 40.4) / (33.7 + 259.0)
+ROOF_K = (97.0 - 40.4) / (33.7 - fx(-259.0))
 SLOPE = ROOF_K                     # the blade lies in the front roofline's plane
 ALPHA = math.atan(SLOPE)
 SPLIT = 66.0
@@ -32,8 +33,8 @@ PR = 3.0                           # prong thickness: CH sits in the channel, th
 CLR = 0.15                         # prong-to-channel clearance
 PROF_TOP = [(2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-72.0, 2.5)]
 FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
-FOOT_X = (-314.0, -300.0)          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
-HOLE_X = -307.0                    # foot screw, from below (the access hole is in the hood underside)
+FOOT_X = (back(-314.0), back(-300.0))          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
+HOLE_X = back(-307.0)                    # foot screw, from below (the access hole is in the hood underside)
 TZ = {"center": 3.0, "left": 36.0, "right": 36.0}     # STL lift per piece (end plates hang 34 mm below the blade's lower face)
 
 
@@ -50,7 +51,7 @@ Z_LE = _z_le_from_roof()
 
 
 def hood_top(x):
-    return 97.0 + (97.0 - 83.3) / 89.1 * (x + 259.0)
+    return 97.0 + (97.0 - 83.3) / 89.1 * (x - fx(-259.0))
 
 
 def foot_z():

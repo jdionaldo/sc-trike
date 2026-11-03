@@ -5,6 +5,7 @@ Base plate: 6 mm at z -29..-23 under the gear housings; the housing clamp bolts 
 frame's strut feet screw down into it.  Servo, diff-case and pivot-pin mounts are pads on the tube frame.
 """
 from cad import Part
+from w3_stretch import back, fx
 from manifold3d import Manifold
 
 DECK_Z = (-29.0, -23.0)
@@ -13,14 +14,14 @@ FRONT_X = (-153.0, -2.5)
 SERVO_DROP = 3.0                           # the lean servos' bottoms sit at the base plate's underside: their trays hang 3 mm below it (the front deck prints top-down)
 # base plate outline (x, half width), as drawn along the cage: a diagonal out from the nose to the cage's widest tubes, a straight run, then one long diagonal in to the tail;
 # both decks read the same table, so the seam at x -153 is flush
-PLAN = [(-2.5, 36.0), (-34.0, 54.5), (-210.0, 54.5), (-296.0, 37.5)]
+PLAN = [(-2.5, 36.0), (-34.0, 54.5), (-210.0, 54.5), (back(-296.0), 37.5)]       # the last diagonal runs from the cage's widest tubes to the tail (stretched 90 mm)
 PL = 50.0                                  # grate length along the slope: up to just below the bumper bar
 TAB_X = (-13.0, 0.6)                       # the grate's foot tab (assembly x), lies in a rebate under the front base plate
 TAB_SCREWS = ((-8.0, 26.0), (-3.0, 12.0))  # (x, |y|) countersunk screws from below, into the base plate
-REAR_X = (-296.0, -153.0)
+REAR_X = (back(-296.0), -153.0)
 HOUSING_BOLTS = [(-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0),
                  (-201.5, -2.5), (-201.5, 44.5), (-161.5, -2.5), (-161.5, 44.5),
-                 (-294.0, 8.5), (-294.0, 33.5), (-247.5, 8.5), (-247.5, 33.5)]
+                 (back(-294.0), 8.5), (back(-294.0), 33.5), (back(-247.5), 8.5), (back(-247.5), 33.5)]
 SLOT_W = 3.4
 
 
