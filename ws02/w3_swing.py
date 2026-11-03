@@ -118,6 +118,10 @@ def rear_travel_channels(up_mm=25.0, down_mm=20.0, margin=3.0):
     # the arm's inner face lies inside the skin wall at the pivot; clear the wall right through around the hub so no sliver of wall is left
     pad = Manifold.cylinder(42.0, 13.0, 13.0, 48).rotate((-90.0, 0.0, 0.0)).translate((XP, 38.0, ZP))
     arm_env = arm_env + pad
+    for n, m, k in __import__("w3_assembly").assembly(0.0, 0.0):                                  # the belt and its pulleys move with the arm too
+        if n in ("mock_rear_belt", "mock_rear_pulley_pivot", "mock_rear_pulley_axle"):
+            bm = MB.man(m)
+            arm_env = arm_env + bm + bm.translate((0, 0.4, 0)) + bm.translate((0, -0.4, 0))
     acc = None
     for k in range(int(a0), int(a1) + 2):
         for part in (env, arm_env):

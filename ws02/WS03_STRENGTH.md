@@ -5,7 +5,7 @@ Loads: 3 g landing, front wheel 14.3 N, rear wheel 18.6 N, cornering force 0.6 x
 | check | factor of safety | verdict |
 |---|---|---|
 | Front arm (truss FE), 3 g landing + cornering; max 6.6 MPa in L2i-L2o, tip deflection 0.9 mm | 3.8 | ok |
-| Rear arm (truss FE), 3 g landing + cornering, wheel 46 mm off the arm; max 4.8 MPa in 3pi-4pi, tip deflection 0.6 mm | 5.2 | ok |
+| Rear arm (truss FE), 3 g landing + cornering, wheel 46 mm off the arm; max 4.8 MPa in 3pi-4pi, tip deflection 0.7 mm | 5.2 | ok |
 | Tube frame (FE), 6 g equivalent on the pivot pads, feet fixed; max 9.8 MPa in PS2+-FP1+, deflection 1.26 mm | 2.5 | ok |
 | Kingpin 4 mm steel, cantilever from the carrier tab, cornering | 5.5 | ok |
 | Steer tie rod, 3 mm steel turnbuckle, buckling at servo stall | 7.3 | ok |

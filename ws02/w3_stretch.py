@@ -7,8 +7,8 @@ STRETCH = 90.0
 import math
 
 WHEELBASE = 360.0 + STRETCH
-RAKE_DEG = 1.7
-RAXLE_Z = -WHEELBASE * math.tan(math.radians(RAKE_DEG))       # rear axle height in the chassis frame (ground line stays raked 1.7 deg)
+RAKE_DEG = 4.0
+RAXLE_Z = -WHEELBASE * math.tan(math.radians(RAKE_DEG))       # rear axle height in the chassis frame (ground line stays raked 4 deg)
 
 
 def fx(x):

@@ -13,7 +13,7 @@ from w3_stretch import STRETCH, WHEELBASE, back
 L = dict(
     track=288.0, tire_od=112.0, tire_w=62.0, rear_od=112.0, rear_w=62.0,
     la=100.0,                      # arm length, pivot to knuckle carrier
-    wheelbase=WHEELBASE, rake_deg=1.7,
+    wheelbase=WHEELBASE, rake_deg=4.0,
     tub_in=48.0, tub_wall=2.0,     # widened tub (inner face, wall)
     arm_y=(50.5, 56.5), horn_y=(57.0, 59.5), servo_y=(28.7, 48.0),
     zu=40.0,                       # upper link height above the lower pin

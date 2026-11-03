@@ -24,7 +24,7 @@ NOSE_LOW = (-1.0, -26.0)                              # where the nose underside
 NOSE_TH = math.atan2(53.0, 35.0)                      # underside slope (56.6 deg)
 TAIL = _pts([(-299.0, 50.0), (-341.5, 66.4), (-348.1, 83.3)])                # new tail from the owner's markup: underside rising to the tail-light face, then the roof
 WHEEL_C, WHEEL_R = (back(-360.0), RAXLE_Z), 62.0                                           # rear tyre (radius 56) plus 6 mm: the skin's rear edge follows this radius over the wheel
-ARC = [(WHEEL_C[0] + WHEEL_R * math.cos(math.radians(a_)), WHEEL_C[1] + WHEEL_R * math.sin(math.radians(a_))) for a_ in (-14, -7, 0, 10, 20, 30, 40, 50, 60, 70)]
+ARC = [(WHEEL_C[0] + WHEEL_R * math.cos(math.radians(a_)), WHEEL_C[1] + WHEEL_R * math.sin(math.radians(a_))) for a_ in (math.degrees(math.asin(max(-1.0, min(1.0, (-26.0 - WHEEL_C[1]) / WHEEL_R)))), 12, 20, 30, 40, 50, 60, 70)]   # the arc starts where the radius meets the skin floor (z -26)
 SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(fx(-259.0), 97), (-70.0, 63.0)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail   # straight roofline, flat vertical nose face, short raked tail
 HALF = _pts([(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-245, 61), (-254, 59), (-258, 57.5), (-266, 47.5), (-280, 43.5), (-300, 42.5), (-340, 40), (-348, 38.5)])
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (51.6, 50), (45.6, 58), (35, 110), (-35, 110), (-45.6, 58), (-51.6, 50), (-68, -9.3)]   # (y, z): flanks lean in toward the roof, with a 45-degree-ish shoulder bevel at z 50..58
@@ -193,8 +193,11 @@ def details(body):
     _tl = __import__('parts.w3_tail', fromlist=['screw_holes'])
     body = body + _tl.screw_bosses() - _tl.screw_holes()                       # wing feet screw onto the hood from inside, so the wing flips up with the skin
     body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()
-    body = body - __import__('w3_swing').rear_travel_channels()                    # wheel arch: the rear tyre and swing arm over their full travel (25 mm up, 20 mm down)
-    body = body - __import__('w3_swing').swing_channels()                       # open-ended channels: the frame tubes slide out as the skin swings up on the nose hinge          # slots where frame tubes pass through the skin
+    body.num_tri()                                                             # evaluate now: the lazily batched boolean chain leaves sliver triangles (an open edge loop on the arm's inner-face plane) at the 4 deg rake
+    _sw = __import__('w3_swing')
+    body = body - _sw.rear_travel_channels()                                   # wheel arch: the rear tyre and swing arm over their full travel (25 mm up, 20 mm down)
+    body.num_tri()
+    body = body - _sw.swing_channels()                                         # open-ended channels: the frame tubes slide out as the skin swings up on the nose hinge
     return body
 
 
