@@ -31,3 +31,21 @@ All sizes below are assumptions from the 1/10 and 1/18 RC parts we planned aroun
 | Antenna tube | 1 | tail post |
 
 Estimated bought-parts mass about 600 to 700 g; printed about 650 g (infill); total about 1.3 kg.
+
+## Stock drivetrain candidates (Axial SCX10 III parts list AXI03007, read 2026-11-02)
+
+Names and part numbers are from the parts list; **dimensions are not in it** and must be measured or taken from the product page before cases are drawn.
+
+| Part no. | Name in the list | Use here |
+|---|---|---|
+| AXI232003 | 6-Bolt Heavy Duty Gear Set (30T ring / 8T pinion, per retailer listings) | front diff gears |
+| AXI232002 | 6-Bolt Differential Locker | diff carrier / spool option |
+| AXI232026 | AR45 Differential Cover | reference for the carrier width |
+| AXI232027 / 232028 | AR45P Universal Axle Set / Straight Axle Shaft | diff outputs |
+| AXI232031 | Internal Metal Drive Gears | gear pairs for the centre / rear split |
+| AXI232033 | Input Metal Gears 27T, 20T and 34T | motor-side reduction |
+| AXI232034 | 40T Metal Spur Gear | reduction stage |
+| AXI232035 | Transmission Shaft Set | shafts |
+| list p.8, p.11 | Bearings 5x11x4, 5x10x4, 5x13x4, 10x15x4, 15x21x4, 4x8x3 | the 5x11x4 seats already in the housings match |
+
+No printed part is cut: housings are drawn around the stock gears and the chassis lengthens as needed.
