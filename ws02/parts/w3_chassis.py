@@ -5,7 +5,7 @@ Base plate: 6 mm at z -29..-23 under the gear housings; the housing clamp bolts 
 frame's strut feet screw down into it.  Servo, diff-case and pivot-pin mounts are pads on the tube frame.
 """
 from cad import Part
-from w3_stretch import back, fx
+from w3_stretch import back, fx, pv
 from manifold3d import Manifold
 
 DECK_Z = (-29.0, -23.0)
@@ -23,7 +23,7 @@ REAR_X = (DECK_SPLIT, -153.0)
 TAIL_X = (back(-296.0), DECK_SPLIT)
 HOUSING_BOLTS = [(-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0),
                  (-201.5, -2.5), (-201.5, 44.5), (-161.5, -2.5), (-161.5, 44.5),
-                 (back(-294.0), 8.5), (back(-294.0), 33.5), (back(-247.5), 8.5), (back(-247.5), 33.5)]
+                 (pv(-294.0), 8.5), (pv(-294.0), 33.5), (pv(-247.5), 8.5), (pv(-247.5), 33.5)]
 SLOT_W = 3.4
 
 

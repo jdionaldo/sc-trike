@@ -7,12 +7,12 @@ Housings are split on the z = 0 plane (every shaft lies in it). The lower half p
 import math
 
 from cad import Part
-from w3_stretch import back, STRETCH, RAXLE_Z
+from w3_stretch import back, pv, STRETCH, RAXLE_Z
 from layout3wd import MOTOR_C
 
 SY = 21.0                 # shaft line |y| (pinion shaft, centre diff axis, rear shaft)
 XD = -100.0               # front diff axis x (arm pivots)
-XR = back(-272.0)               # rear bevel apex x (rear arm pivot)
+XR = pv(-272.0)                 # rear bevel apex x (rear arm pivot), 30 mm forward of the stretched position
 RAXLE = (back(-360.0), RAXLE_Z)   # rear axle (x, z): wheelbase 450, chassis raked 4 deg nose-down
 BORE = 5.4                # 5 mm shaft
 SEAT = 11.15              # 5 x 11 x 4 bearing
@@ -106,17 +106,17 @@ def center_diff_case(p):
 
 
 def rear_bevel_case(p):
-    box = ((back(-297.0), back(-244.0)), (6.0, 36.0), (-21.0, 21.0))
+    box = ((pv(-297.0), pv(-244.0)), (6.0, 36.0), (-21.0, 21.0))
 
     def build(h):
         h.cyl_y(XR, (13.0, 29.0), 0.0, 33.6)                               # ring cavity
-        h.cyl_x((XR, back(-248.0)), SY, 0.0, 15.0)                               # pinion tunnel
-        h.cyl_x((back(-248.1), back(-244.0)), SY, 0.0, SEAT)
-        h.cyl_x((back(-248.1), back(-243.9)), SY, 0.0, BORE)
+        h.cyl_x((XR, pv(-248.0)), SY, 0.0, 15.0)                               # pinion tunnel
+        h.cyl_x((pv(-248.1), pv(-244.0)), SY, 0.0, SEAT)
+        h.cyl_x((pv(-248.1), pv(-243.9)), SY, 0.0, BORE)
         h.cyl_y(XR, (5.9, 10.0), 0.0, SEAT)                                # shaft end bearing
         h.cyl_y(XR, (32.0, 36.1), 0.0, SEAT)                               # output bearing
         h.cyl_y(XR, (5.9, 36.1), 0.0, BORE)
-        for x, y in ((back(-294.0), 8.5), (back(-294.0), 33.5), (back(-247.5), 8.5), (back(-247.5), 33.5)):
+        for x, y in ((pv(-294.0), 8.5), (pv(-294.0), 33.5), (pv(-247.5), 8.5), (pv(-247.5), 33.5)):
             h.hole_z(x, y, BOLT)
     return _halves("w3_rbc", box, build)
 

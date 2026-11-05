@@ -12,7 +12,7 @@ from manifold3d import Manifold
 
 import mono_build as MB
 from parts.w3_style import MeshPart
-from w3_stretch import fx, back
+from w3_stretch import fx, back, pv
 
 R = 3.0                      # tube radius (6 mm OD)
 Y0, Y1 = 54.6, 57.6          # ladder pad thickness (outer face of the servos / diff case ears at 54.5)
@@ -88,25 +88,25 @@ def nodes():
         px, pz = NOSE_LOW[0] + u * math.cos(NOSE_TH) + inw[0] * 4.2, NOSE_LOW[1] + u * math.sin(NOSE_TH) + inw[1] * 4.2
         return (px, 22.0, pz)
     return {"BT": (24.0, 28.0, 22.0), "CBT": (24.0, 0.0, 22.0), "NA": nose(10.0), "NB": nose(28.0), "FS": (-8.0, 22.0, -19.5), "PE1": (-150.0, Y, -10.0), "PS2": (-135.9, Y, -14.0), "PM": (-86.0, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (PIVOT[0], Y, PIVOT[1]), "FN": (-25.0, Y, 28.0),
-            "B1": (-200.0, 59.0, -10.0), "R1": (back(-246.0), 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
+            "B1": (-200.0, 59.0, -10.0), "R1": (pv(-246.0), 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
             "C100": (hx, 0.0, hz), "C262": (rx, 0.0, rz), "FT": (fx, fy, fz), "C29": (fx, 0.0, fz), "XN": (0.5 * (mx + rx), 0.0, 0.5 * (mz + rz) + 0.5 * 0.0 + 0.0),
-            "R2m": (rx, -ry, rz), "PHm": (hx, -53.0, PIVOT[1]), "C40": (hx, 0.0, PIVOT[1]), "XH": (hx, 0.0, hz - (30.0 / 83.0) * (hz - PIVOT[1])),
+            "RW": (pv(-262.0), 40.5, 30.0), "R2m": (rx, -ry, rz), "PHm": (hx, -53.0, PIVOT[1]), "C40": (hx, 0.0, PIVOT[1]), "XH": (hx, 0.0, hz - (30.0 / 83.0) * (hz - PIVOT[1])),
             "HT2": (-135.9, hy + (my - hy) * 0.449, hz + (mz - hz) * 0.449), "K1": (-135.9, 38.5, 25.0),
             "R3": (-200.0, my + (ry - my) * 0.244, mz + (rz - mz) * 0.244), "K2": (-200.0, 52.0, 28.0),
-            "FP1": (-135.9, 44.0, -20.0), "FPB": (-200.0, 52.5, -19.0), "FPR": (back(-250.0), 41.5, -19.0), "FPF": (-35.5, 28.0, -19.5)}
+            "FP1": (-135.9, 44.0, -20.0), "FPB": (-200.0, 52.5, -19.0), "FPR": (pv(-250.0), 41.5, -19.0), "FPF": (-35.5, 28.0, -19.5)}
 
 
 # (a, b, tube radius, trim at a, trim at b): angled tubes only; the roof members are thicker (inboard, no clearance problem)
 EDGES = [("PE1", "PS2", 3.0, 0, 0), ("PS2", "PM", 3.0, 0, 0), ("PM", "PS1", 3.0, 0, 0), ("PS2", "PL", 3.0, 0, 6.0), ("PE1", "PL", 3.0, 0, 6.0),
          ("PS1", "FN", 3.0, 0, 0), ("FN", "PL", 3.0, 0, 6.0),
          ("PS2", "FP1", 3.0, 0, 0), ("B1", "FPB", 4.0, 0, 0), ("R1", "FPR", 4.0, 0, 0), ("PS1", "FPF", 3.5, 0, 0),
-         ("PE1", "B1", 4.5, 7.0, 0), ("B1", "R1", 4.5, 0, 0), ("R1", "R2", 5.0, 0, 0),
+         ("PE1", "B1", 4.5, 7.0, 0), ("B1", "R1", 4.5, 0, 0), ("R1", "RW", 4.5, 0, 0), ("RW", "R2", 4.5, 0, 0),
          ("HT", "PH", 5.5, 0, 6.0), ("PH", "PL", 6.0, 0, 0), ("HT", "C100", 5.5, 0, 0), ("HT", "HT2", 5.5, 0, 0), ("HT2", "MU", 5.5, 0, 0), ("MU", "R3", 5.5, 0, 0), ("R3", "R2", 5.5, 0, 0), ("R2", "C262", 5.5, 0, 0),
          ("MU", "XN", 4.5, 0, 0), ("XN", "R2m", 4.5, 0, 0),
          ("PH", "C40", 4.5, 6.0, 0), ("HT", "XH", 3.5, 0, 0), ("XH", "PHm", 3.5, 0, 6.0),
          ("FT", "C29", 5.5, 0, 0), ("FT", "HT", 5.5, 0, 0), ("FT", "FN", 4.5, 0, 0),
          ("NB", "BT", 3.5, 0, 0), ("FN", "BT", 4.0, 0, 0), ("FT", "BT", 4.5, 0, 0), ("BT", "CBT", 4.5, 0, 0), ("FS", "NA", 3.5, 0, 0), ("NA", "NB", 3.0, 0, 0), ("FP1", "K1", 3.0, 0, 0), ("K1", "HT2", 3.0, 0, 0), ("R3", "K2", 4.0, 0, 0), ("K2", "FPB", 4.0, 0, 0)]
-BALLS = {"BT": 4.5, "FS": 3.5, "XH": 3.5, "C40": 4.5, "R1": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 4.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 4.0, "FPR": 4.0, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 4.0}
+BALLS = {"BT": 4.5, "FS": 3.5, "XH": 3.5, "C40": 4.5, "R1": 4.5, "RW": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 4.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 4.0, "FPR": 4.0, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 4.0}
 FEET = {"FS": 8.0, "FP1": 7.0, "FPB": 9.0, "FPR": 7.6, "FPF": 10.0}      # foot pad diameters, screwed down into the base plate
 
 

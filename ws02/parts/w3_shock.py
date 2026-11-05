@@ -20,6 +20,19 @@ HOOP_R, LEG_R = 6.5, 6.5          # cross tube / legs (13 mm OD)
 WOFF = 46.0 - BOSS_Y[0]           # arm print frame: w = y - (46 - WOFF) = y - BOSS_Y[0], so the lower bolt boss is the lowest layer on the bed
 
 
+CARET_H, CARET_AT = 16.0, 0.3     # swing arm bend (side view, an asymmetric up-caret): the top rail rises CARET_H over the first 30 % of the arm from the pivot, then falls back over the other 70 %
+
+
+def caret_rise(u, L):
+    """How far the top rail / top lattice sit above their straight position at distance u from the pivot."""
+    a = CARET_AT * L
+    return CARET_H * (u / a if u <= a else (L - u) / (L - a))
+
+
+def caret_stations(L):
+    return [0.0, 0.5 * CARET_AT * L, CARET_AT * L, 0.65 * L, L]
+
+
 def _geom():
     from parts import w3_drive as D
     px, pz = D.XR, 0.0
@@ -55,7 +68,7 @@ def hoop_arm_points():
     L = _geom()[3]
     u, v = _lug_uv()
     wo = HOOP_Y - (46.0 - WOFF)
-    return {"A1": (55.0, 9.5, wo), "A2": (L - 4.0, 9.5, wo), "B": (u, v, wo), "C": (u, v, 0.5 * (PLATE_Y[0] + PLATE_Y[1]) - BOSS_Y[0])}
+    return {"A1": (CARET_AT * L, 9.5 + CARET_H, wo), "A2": (L - 4.0, 9.5 + caret_rise(L - 4.0, L), wo), "B": (u, v, wo), "C": (u, v, 0.5 * (PLATE_Y[0] + PLATE_Y[1]) - BOSS_Y[0])}
 
 
 def _tab():

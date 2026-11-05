@@ -8,7 +8,7 @@ import sys
 import numpy as np
 import trimesh
 
-from w3_stretch import STRETCH, WHEELBASE, back
+from w3_stretch import STRETCH, WHEELBASE, back, pv
 
 L = dict(
     track=288.0, tire_od=112.0, tire_w=62.0, rear_od=112.0, rear_w=62.0,
@@ -64,16 +64,16 @@ def blocks():
     b["front_ring"] = cyl((xp, 21.0, 0), 16, 6, "y")
     b["front_pinion_shaft"] = cyl((-135.0, 21.0, 0), 2.5, 40, "x")             # x -155..-115, pinion at its front end
     b["center_diff"] = cyl((-180.0, 21.0, 0), 19, 30, "x")
-    b["rear_shaft"] = cyl((-231.0 - STRETCH / 2, 21.0, 0), 2.5, 52 + STRETCH, "x")      # x -205 .. back(-257): 142 mm, from the centre diff to the rear bevel
+    b["rear_shaft"] = cyl((0.5 * (-205.0 + pv(-257.0)), 21.0, 0), 2.5, -205.0 - pv(-257.0), "x")      # x -205 .. pv(-257): from the centre diff to the rear bevel
     b["motor"] = cyl(MOTOR_C, 18, 58.1, "x")                                # Hobbywing Fusion SE (36 x 58.1, ESC built in) opposite the driveline
     b["motor_shaft"] = cyl((MOTOR_C[0] - 29.05 - 8.0, MOTOR_C[1], MOTOR_C[2]), 2, 16, "x")      # output shaft leaves the rear face; the cross-over stage to the centre diff is still to be drawn
     b["battery"] = box((-79, -17), (-10, 10), (-20, -6))
     rear_x = -L["wheelbase"]
     rz = L["rear_od"] / 2 - L["tire_od"] / 2 - L["wheelbase"] * np.tan(np.radians(L["rake_deg"]))   # chassis raked nose-down: rear axle lower in the chassis frame
-    b["rear_ring"] = cyl((back(-272.0), 21.0, 0), 15, 6, "y")
-    b["rear_bevel"] = cyl((back(-257.0), 21.0, 0), 6, 8, "x")
-    b["rear_out"] = cyl((back(-272.0), 48.0, 0), 2.5, 56, "y")
-    b["rear_arm"] = box((rear_x - 8, back(-264)), (46, 76), (min(-9, rz - 9), 9))
+    b["rear_ring"] = cyl((pv(-272.0), 21.0, 0), 15, 6, "y")
+    b["rear_bevel"] = cyl((pv(-257.0), 21.0, 0), 6, 8, "x")
+    b["rear_out"] = cyl((pv(-272.0), 48.0, 0), 2.5, 56, "y")
+    b["rear_arm"] = box((rear_x - 8, pv(-264)), (46, 76), (min(-9, rz - 9), 9))
     b["rear_tire"] = cyl((rear_x, 0, rz), L["rear_od"] / 2, L["rear_w"], "y")
     return b
 

@@ -16,6 +16,14 @@ def fx(x):
     return x - STRETCH if x < SEAM else x
 
 
+PIVOT_SHIFT = 30.0                      # the rear bevel case, arm pivot and pulley sit this far forward of the stretched position (a longer swing arm)
+
+
+def pv(x):
+    """back(x) for everything that moved forward with the rear arm pivot."""
+    return back(x) + PIVOT_SHIFT
+
+
 def back(x):
     """Rigid shift for something that lies wholly behind the seam (a wheel, a gear case, a wing)."""
     return x - STRETCH

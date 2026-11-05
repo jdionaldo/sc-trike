@@ -58,14 +58,15 @@ rows.append((f"Front arm (truss FE), 3 g landing + cornering; max {s_:.1f} MPa i
 # ---- rear arm: print frame (u along the arm, v vertical-ish, w = lateral) ----
 def rear_arm():
     L = math.hypot(D.XR - D.RAXLE[0], D.RAXLE[1])
-    us = [0.0, L / 4, L / 2, 3 * L / 4, L]
+    from parts import w3_shock as SK
+    us = SK.caret_stations(L)
     V, VL = 9.5, 12.5
     t = Truss()
     planes = {"i": (S.REAR_W[0], 2.4, 2.4), "o": (S.REAR_W[1], 4.5, 3.5)}
     for p_, (w, r, rw) in planes.items():
         for sg in (1, -1):
             for i, u in enumerate(us):
-                t.node(f"{i}{'p' if sg > 0 else 'n'}{p_}", (u, sg * V, w))
+                t.node(f"{i}{'p' if sg > 0 else 'n'}{p_}", (u, sg * V + (SK.caret_rise(u, L) if sg > 0 else 0.0), w))
             for i in range(4):
                 t.edge(f"{i}{'p' if sg > 0 else 'n'}{p_}", f"{i+1}{'p' if sg > 0 else 'n'}{p_}", r)
         for i in range(4):

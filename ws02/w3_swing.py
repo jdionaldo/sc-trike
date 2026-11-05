@@ -116,12 +116,12 @@ def rear_travel_channels(up_mm=25.0, down_mm=20.0, margin=3.0):
     r_arm = math.hypot(cx - XP, cz - ZP)
     a0, a1 = -math.degrees(math.asin(down_mm / r_arm)), math.degrees(math.asin(up_mm / r_arm))
     # the arm's inner face lies inside the skin wall at the pivot; clear the wall right through around the hub so no sliver of wall is left
-    pad = Manifold.cylinder(42.0, 13.0, 13.0, 48).rotate((-90.0, 0.0, 0.0)).translate((XP, 38.0, ZP))
+    pad = Manifold.cylinder(42.0, 13.0, 13.0, 48).rotate((0.0, 0.0, 3.75)).rotate((-90.0, 0.0, 0.0))      # polygon turned half a facet: a vertex line at x = pivot + 13, z = 0 pinched an edge against the frame pad face at y 57.6.translate((XP, 38.0, ZP))
     arm_env = arm_env + pad
     for n, m, k in __import__("w3_assembly").assembly(0.0, 0.0):                                  # the belt and its pulleys move with the arm too
         if n in ("mock_rear_belt", "mock_rear_pulley_pivot", "mock_rear_pulley_axle"):
             bm = MB.man(m)
-            arm_env = arm_env + bm + bm.translate((0, 0.4, 0)) + bm.translate((0, -0.4, 0))
+            arm_env = arm_env + bm + bm.translate((0, 0.7, 0)) + bm.translate((0, -0.4, 0))      # +0.7 on the outer side: +0.4 left a 0.1 mm sliver against the frame pad's face at y 57.6
     acc = None
     for k in range(int(a0), int(a1) + 2):
         for part in (env, arm_env):

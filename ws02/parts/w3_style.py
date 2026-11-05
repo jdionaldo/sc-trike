@@ -235,21 +235,24 @@ def rear_arm(p):
     L = math.hypot(D.XR - D.RAXLE[0], D.RAXLE[1])
     wi, wo = REAR_W                                            # inner / outer plane centres (belt at w 8.1..11.1)
     V, VL = 9.5, 12.5                                          # rail offset; lattice offset (clear of the belt hull, r 8 at the axle)
-    us = [0.0, L / 4, L / 2, 3 * L / 4, L]
+    from parts import w3_shock as SK
+    us = SK.caret_stations(L)                                  # stations: pivot, half way to the apex, apex (30 %), 65 %, axle
+    rv = lambda sgn, u: sgn * V + (SK.caret_rise(u, L) if sgn > 0 else 0.0)        # rail height: the top rail follows the caret, the bottom rail stays straight (the belt runs between)
+    lv = lambda sgn, u: sgn * VL + (SK.caret_rise(u, L) if sgn > 0 else 0.0)
     def fn():
         parts = []
         for w, r, rw in ((wi, 2.4, 2.4), (wo, 4.5, 3.5)):
             for sgn in (1, -1):
                 for a, b in zip(us, us[1:]):
-                    parts.append(_tb((a, sgn * V, w), (b, sgn * V, w), r))
+                    parts.append(_tb((a, rv(sgn, a), w), (b, rv(sgn, b), w), r))
                 for u in us:
-                    parts.append(_ball((u, sgn * V, w), r))
+                    parts.append(_ball((u, rv(sgn, u), w), r))
             for i, (a, b) in enumerate(zip(us, us[1:])):         # zigzag between the rails
-                v0, v1 = (V, -V) if i % 2 == 0 else (-V, V)
+                v0, v1 = (rv(1, a), rv(-1, b)) if i % 2 == 0 else (rv(-1, a), rv(1, b))
                 parts.append(_tb((a, v0, w), (b, v1, w), rw))
         for i, (a, b) in enumerate(zip(us, us[1:])):             # lateral X lattices in the top and bottom faces
             for sgn, r in ((1, 3.0), (-1, 3.0)):
-                parts += [_tb((a, sgn * VL, wi), (b, sgn * VL, wo), r), _tb((b, sgn * VL, wi), (a, sgn * VL, wo), r)]
+                parts += [_tb((a, lv(sgn, a), wi), (b, lv(sgn, b), wo), r), _tb((b, lv(sgn, b), wi), (a, lv(sgn, a), wo), r)]
         for u in (0.0, L):
             for sgn in (1, -1):
                 parts.append(_tb((u, sgn * VL, wi), (u, sgn * VL, wo), 3.2))
@@ -259,7 +262,7 @@ def rear_arm(p):
                     parts += [_tb((u, sgn * V, w), (u, sgn * 16.0, w), 4.0), _ball((u, sgn * 16.0, w), 4.0)]
                 parts.append(_tb((u, sgn * 16.0, wi), (u, sgn * 16.0, wo), 4.0))
         parts += [_cz(0.0, 0.0, 0.0, 7.6, 20.0), _cz(L, 0.0, 0.0, 7.6, 26.0), _cz(0.0, 0.0, wo - 4.4, wo + 4.7, 24.0), _cz(L, 0.0, wo - 4.4, wo + 4.7, 28.0)]    # hubs
-        from parts import w3_shock as SK                                         # coilover hoop: two legs from the outer plane's top rail up behind the tyre, a cross tube over the tyre to the lower bolt lug
+        # coilover hoop: two legs from the outer plane's top rail up behind the tyre, a cross tube over the tyre to the lower bolt lug
         sh = lambda m_: m_.translate((0.0, 0.0, SK.WOFF))                         # the whole arm moves up the print frame so the lug boss is the lowest layer
         H = SK.hoop_arm_points()
         A1, A2, B, C = (np.array(H[k]) for k in ("A1", "A2", "B", "C"))

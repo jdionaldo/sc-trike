@@ -197,7 +197,7 @@ def details(body):
     _sw = __import__('w3_swing')
     body = body - _sw.rear_travel_channels()                                   # wheel arch: the rear tyre and swing arm over their full travel (25 mm up, 20 mm down)
     body.num_tri()
-    body = body - _sw.swing_channels()                                         # open-ended channels: the frame tubes slide out as the skin swings up on the nose hinge
+    body = body - _sw.swing_channels().translate((0.0031, 0.0017, 0.0023))       # a few microns off: exact coincidence with the frame relief left a pinched edge                                         # open-ended channels: the frame tubes slide out as the skin swings up on the nose hinge
     return body
 
 
