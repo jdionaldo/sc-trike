@@ -140,3 +140,19 @@ def test_rear_shock_clear(dz, body_built):
         mv = n.startswith(("mock_rear_", "w3_rear_arm"))
         part = SW.rot_pivot(MB.man(mesh), ang) if mv else MB.man(mesh)
         assert (shock ^ part).volume() < 0.5, (n, dz)
+
+
+def test_lean_shock_stroke():
+    """The two lean coilovers stay inside their stroke (3 mm spare at each end) over the full lean range and sit near 70 % extension at lean 0."""
+    import math
+    import parts.w3_lean as LN
+    lo, hi = LN.SHOCK["lmin"] + 3.0, LN.SHOCK["lmax"] - 3.0
+    for ph in np.linspace(-20.0, 20.0, 41):
+        _, _, _, ln = S.lean_geometry(math.radians(ph))
+        assert all(lo <= v <= hi for v in ln.values()), (ph, ln)
+    _, _, _, l0 = S.lean_geometry(0.0)
+    ext = (l0[1] - LN.SHOCK["lmin"]) / LN.SHOCK["stroke"]
+    assert 0.65 <= ext <= 0.75, ext
+    for ph in (0.0, 20.0, -20.0):
+        names = [n for n, _, _ in S.scene(ph)]
+        assert "b_lean_shock_1" in names and "b_lean_shock_-1" in names
