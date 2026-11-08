@@ -7,7 +7,7 @@ ORDER = ["frame", "hinge", "arm", "gen", "wing", "abuse", "creep"]
 
 def main():
     rows = R.run()
-    base = {f"{r['part']} | {r['case']}": round(r["fs"], 3) for r in rows}
+    base = {R.row_key(r): round(r["fs"], 3) for r in rows}
     json.dump(base, open("tests/strength_baseline.json", "w"), indent=1, sort_keys=True)
     low = [r for r in rows if r["fs"] < r["min"]]
     L = ["# WS-03 strength and robustness review", "",

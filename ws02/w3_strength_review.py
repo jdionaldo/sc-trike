@@ -539,6 +539,12 @@ def checks():
     return ROWS
 
 
+def row_key(r):
+    """Regression key of a row: part | case with load magnitudes ("62 N") removed, so a changed load does not rename the row."""
+    import re
+    return re.sub(r"\d+(?:\.\d+)? N\b", "N", f"{r['part']} | {r['case']}")
+
+
 def run():
     if not ROWS:
         checks()

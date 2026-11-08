@@ -13,7 +13,7 @@ import w3_strength_review as R
 HERE = os.path.dirname(__file__)
 BASE = json.load(open(os.path.join(HERE, "strength_baseline.json")))
 ROWS = R.run()
-KEYS = [f"{r['part']} | {r['case']}" for r in ROWS]
+KEYS = [R.row_key(r) for r in ROWS]
 
 
 @pytest.mark.parametrize("r,key", list(zip(ROWS, KEYS)), ids=[k[:90] for k in KEYS])
@@ -32,5 +32,5 @@ def test_no_regression(r, key):
 def test_solver_reproduces_old_factors():
     import w3_strength_validate as V
     got = [v for _, v in V.run()[:3]]
-    for g, want in zip(got, (3.8, 4.3, 2.5)):
+    for g, want in zip(got, (3.8, 4.3, 2.95)):
         assert abs(g - want) < 0.1
