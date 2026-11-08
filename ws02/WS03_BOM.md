@@ -8,9 +8,9 @@ All sizes below are assumptions from the 1/10 and 1/18 RC parts we planned aroun
 | Servo, 12 kg short body 40 x 20 x 19.3 | 2 | steer x2 (one per side at x -100, unchanged); a single central steering servo was ruled out, see WS03_LEAN.md |
 | Servo horn 25T, aluminium, small round (lean) | 1 | the printed V rocker screws to it with 4 x M2 (the horn sits on the 4.5 mm spline stub; the rocker is 4 mm thick, so no standoff is needed) |
 | Servo horn, 12 mm (steer) | 2 | aluminium horns, M2 ball studs |
-| Motor 2830 about 1400 KV, 3.17 mm shaft | 1 | 16 mm mounting pattern |
-| ESC 60 A, 46 x 38 x 33 | 1 | sits above the battery |
-| LiPo 2S/3S about 62 x 20 x 14 | 1 | in the nose bay |
+| Motor: Hobbywing QuicRun Fusion SE 36 x 58.1 mm, 201 g, ESC built in | 1 | replaces the 2830 motor; at x -122, y -21, z 41 (see Motor placement) |
+| ESC | 0 | none: built into the Fusion SE |
+| LiPo 3S 1300 mAh 75 x 35 x 25 | 1 | on the printed cradle beside the drive shaft (x -77.5..-2.5, y -37.5..-2.5) |
 | Receiver 6 ch with mixing | 1 | lean, steer, throttle mixes |
 | Spur gears module 0.8: 15T pinion, 45T diff ring | 1 + 1 | centre distance 24 mm |
 | Spur gear diff (45T ring) | 1 | centre diff, axis along the body |
@@ -90,3 +90,10 @@ For the single central lean servo the motor moved 22 mm aft: the can now spans x
 The rear bevel case, arm pivot, pivot pulley and the cage nodes R1 and FPR sit 30 mm further forward than the stretched position (`PIVOT_SHIFT` in `w3_stretch.py`), so the swing arm is 122 mm pivot to axle (was 93 mm). The arm's top rail is bent into an asymmetric up-caret: it rises 16 mm over the first 30 % of the arm from the pivot (apex) and falls back over the remaining 70 %, while the bottom rail and bottom lattice stay straight so the belt runs between them. One hoop leg starts at the apex, the other at the axle end. The cage's R1 to R2 rail now bends inboard and up through a waypoint node RW (above the bevel case, clear of the arm).
 
 The shock sits at y 12, inside the body. Eye to eye over the travel (arm angle -9.4 to +11.8 deg, 20 mm droop to 25 mm bump): 79.5 mm at full droop, 70.3 mm at rest, 60.5 mm at full bump: about 61 % extended at rest, 0.5 mm spare at full droop, 5.5 mm before bottoming (`tests/test_w3.py::test_rear_shock_length`). The skin's floor and rear lip are slotted where the hoop, shock and swinging skin cross (the swing channels), as for the swing arm.
+
+## Integrated build (ws03-integrated, 2026-11-07)
+
+Merged: 450 mm wheelbase and 4 deg rake with the caret swing arm and hoop-mounted coilover (ws03-rear-shock), single INJS15 lean servo with rocker and tower, battery beside the drive shaft and motor at x -122 (servo branch), simplified skin, new wing, covered canopy and windscreen (skin branch), and the dead-plate cleanup (cleanup branch).
+- Rear shaft block spans about x -205 to -347: buy 5 x 150 mm stock for the centre-to-rear-bevel shaft (nothing cut).
+- Tyres: all three 112 x 62 per the latest decision; the 83 x 24 and 8 mm / 4 mm axle lines above are from the earlier layout and must be re-checked when the front wheel part is final.
+- Printed mass 671 g, bought 1184 g, total about 1965 g; front weight share 63.8 %, CG x -162.9 mm, 53.1 mm above ground (WS03_MASS_CG.md).
