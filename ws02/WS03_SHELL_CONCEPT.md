@@ -8,3 +8,22 @@ Build: `WS03_SKIN=concept python body3_build.py && WS03_SKIN=concept python spli
 - Dropped: reference wheels, front/rear drivetrain, mirrors, roof snorkel, the GLB's four-wheel layout (the GLB is a noisy 4-wheel buggy, 141k tris, not watertight, so it was used for proportions only; the two drawings drive the styling).
 ## Results
 Pieces watertight and fit bed; swing sweep 0..35 deg at 1 deg: 0 hits; 11 WS-03 body/interior/assembly/mass tests pass; clearance script clean. Printed mass 855 g vs 848 g (+7 g); total 2307 vs 2300 g; front share 64.2 % both. Thin-wall ray sample: 5.6 % of points under 1.2 mm vs 2.6 % for current (groove/louvre edges) - not tuned.
+
+## Rev 2 - silhouette rebuild (hump, chisel nose, wide rear pods)
+Reference traced from drawings 54/55 (tools_skin/ref_outline.py): x scaled on the 450 mm wheelbase, z on the tyre (0.44 mm/px). Overlays are in WS03_concept_{top,side,iso,front}.png.
+Changes: plan chisel nose (half width 26 at x 30, was 38) with faceted flare; rear pods 92 mm half-width from x -176..-293 (was 86 peak/70); canopy block (hull, base half 46, top half 40) rising to z 112 between x -135 and -290 so the canopy top is z 131 (cage included, was 101) - bbox height 136 -> 157, width 172 -> 184. Roof tabs, hood, nose and wing deck stay on the old roofline: top_z() is kept for the frame's tab stations (w3_frame untouched), _tz() is the real surface; tab posts reach up to the taller roof.
+Not matched, and why: front shoulders (x +15..-123) stay at 52 mm: the front arm sweep envelope (up to z 125 at x -30) is cut out of the skin up to y 100. Rear deck stays at z 96 (ref 130): the wing feet and roof-gill geometry sit on the old deck. Cowl z 70 at x -105 (ref 101): roof tab at x -100 and the motor louvres.
+| x | half-width cur | new | ref | top z cur | new | ref |
+|---|---|---|---|---|---|---|
+| 30 | nan | nan | 38 | nan | nan | 57 |
+| 0 | 44 | 43 | 60 | 48 | 48 | 72 |
+| -52 | 46 | 52 | 85 | 64 | 64 | 81 |
+| -105 | 52 | 50 | 90 | 68 | 70 | 101 |
+| -200 | 83 | 92 | 91 | 101 | 131 | 126 |
+| -290 | 70 | 92 | 91 | 95 | 96 | 130 |
+| -350 | 54 | 54 | 81 | 97 | 97 | 122 |
+| -400 | 49 | 49 | 40 | 89 | 89 | 111 |
+| bbox current | L 468 W 172 H 136 | | | | | |
+| bbox new | L 468 W 184 H 157 | | | | | |
+
+Skin printed total 879 g (was 848, +31 g; limit 900), total 2331 g, front share 63.9 %. 11 body/interior/assembly/mass tests pass, clearance clean, swing sweep 0 hits 0..35 deg (1 deg), body and pieces watertight. Thin-wall sample under 1.2 mm: 4.4 % (current 2.4 %).

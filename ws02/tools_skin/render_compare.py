@@ -65,22 +65,72 @@ def render(m, kind, size=(900, 420), col=(120, 150, 200), scale=None, center=Non
     return im, sc, c
 
 
+def outline(im, sc, c, size, pts, mirror=False):
+    d = ImageDraw.Draw(im)
+    for sgn in ((1, -1) if mirror else (1,)):
+        xy = [((x - c[0]) * sc + size[0] / 2, size[1] / 2 - (sgn * v - c[1]) * sc) for x, v in pts]
+        d.line(xy, fill=(220, 30, 30), width=3)
+
+
+def drawing(n, size, crop):
+    im = Image.open(f"/private/tmp/claude-501/-Users-johndionaldo-Library-Application-Support-Claude-scratch-workspaces-8645d517-f4a3-433c-8998-fd7c0e49ba87-a748fb05-e298-40e2-a797-544bc288ae5f-scratch-2026-10-30-ec4193/0d275d42-fddc-4cbd-9c02-604bf37928ec/images/{n}.webp").convert("RGB").crop(crop)
+    return im.resize((size[0], int(im.height * size[0] / im.width)))
+
+
+def stations(m, xs):
+    out = []
+    for x in xs:
+        sec = m.section(plane_origin=(x, 0, 0), plane_normal=(1, 0, 0))
+        if sec is None:
+            out.append((x, float("nan"), float("nan"))); continue
+        v = sec.vertices
+        out.append((x, float(np.abs(v[:, 1]).max()), float(v[:, 2].max())))
+    return out
+
+
 def main(out):
+    import ref_outline as R
     out = Path(out); out.mkdir(parents=True, exist_ok=True)
     cur = trimesh.load("out/mono3/body3.stl"); con = trimesh.load("out/mono3_concept/body3.stl")
     ref = load_ref(float(np.ptp(con.vertices[:, 0])))
     font = ImageFont.load_default()
-    for kind, size in (("top", (900, 330)), ("side", (900, 330)), ("iso", (900, 480))):
+    C = (-130, 0)
+    for kind, size in (("top", (900, 340)), ("side", (900, 360)), ("iso", (900, 480)), ("front", (520, 330))):
         cols = []
-        for name, m, colr in (("current skin", cur, (130, 150, 175)), ("concept skin", con, (180, 110, 150)), ("reference (Shapecast GLB, shell + wheels)", ref, (120, 160, 120))):
-            im, _, _ = render(m, kind, size, colr)
-            ImageDraw.Draw(im).text((8, 6), f"{name} - {kind}", fill=(0, 0, 0), font=font)
+        for name, m, colr in (("current skin", cur, (130, 150, 175)), ("NEW concept skin", con, (180, 110, 150))):
+            if kind in ("top", "side"):
+                sc = 1.42
+                im, sc, c = render(m, kind, size, colr, scale=sc, center=(-185.0, 0.0 if kind == "top" else 40.0))
+                if kind == "top":
+                    outline(im, sc, c, size, R.REF_HALF, mirror=True)
+                else:
+                    outline(im, sc, c, size, R.REF_TOP)
+            elif kind == "front":
+                im, sc, c = render(m, "front", size, colr, scale=1.6, center=(0.0, 45.0))
+            else:
+                im, _, _ = render(m, kind, size, colr)
+            ImageDraw.Draw(im).text((8, 6), f"{name} - {kind}" + (" (red = reference outline)" if kind in ("top", "side") else ""), fill=(0, 0, 0), font=font)
             cols.append(im)
+        if kind == "top":
+            r = drawing("54", (900, 340), (60, 30, 1244, 540))
+        elif kind == "side":
+            r = drawing("55", (900, 360), (100, 20, 1344, 552))
+        else:
+            r, _, _ = render(ref, kind, size, (120, 160, 120))
+        ImageDraw.Draw(r).text((8, 6), f"reference - {kind}" + (" (drawing)" if kind in ("top", "side") else " (Shapecast GLB)"), fill=(0, 0, 0), font=font)
+        cols.append(r)
         sheet = Image.new("RGB", (size[0], sum(c.height for c in cols)), (255, 255, 255)); y = 0
-        for c in cols:
-            sheet.paste(c, (0, y)); y += c.height
+        for c_ in cols:
+            sheet.paste(c_, (0, y)); y += c_.height
         sheet.save(out / f"compare_{kind}.png")
-    print("ok")
+    xs = [30, 0, -52, -105, -200, -290, -350, -400]
+    a, b = stations(cur, xs), stations(con, xs)
+    rows = ["| x | half-width cur | new | ref | top z cur | new | ref |", "|---|---|---|---|---|---|---|"]
+    for (x, hc, zc), (_, hn, zn) in zip(a, b):
+        rows.append(f"| {x} | {hc:.0f} | {hn:.0f} | {R.half(x):.0f} | {zc:.0f} | {zn:.0f} | {R.top(x):.0f} |")
+    for nm, m in (("current", cur), ("new", con)):
+        e = m.bounds; rows.append(f"| bbox {nm} | L {e[1][0]-e[0][0]:.0f} W {e[1][1]-e[0][1]:.0f} H {e[1][2]-e[0][2]:.0f} | | | | | |")
+    open(out / "table.md", "w").write(chr(10).join(rows)); print(chr(10).join(rows))
 
 
 if __name__ == "__main__":
