@@ -1,10 +1,13 @@
-"""Rev 6 comparison sheets: previous skin (rev 5), new skin and the reference (image 60 crop) per view, with the traced reference outline in red.
+"""Rev 6 comparison sheets: previous skin (rev 6), new skin and the reference (image 60 crop) per view, with the traced reference outline in red.
 usage: python tools_skin/render_rev6.py REF_IMAGE OUT_DIR PREV_GLB"""
 import sys
 from pathlib import Path
 import numpy as np, trimesh
 from PIL import Image, ImageDraw, ImageFont
 REF, OUT, PREV = sys.argv[1], Path(sys.argv[2]), sys.argv[3]
+MD = sys.argv[4] if len(sys.argv) > 4 else 'out/mono3_concept'
+TAG = sys.argv[5] if len(sys.argv) > 5 else 'rev6'
+SHEET61 = len(sys.argv) > 6
 OUT.mkdir(parents=True, exist_ok=True)
 tr = np.load("skin_trace.npz")
 Rz = np.array([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0], [0, 0, 0, 1.0]])           # inverse of the glb y-up transform
@@ -47,8 +50,15 @@ def render(m, kind, size, sc, col):
     vis = (n @ np.array(D, float)) > 0.02
     order = [i for i in np.argsort((d[f]).mean(1)) if vis[i]]
     im = Image.new("RGB", size, (252, 250, 250)); dr = ImageDraw.Draw(im)
+    crease = set()
+    for (fa, fb), e, ang in zip(m.face_adjacency, m.face_adjacency_edges, m.face_adjacency_angles):
+        if ang > 0.2:
+            crease.add((fa, tuple(e))); crease.add((fb, tuple(e)))
     for i in order:
         t = f[i]; dr.polygon([(X[t[0]], Y[t[0]]), (X[t[1]], Y[t[1]]), (X[t[2]], Y[t[2]])], fill=tuple(int(sh[i] * c) for c in col))
+        for u, v in ((t[0], t[1]), (t[1], t[2]), (t[2], t[0])):
+            if (i, (min(u, v), max(u, v))) in crease or (i, (max(u, v), min(u, v))) in crease:
+                dr.line([(X[u], Y[u]), (X[v], Y[v])], fill=(40, 20, 40), width=1)
     return im, (cx, cy)
 
 
@@ -67,7 +77,8 @@ def outline(im, kind, size, sc, cen):
 
 
 CROP = {"iso": (1460, 30, 1990, 400), "side": (100, 30, 860, 390), "top": (880, 50, 1450, 350), "front": (250, 440, 720, 800), "rear": (950, 440, 1350, 800)}
-new = trimesh.util.concatenate([trimesh.load(f"out/mono3_concept/body3_{p}.stl") for p in ("front", "mid", "rear")])
+if SHEET61: CROP = {"iso": (1180, 440, 1960, 800), "side": (70, 435, 870, 800), "top": (100, 20, 860, 400), "front": (990, 30, 1440, 400), "rear": (1480, 30, 1960, 400)}
+new = trimesh.util.concatenate([trimesh.load(f"{MD}/body3_{p}.stl") for p in ("front", "mid", "rear")])
 old = prev_mesh()
 ref = Image.open(REF).convert("RGB")
 font = ImageFont.load_default()
@@ -76,13 +87,13 @@ SC = {"iso": 1.45, "side": 1.5, "top": 1.5, "front": 2.0, "rear": 2.0}
 for kind in ("iso", "side", "top", "front", "rear"):
     size, sc = sizes[kind], SC[kind]
     ims = []
-    for name, m, col in (("previous skin (rev 5)", old, (130, 150, 175)), ("NEW skin (rev 6)", new, (190, 100, 150))):
+    for name, m, col in (("previous skin (rev 6)", old, (130, 150, 175)), ("NEW faceted skin (rev 7)", new, (190, 100, 150))):
         im, cen = render(m, kind, size, sc, col)
-        if kind != "iso": outline(im, kind, size, sc, cen)
+        if kind != "iso" and not SHEET61: outline(im, kind, size, sc, cen)
         ImageDraw.Draw(im).text((8, 6), f"{name} - {kind}  (red = traced reference outline)", fill=(0, 0, 0), font=font); ims.append(im)
     c = ref.crop(CROP.get(kind, (1460, 30, 1990, 400))); c = c.resize((size[0], int(c.height * size[0] / c.width))); r = Image.new("RGB", size, (255, 255, 255)); r.paste(c, (0, 0))
     ImageDraw.Draw(r).text((8, 6), f"reference (image 60) - {kind}", fill=(0, 0, 0), font=font); ims.append(r)
     sheet = Image.new("RGB", (size[0], sum(i.height for i in ims)), (255, 255, 255)); y = 0
     for i in ims: sheet.paste(i, (0, y)); y += i.height
-    sheet.save(OUT / f"WS03_rev6_{kind}.png")
+    sheet.save(OUT / f"WS03_{TAG}_{kind}.png")
 print("ok")

@@ -14,7 +14,7 @@ from shapely.geometry import MultiPoint, Polygon
 import mono_build as MB
 from w3_stretch import fx, back, pts as _pts, STRETCH, RAXLE_Z
 
-from skin_cfg import CONCEPT, MONO
+from skin_cfg import CONCEPT, MONO, FACET
 OUT = Path(MONO)
 KX, KY, DZ, XOFF = 1.0, 1.0, 0.0, 0.0           # the profile below is already in the assembly frame
 WALL = 2.4
@@ -143,6 +143,9 @@ def fenders(inset=0.0):
 
 
 def solid(inset=0.0, belly=False):
+    if FACET:
+        import skin7
+        return skin7.solid(inset, belly)
     side = Polygon(to_new(SIDE, "side")).buffer(-inset, join_style=2)
     hp = to_new(HALF, "plan")
     plan_pts = hp + [(x, -y) for x, y in reversed(hp)]
@@ -181,11 +184,17 @@ def top_z(x, inset=0.0):
 
 def _tz(x, inset=0.0):
     """Actual skin top at the centre line."""
+    if FACET:
+        import skin7
+        return skin7.tz(x, inset)
     g = LineString([(x, -500), (x, 500)]).intersection(_poly("side", inset))
     return g.bounds[3]
 
 
 def hw_in(x, inset=WALL):
+    if FACET:
+        import skin7
+        return skin7.hw(x, inset)
     g = LineString([(x, -500), (x, 500)]).intersection(_poly("plan", inset))
     return g.bounds[3]
 
@@ -229,8 +238,12 @@ def details(body):
         nvec = -nvec                                                      # outward = rearward
     p0, p1 = np.array([bx, bz]) + dvec * 3.0, np.array([cx_, cz_]) - dvec * 3.0
     quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
-    body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
-    if CONCEPT:
+    if not FACET:
+        body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
+    if FACET:
+        import skin7
+        body = skin7.rear_arch(skin7.features(body, solid(0.0), solid, pink_grooves))
+    elif CONCEPT:
         body = ref_features(body)
     else:
         body = body - canopy_cut() + canopy_cage()
@@ -251,6 +264,9 @@ def details(body):
     body = body + _tl.screw_bosses() - _tl.screw_holes()                       # wing feet screw onto the hood from inside, so the wing flips up with the skin
     if CONCEPT:                                                                # registration pins: four dowel holes per split cut (two under the roof, two low on the flanks), each in a pad fused to the inside of the wall
         import skin_hf as HF
+        if FACET:
+            import skin7
+            HF = type('H', (), {'zat': staticmethod(skin7.surf)})
         for cx in SPLIT_X:
             for yy, zl in ((-24.0, None), (24.0, None), (-1.0, -20.0), (1.0, -20.0)):
                 if zl is None:
@@ -331,8 +347,8 @@ def canopy_cage():
 
 
 GROOVE_W, GROOVE_D = 1.4, 0.7                       # pink accent lines as engraved grooves (paint colour regions): 1.4 wide, 0.7 deep (wall stays >= 1.7)
-FLANK_LINES = [((-142.0, -3.0), (-300.0, -3.0)), ((-318.0, 10.0), (-352.0, 48.0))]       # (x, z): door diagonal, sill, rear fender
-ROOF_LINES = [((-240.0, 14.0), (-292.0, 14.0))]                                          # (x, |y|) plan lines: shoulder shelf, deck stripes
+FLANK_LINES = [((-142.0, -3.0), (-300.0, -3.0))] if FACET else [((-142.0, -3.0), (-300.0, -3.0)), ((-318.0, 10.0), (-352.0, 48.0))]       # (x, z): door diagonal, sill, rear fender
+ROOF_LINES = [((-20.0, 18.0), (-92.0, 22.0)), ((-200.0, 14.0), (-292.0, 14.0))] if FACET else [((-240.0, 14.0), (-292.0, 14.0))]                                          # (x, |y|) plan lines: shoulder shelf, deck stripes
 
 
 def _band(p, q, w):
@@ -436,7 +452,7 @@ def front_window():
         for n, m, k in S.scene(float(ph)):
             if n.startswith(("arm_", "pod_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
                 pts += [(float(x), float(z)) for x, y, z in m.vertices[::7]]
-    hull = MultiPoint(pts).convex_hull.buffer(8.0 if CONCEPT else 5.5, join_style=2).simplify(2.0)
+    hull = MultiPoint(pts).convex_hull.buffer(8.0 if CONCEPT else 5.5, join_style=2).simplify(5.0 if FACET else 2.0)
     return hull
 
 

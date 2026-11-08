@@ -174,3 +174,23 @@ Not matched / flagged
 - Tail ends at x -438 (reference -468) and is narrower at x -400 (54 against 78 mm).
 - Dropped pink grooves on the door diagonal and shoulder; the lap joint tried first (tongue and rebate) was dropped for dowels because its 1 mm layers left self-overlaps in the exported STLs.
 - The STL exporter welds near-coincident vertices (sub-micron tangent sheets between features); `body3_build.main` separates such pairs by 12 microns and drops collapsed slivers.
+
+## Rev 7 - ground-up faceted skin (WS03_SKIN=facet)
+
+Build: `WS03_SKIN=facet python body3_build.py && WS03_SKIN=facet python split_shell3.py` -> `out/mono3_facet/`. Geometry is `skin7.py`: 13 stations traced from sheet 61 (same body as sheet 60), each a pair of convex section polygons (lower body to the shoulder, cabin above it), lofted by convex hulls between stations, so every surface is a flat panel with hard creases. No outline, prism or section of the older skins is reused; only the structural interface is kept (hinge pin and ears, frame relief, swing and rear-travel channels, wing mounts and hangers, 3-piece split with dowel pads). Walls: the cavity is the same loft inset 2.4 mm, with extra roof drop on raked panels and an x-erosion so ramps keep their thickness.
+
+Features, all faceted: raked windscreen trapezoid (1.0 mm glass recess, 2.5 mm bezel), large angular side windows (1.0 mm recess, bezel), twin angular hood scoops (raised wedges, open mouth, hole through the hood), slim vents and door louvres, grid-hole mesh nose with a bull bar, roof lamp pods, roll bar, stepped sill with rivets, open engine bay with mesh grille, tail lamp bar, octagonal rear wheel arch plus a straight tail underside wedge, front arch windows simplified to a coarse polygon, pink lines as 1.4 x 0.7 mm grooves (sill, hood, deck stripes).
+
+Facet metrics (`python tools_skin/facet_metrics.py out/mono3_facet/body3.stl`, outer surface only; panel = region of triangles within 1.5 deg and 0.25 mm of one plane):
+triangles 14241, panels 2074, panels >= 50 mm2: 302
+mean triangles per panel 6.9 (area-weighted 21.3)
+flat-panel coverage 98.2 % of surface area (panels >= 50 mm2)
+edges between panels: 8091; longer than 3 mm: 787
+normal change at panel edges (>3 mm long): median 72 deg, p95 95 deg, max 165 deg
+smooth blends (panel edge change < 15 deg, >3 mm long): 227 edges = 28.8 % of panel edges
+
+The edges under 15 deg are lofting twist (a hull between two stations splits a slightly non-planar quad into two triangles at 3-15 deg, mostly on the nose and hood stations) and the small bull-bar and grille cells; no panel edge is a rounded blend, but these twists do not meet the 15 deg rule everywhere.
+
+Checks: body and three pieces watertight; swing 0 hits at 0-35 deg in 1 deg steps; headroom over internal parts 18 mm at the nose, 23 mm over the motor, up to 77 mm; 192 tests pass, 1 xfail (legacy tests excluded as before); wall samples under 1.2 mm 2.75 %; printed 932 g, total 2384 g, front weight share 64 %; pieces 214 x 172 x 150 (front, bull bar included), 148 x 175 x 176, 141 x 158 x 83 on a 220 x 220 bed; dowel holes on both cuts (x -152, -300).
+
+Not matched: the plan is a blockier hexagon than the sketch (constant 83 mm half width from x -124 to -300 and a stepped rear fender); tail ends at x -441 (sketch -468); the engine-bay hump is lower than the sketch because the wing hangers sit at the old deck height (deck 104-116 mm behind x -345); nose grille is square holes, not diamond mesh.

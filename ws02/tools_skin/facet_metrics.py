@@ -1,0 +1,44 @@
+"""Facet metrics of a skin STL: planar panels by region growing (normal within 1.5 deg, plane offset within 0.25 mm), then
+panel count, mean triangles per panel, flat-panel coverage (area in panels >= 50 mm2), and the dihedral change across panel edges.
+usage: python tools_skin/facet_metrics.py STL [OUTER_ONLY=1]"""
+import sys
+import numpy as np, trimesh
+from collections import defaultdict, deque
+m = trimesh.load(sys.argv[1]); m.merge_vertices()
+# outer surface only: faces whose outward ray leaves the body (the cavity walls are excluded)
+hit = m.ray.intersects_any(m.triangles_center + m.face_normals * 0.05, m.face_normals)
+m = trimesh.Trimesh(m.vertices, m.faces[~hit], process=False)
+F = len(m.faces); N = m.face_normals; A = m.area_faces; C = m.triangles_center
+adj = defaultdict(list)
+for a, b in m.face_adjacency: adj[a].append(b); adj[b].append(a)
+lab = -np.ones(F, int); n = 0
+cos = np.cos(np.radians(1.5))
+for s in np.argsort(-A):
+    if lab[s] >= 0: continue
+    lab[s] = n; q = deque([s]); n0 = N[s]; d0 = n0 @ C[s]
+    while q:
+        f = q.popleft()
+        for g in adj[f]:
+            if lab[g] < 0 and N[g] @ n0 > cos and abs(N[g] @ C[g] - 0 - (n0 @ C[g])) < 1e9 and abs(n0 @ C[g] - d0) < 0.25:
+                lab[g] = n; q.append(g)
+    n += 1
+pa = np.bincount(lab, weights=A); pt = np.bincount(lab)
+big = pa >= 50.0
+cover = pa[big].sum() / pa.sum() * 100
+ang = np.degrees(m.face_adjacency_angles)
+cross = lab[m.face_adjacency[:, 0]] != lab[m.face_adjacency[:, 1]]
+ea = ang[cross]
+el = m.face_adjacency_edges; ln = np.linalg.norm(m.vertices[el[:, 0]] - m.vertices[el[:, 1]], axis=1)[cross]
+sig = ln > 3.0                                                           # ignore tiny edges (rivet domes, grille cells)
+print(f"triangles {F}, panels {n}, panels >= 50 mm2: {int(big.sum())}")
+print(f"mean triangles per panel {pt.mean():.1f} (area-weighted {np.average(pt, weights=pa):.1f})")
+print(f"flat-panel coverage {cover:.1f} % of surface area (panels >= 50 mm2)")
+print(f"edges between panels: {len(ea)}; longer than 3 mm: {int(sig.sum())}")
+print(f"normal change at panel edges (>3 mm long): median {np.median(ea[sig]):.0f} deg, p95 {np.percentile(ea[sig],95):.0f} deg, max {ea[sig].max():.0f} deg")
+print(f"smooth blends (panel edge change < 15 deg, >3 mm long): {int((ea[sig] < 15).sum())} edges = {100*(ea[sig] < 15).mean():.1f} % of panel edges")
+if len(sys.argv) > 2:
+    mid = m.vertices[el[cross][sig][ea[sig] < 15]].mean(1)
+    a = ea[sig][ea[sig] < 15]
+    print("smooth-edge angles: <3:", int((a < 3).sum()), "3-8:", int(((a >= 3) & (a < 8)).sum()), "8-15:", int((a >= 8).sum()))
+    h, e = np.histogram(mid[:, 0], bins=12, range=(-445, 65)); print("by x:", dict(zip(e[:-1].astype(int), h)))
+    print("z>110:", int((mid[:, 2] > 110).sum()), " |y|>60:", int((abs(mid[:, 1]) > 60).sum()))
