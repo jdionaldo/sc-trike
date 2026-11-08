@@ -72,6 +72,19 @@ Consequence: the motor pinion can no longer mesh directly with the centre-diff r
 
 The 3S 1300 mAh pack (75 x 35 x 25) now lies at x -77.5..-2.5, y -37.5..-2.5, z -11..14 on a printed cradle (`w3_battery_tray`: 3 mm floor on two ribs, end stops, short side lips, two pairs of strap slots, two screws into the base plate on the centreline side, grooved around the frame tubes). The centreline is free for the lean servo and its tower, which is open under the servo window. The skin has open channels for the pack's swing path. CG y +0.7 mm (was +1.4), CG x -167.8, front share 62.7 %. A 105 mm 3S 2200 mAh pack fits nowhere (fit scan); it needs about 30 mm more free length between the diff case (x -80) and the nose frame nodes (x -5), i.e. the front end ahead of the diff 30 mm longer. Buy: 2 hook-and-loop or silicone battery straps, 10 mm wide.
 
+### Lean coilovers (2026-11-07)
+
+The two rigid lean rods are replaced by two small coilovers from the rocker tips to the arm lugs; the single INJS15 sets the lean (servo angle 1.013 deg per degree of lean, +-20.3 deg for +-20 deg), the shocks give spring and damping.
+
+| part | qty | notes |
+|---|---|---|
+| Micro coilover shock, 3 mm eyes, eye to eye 51.5 mm compressed / 75.5 mm extended (24 mm stroke), spring about 8 mm OD, 25 g | 2 | stock part: any 1:10 / 1:12 aluminium 'short' shock with that length, or a Redcat/Axial 70 mm class shock shortened by 5 mm; fit with oil 30-35 wt |
+| Spring, 3-6 N/mm (17-34 lb/in) | 2 | stiffer than stock RC springs (0.3-1.2 N/mm): see below |
+| Shock oil 30-35 wt (50 cSt) | 1 | damps the arm swing |
+| M3 bolts 10 mm + nylon nuts | 4 | rocker tips and arm lugs (the printed eye holes are 3.2 mm) |
+
+Geometry (neutral): rocker axis x -82, z 34.5; tip radius 17.3 mm, V half angle 71.9 deg; eye to eye 68.5 mm at lean 0 (71 % extension), 67.9 to 69.9 mm over lean +-20 deg at any steer (steer does not move the lugs), so the shocks keep 13 mm of compression and 5 mm of extension in hand. Torque: holding 20 deg of lean against the weight takes 3.9 kg.cm at the servo (about 11.8 N in each shock), 4.5 times under the 17.7 kg.cm of the INJS15; spring rate 3 to 6 N/mm keeps the sag under about 2 to 4 mm, 1 N/mm is only workable with the servo closed-loop on an IMU.
+
 ### Belt cross-over (2026-11-03)
 
 The motor (y -21, z 41) cannot mesh the centre-diff ring (axis y 21, z 0) directly: 58.7 mm apart, with the diff cases filling z < 22 from x -205 to -80, so no spur idler fits. Instead the motor shaft runs aft above the case (x -151 to -218, 4 mm, needs a bearing block on the cage: not yet drawn) to a 16T GT2 pulley at x -213; a 6 mm GT2 belt (about 190 mm, to be matched to the pulley pair) runs to a 40T pulley on a countershaft at y 21, z 24 (4 mm shaft, x -218..-197) whose 15T pinion meshes the ring. Ratio 2.5 : 1 from the pulleys; the stock pinion/ring then add 3 : 1. Buy: 16T and 40T GT2 pulleys (5 mm / 4 mm bore as fitted), one GT2 belt, two 4 mm bearings. Added mass about 24 g behind the CG: front share 62.6 %.
