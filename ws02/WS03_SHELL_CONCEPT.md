@@ -118,3 +118,59 @@ Feature checklist (ref_features() in body3_build.py):
 | canopy top z | 110 | 145 | 130 |
 | deck z at x -400 | 90 | 112 | 111 |
 Skin 283 g, all printed 946 g, total 2398 g. 132 tests pass, clearance clean, swing 0 hits 0..35 deg at 1 deg, pieces watertight, headroom 25-76 mm (13 mm at the beak tip). Wall sample under 1.2 mm: 3.6 % (was 2.0 %): the slots, mesh cells and ridge edges; not tuned yet.
+
+## Rev 6 - traced profiles, contour height field, shoulders, glazing, scoops (reference sheet image 60)
+
+Build unchanged: `WS03_SKIN=concept python body3_build.py && WS03_SKIN=concept python split_shell3.py`. Trace: `python tools_skin/trace_ref.py IMAGE60` writes `skin_trace.npz` (side roofline, plan half width, front section, contour height field); `skin_hf.py` turns the field into a closed height-field cap that `solid()` intersects with the plan, side and section prisms (and offsets by 2.4 mm for the cavity). Sheets: `WS03_rev6_{iso,side,top,front,rear}.png` (previous / new / reference, red = traced outline).
+
+Scale: x from the side view (front axle px 200 = x 0, 0.862 mm/px, wheelbase 450), top view mapped onto the same x extent, z so the body height (256 px) is 169 mm above the frame floor (z -26), y so the top-view body width is 170 mm. Nose clamped to x 45-49 (reference 43) because the hinge ears sit at x 21; tail kept at x -438 (reference -468), the rear wing hangers and rear-arm channels set that.
+
+What changed
+- Profiles come from the trace, not by eye: roofline (nose 63 -> hood 86 -> raked windscreen to the header at x -171 -> flat roof z 129-133 to x -290), plan (narrow nose, 83 mm half width from x -124, 84 at the rear fenders), pods clipped by the traced plan (no more fixed y 92 shoulders).
+- Contour field: z(x, y) = roof(x) - (Hc(x) - H(x, y)) x 169 mm, floored at z 20 and smoothed (2.5 mm grid). The roof is flat to about 15 mm off the centre line and falls off in ~60 degree flanks (z 98 at y 40, 57 at y 60, 22 at y 70 at x -250); the engine-bay hump stays high and wide (z 139 to y 40 at x -350). This is the shoulder cut: the old shelf and pods are gone.
+- Windscreen: raked trapezoid, half width 45 at the base (x -100) to 35 at the roof header (x -164), glazing 1.0 mm below the surface (1.4 mm of skin left), raised 1.5 mm bezel 5 mm wide around it.
+- Side windows: large raked polygons (rising front edge x -188 z 99 -> -206 z 123, angular lower edge to x -292), 1.0 mm recess, 1.5 mm bezel.
+- Hood scoops: twin raised angular wedges (7 mm at the mouth, flush behind), open cavity, mouth slot and a through hole in the hood, mirrored; slim vents (3 x 2.4 mm slots) behind the side windows; louvre slits on the door; lamp pods at the roof corners.
+- Kept from rev 5: door ridge, stepped sill with rivets, roll bar and roof ridge, engine-bay opening with mesh grille, tail lamp bar, badge boss, splitter, sill/fender/deck pink grooves. Dropped: the door-diagonal and shoulder pink grooves (they ran along the flank crease and made non-manifold edges); the door ridge carries that line.
+- Split: cuts at x -152 / -300 with registration dowels, four 3.2 mm holes (two under the roof, two low on the flanks) per cut in pads fused to the inside of the wall (use 3 mm pins, e.g. filament offcuts). Pieces 201 x 172 x 136, 148 x 172 x 173, 140 x 168 x 152 (bed 220 x 220).
+
+Checks (all with WS03_SKIN=concept): body and the three pieces watertight; swing sweep 0 hits at 0-35 deg in 1 deg steps; headroom over internal parts 19 mm (nose) to 76 mm, 22 mm over the motor; 192 tests pass, 1 xfail (legacy `tests/test_body.py`, `tests/test_assembly.py` and `test_strength_factors` excluded, as before); wall samples under 1.2 mm 2.8 % (rev 5 3.6 %, default skin 2.6 %); printed parts 930 g, total 2382 g (rev 5 2398 g), front weight share 63.7 %.
+
+Numbers (previous = rev 5, ref = traced image 60; nan = engine-bay opening or front arm window)
+
+| x | roof z prev | new | ref | half-width prev | new | ref |
+|---|---|---|---|---|---|---|
+| 30 | 51 | 59 | 60 | 29 | 29 | 29 |
+| 0 | 61 | 67 | 68 | 52 | 52 | 54 |
+| -50 | 77 | 80 | 80 | 52 | 52 | 69 |
+| -100 | nan | 86 | 86 | 73 | 72 | 81 |
+| -150 | nan | 107 | 108 | nan | 85 | 81 |
+| -200 | nan | 129 | 128 | 95 | 83 | 79 |
+| -250 | 131 | 133 | 131 | 95 | 82 | 78 |
+| -300 | nan | nan | 131 | nan | nan | 81 |
+| -350 | nan | nan | 139 | 60 | 84 | 82 |
+| -400 | 111 | 111 | 124 | 44 | 54 | 78 |
+
+| bbox | L | W | H |
+|---|---|---|---|
+| prev | 502 | 190 | 171 |
+| new | 489 | 172 | 172 |
+| ref (trace) | 515 | 170 | 169 |
+
+Height field: skin surface z vs the traced contour field z_ref(x,y)
+| x | y=0 new/ref | y=20 | y=40 | y=60 |
+|---|---|---|---|---|
+| -60 | 81/82 | 85/82 | 81/82 | nan/73 |
+| -120 | 93/95 | 93/95 | 93/95 | 70/83 |
+| -180 | 132/133 | 132/133 | 121/123 | 55/93 |
+| -240 | 146/131 | 146/128 | 101/103 | 51/64 |
+| -300 | nan/132 | nan/127 | nan/102 | nan/67 |
+| -350 | nan/139 | nan/139 | 119/138 | 45/123 |
+| -400 | 111/112 | 111/119 | 111/124 | nan/114 |
+mean |dz| 8.4 mm, max 78.6 mm
+
+Not matched / flagged
+- Front shoulders: the plan is traced (nose to 59 mm half width at x -3, 79 at x -87) but the lean-linkage window (arm sweep, y 52-100, x +15..-123) is still cut out of the skin; at x -50 the half width is 52 mm against a traced 69. This is the open arch with exposed wishbones the reference shows.
+- Tail ends at x -438 (reference -468) and is narrower at x -400 (54 against 78 mm).
+- Dropped pink grooves on the door diagonal and shoulder; the lap joint tried first (tongue and rebate) was dropped for dowels because its 1 mm layers left self-overlaps in the exported STLs.
+- The STL exporter welds near-coincident vertices (sub-micron tangent sheets between features); `body3_build.main` separates such pairs by 12 microns and drops collapsed slivers.
