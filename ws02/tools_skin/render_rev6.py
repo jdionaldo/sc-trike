@@ -1,4 +1,4 @@
-"""Rev 6 comparison sheets: previous skin (rev 6), new skin and the reference (image 60 crop) per view, with the traced reference outline in red.
+"""Rev 6 comparison sheets: previous skin (rev 7), new skin and the reference (image 60 crop) per view, with the traced reference outline in red.
 usage: python tools_skin/render_rev6.py REF_IMAGE OUT_DIR PREV_GLB"""
 import sys
 from pathlib import Path
@@ -87,7 +87,7 @@ SC = {"iso": 1.45, "side": 1.5, "top": 1.5, "front": 2.0, "rear": 2.0}
 for kind in ("iso", "side", "top", "front", "rear"):
     size, sc = sizes[kind], SC[kind]
     ims = []
-    for name, m, col in (("previous skin (rev 6)", old, (130, 150, 175)), ("NEW faceted skin (rev 7)", new, (190, 100, 150))):
+    for name, m, col in (("previous skin (rev 7)", old, (130, 150, 175)), ("NEW faceted skin (rev 8)", new, (190, 100, 150))):
         im, cen = render(m, kind, size, sc, col)
         if kind != "iso" and not SHEET61: outline(im, kind, size, sc, cen)
         ImageDraw.Draw(im).text((8, 6), f"{name} - {kind}  (red = traced reference outline)", fill=(0, 0, 0), font=font); ims.append(im)

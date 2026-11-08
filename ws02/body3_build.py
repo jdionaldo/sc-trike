@@ -453,6 +453,18 @@ def front_window():
             if n.startswith(("arm_", "pod_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
                 pts += [(float(x), float(z)) for x, y, z in m.vertices[::7]]
     hull = MultiPoint(pts).convex_hull.buffer(8.0 if CONCEPT else 5.5, join_style=2).simplify(5.0 if FACET else 2.0)
+    if FACET:                                                         # enclosing 12-gon (30 deg steps) instead of a many-sided hull: a faceted arch
+        from shapely.geometry import box as _box
+        from shapely import affinity
+        P = np.array(hull.exterior.coords)
+        poly = None
+        for k in range(12):
+            a_ = math.radians(30.0 * k)
+            d = np.array([math.cos(a_), math.sin(a_)])
+            h = float((P @ d).max())
+            half = affinity.rotate(_box(-1000.0, -1000.0, h, 1000.0), 30.0 * k, origin=(0, 0))
+            poly = half if poly is None else poly.intersection(half)
+        hull = poly
     return hull
 
 

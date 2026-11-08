@@ -194,3 +194,22 @@ The edges under 15 deg are lofting twist (a hull between two stations splits a s
 Checks: body and three pieces watertight; swing 0 hits at 0-35 deg in 1 deg steps; headroom over internal parts 18 mm at the nose, 23 mm over the motor, up to 77 mm; 192 tests pass, 1 xfail (legacy tests excluded as before); wall samples under 1.2 mm 2.75 %; printed 932 g, total 2384 g, front weight share 64 %; pieces 214 x 172 x 150 (front, bull bar included), 148 x 175 x 176, 141 x 158 x 83 on a 220 x 220 bed; dowel holes on both cuts (x -152, -300).
 
 Not matched: the plan is a blockier hexagon than the sketch (constant 83 mm half width from x -124 to -300 and a stepped rear fender); tail ends at x -441 (sketch -468); the engine-bay hump is lower than the sketch because the wing hangers sit at the old deck height (deck 104-116 mm behind x -345); nose grille is square holes, not diamond mesh.
+
+## Rev 8 - planar lofting and tapered plan (WS03_SKIN=facet)
+
+`skin7.py` now builds each section from FIXED edge directions (vertical flank, shoulder bevel dy/dz -0.6, cabin flank dy/dz -0.12, horizontal floor, shelf and roof) and varies only the offsets per station, so every lateral quad between stations is an exact planar trapezoid (no loft twist). Every parameter is a polyline (`YF`, `YSH`, `YR`, `ZR`, `ZB`, `ZSH`) with breaks of at least 15 deg; the bevel, cabin flank and roof are separate parameters so a plan break does not leave a 5-14 deg crease on the other panels. Plan is now the sketch's tapered hexagon: chisel nose (half width 12 at x 49 to 46 at x 6), widening to 83 at x -124, flat cabin to x -300, flared rear fender to 92 (x -330..-384), taper to 64 at the tail. Front arch windows are an enclosing 12-gon.
+
+Facet metrics (outer surface, `tools_skin/facet_metrics.py`):
+triangles 16391, panels 2464, panels >= 50 mm2: 203
+mean triangles per panel 6.7 (area-weighted 29.2)
+flat-panel coverage 97.3 % of surface area (panels >= 50 mm2)
+edges between panels: 8810; longer than 3 mm: 762
+normal change at panel edges (>3 mm long): median 62 deg, p95 106 deg, max 150 deg
+smooth blends (panel edge change < 15 deg, >3 mm long): 245 edges = 32.2 % of panel edges
+  of those, 123 lie on the frame-relief / swing-channel cuts (interface, swept arcs) and 122 on the skin itself = 20.3 % of the skin's own panel edges
+
+The swept channel cuts for the frame tubes are curved by nature (interface: the tubes sweep an arc) and stay as they were; they account for half of the creases under 15 deg. The 122 on the skin itself are mostly small creases where a bezel or scoop wall meets a panel at 3-9 deg, plus the nose grille and bull-bar cells.
+
+Checks: body and three pieces watertight, swing 0 hits at 0-35 deg, no clashes in the assembly, headroom 19 mm (nose) to 75 mm, 192 tests pass (1 xfail, legacy tests excluded), wall samples under 1.2 mm 4.2 % (rev 7 2.75 %: the narrow hood roof and ramps; not yet reduced), printed 921 g, total 2373 g, front weight share 64.3 %, pieces 214 x 172 x 152 / 148 x 175 x 176 / 144 x 146 x 83 on a 220 x 220 bed, dowel holes on both cuts.
+
+Not matched: the hood is narrow at the nose (roof half width 17 mm at x 0 against the sketch's wider hood), tail ends x -444 (sketch -468), deck hump is low (hangers), nose grille holes are square.

@@ -8,24 +8,35 @@ from shapely.geometry import Polygon
 
 import mono_build as MB
 
-# (x, zb, yf, zw, ysh, zsh, yc, yr, zr): floor z, floor half width (vertical flank to zw), shoulder (y, z), cabin base half width, roof half width, roof z
-ST = [
-    (49.0, 40.0, 12.0, 42.0, 10.0, 46.0, 8.0, 8.0, 50.0),
-    (34.0, 27.0, 28.0, 30.0, 24.0, 40.0, 20.0, 16.0, 56.0),
-    (6.0, -20.0, 46.0, 10.0, 42.0, 48.0, 32.0, 28.0, 66.0),
-    (-3.0, -26.0, 59.0, 5.0, 52.0, 52.0, 34.0, 30.0, 66.0),
-    (-50.0, -26.0, 70.0, 5.0, 62.0, 58.0, 44.0, 38.0, 80.0),
-    (-100.0, -26.0, 80.0, 5.0, 70.0, 62.0, 52.0, 44.0, 88.0),
-    (-124.0, -26.0, 83.0, 5.0, 70.0, 66.0, 52.0, 44.0, 98.0),
-    (-166.0, -26.0, 83.0, 5.0, 66.0, 70.0, 48.0, 40.0, 133.0),
-    (-300.0, -26.0, 80.0, 5.0, 60.0, 60.0, 46.0, 40.0, 133.0),
-    (-306.0, -26.0, 84.0, 20.0, 74.0, 85.0, 50.0, 42.0, 130.0),
-    (-345.0, -26.0, 84.0, 20.0, 74.0, 90.0, 50.0, 42.0, 116.0),
-    (-384.0, -26.0, 84.0, 20.0, 70.0, 88.0, 46.0, 40.0, 108.0),
-    (-438.0, -26.0, 64.0, 40.0, 54.0, 90.0, 44.0, 40.0, 104.0),
-]
+# Rev 8: every section is built from FIXED edge directions (vertical flank, shoulder bevel dy/dz -0.6, cabin flank dy/dz -0.12, horizontal floor/shelf/roof), only the
+# offsets vary per station, so the lateral quads between stations are exactly planar trapezoids. Each parameter is a polyline whose breaks are >= 15 deg.
+S1, SC = 0.6, 0.12
+YF = [(49, 12), (6, 46), (-124, 83), (-300, 83), (-330, 92), (-384, 92), (-441, 64)]          # plan half width (tapered hexagon: chisel nose, flat cabin, flared rear fender, tail taper)
+ZR = [(49, 52), (-100, 88), (-166, 133), (-300, 133), (-312, 116), (-441, 104)]                # roof: hood, raked windscreen, flat roof, step down to the deck
+ZB = [(49, 38), (34, 27), (-3, -26), (-441, -26)]                                              # floor / nose underside
+ZSH = [(49, 46), (-300, 62), (-312, 88), (-441, 90)]                                           # shoulder shelf
+
+
+def _pl(pts, x):
+    q = sorted(pts)
+    return float(np.interp(x, [a for a, _ in q], [b for _, b in q]))
+
+
+YSH = [(49, 9), (-60, 62), (-300, 66), (-312, 40), (-384, 40), (-441, 13)]                    # shoulder edge (top of the bevel), independent of the plan so the bevel stays one plane
+YR = [(49, 2), (-60, 41), (-300, 41), (-312, 27), (-384, 27), (-441, 5)]                        # roof half width
+
+
+def _station(x):
+    zb, yf, zr, zsh, ysh, yr = _pl(ZB, x), _pl(YF, x), _pl(ZR, x), _pl(ZSH, x), _pl(YSH, x), _pl(YR, x)
+    zw = zsh - (yf - ysh) / S1                                       # bevel runs at the fixed slope from (yf, zw) to (ysh, zsh)
+    yc = yr + SC * (zr - zsh)
+    return (x, zb, yf, zw, ysh, zsh, yc, yr, zr)
+
+
+XSTA = sorted({a for pts in (YF, ZR, ZB, ZSH, YSH, YR) for a, _ in pts}, reverse=True)
+ST = [_station(float(x)) for x in XSTA]
 X0, X1 = ST[0][0], ST[-1][0]
-XS = np.array([s[0] for s in ST])[::-1]                              # ascending, for np.interp
+XS = np.array([s[0] for s in ST])[::-1]
 
 
 def _pitch(i):
@@ -84,11 +95,11 @@ def solid(inset=0.0, belly=False):
 
 
 def hw(x, inset=0.0):
-    return float(np.interp(x, XS, [s[2] for s in ST][::-1])) - inset
+    return _pl(YF, x) - inset
 
 
 def tz(x, inset=0.0):
-    return float(np.interp(x, XS, [s[8] for s in ST][::-1])) - inset
+    return _pl(ZR, x) - inset
 
 
 _M = {}
@@ -120,7 +131,7 @@ def features(body, S0, solid_fn, pink):
     grow = lambda poly, d: list(Polygon(poly).buffer(d, join_style=2).exterior.coords)[:-1]
     body = body - pink()
     # 1. raked windscreen: trapezoid on the roof/hood facets, glazing 1.0 mm down, raised bezel
-    W = [(-104.0, 41.0), (-163.0, 36.0), (-163.0, -36.0), (-104.0, -41.0)]
+    W = [(-104.0, 38.0), (-163.0, 36.0), (-163.0, -36.0), (-104.0, -38.0)]
     body = body + (out15 ^ (pr(grow(W, 5.0)) - pr(W)))
     body = body - (inl ^ pr(grow(W, -0.4)))
     # 2. large angular side windows on the cabin flank
@@ -130,14 +141,14 @@ def features(body, S0, solid_fn, pink):
     body = body - (inl ^ swp(grow(SW, -0.4)))
     # 3. twin angular hood scoops: raised wedges, open mouths forward, mirrored
     for s_ in (1, -1):
-        foot = [(-30.0, 14.0), (-84.0, 16.0), (-90.0, 34.0), (-62.0, 34.0), (-30.0, 28.0)]
+        foot = [(-30.0, 7.0), (-84.0, 9.0), (-90.0, 28.0), (-62.0, 24.0), (-30.0, 17.0)]
         pts = [(x, s_ * y, surf(x, y) - 2.0) for x, y in foot] + [(x, s_ * y, surf(x, y) + (7.0 if x > -50.0 else 0.8)) for x, y in foot]
         wedge = Manifold.hull_points(np.array(pts, float))
-        ci = [(-33.0, 18.0), (-80.0, 19.0), (-85.0, 31.0), (-62.0, 31.0), (-33.0, 26.0)]
+        ci = [(-33.0, 10.0), (-80.0, 11.0), (-85.0, 25.0), (-62.0, 21.0), (-33.0, 15.0)]
         cp = [(x, s_ * y, surf(x, y) - 3.0) for x, y in ci] + [(x, s_ * y, surf(x, y) + (4.0 if x > -50.0 else -0.2)) for x, y in ci]
         cav = Manifold.hull_points(np.array(cp, float))
-        mouth = Manifold.cube((12.0, 9.0, 5.5), center=False).translate((-42.0, 18.0 if s_ > 0 else -27.0, surf(-34.0, 22.0) + 0.2))
-        hole = MB.prism_xy([(-36.0, s_ * 20.0), (-70.0, s_ * 21.0), (-70.0, s_ * 29.0), (-36.0, s_ * 28.0)], 40.0, 220.0) ^ (solid_fn(-1.0) - solid_fn(5.0))
+        mouth = Manifold.cube((12.0, 8.0, 5.5), center=False).translate((-42.0, 9.0 if s_ > 0 else -17.0, surf(-34.0, 12.0) + 0.2))
+        hole = MB.prism_xy([(-36.0, s_ * 11.0), (-70.0, s_ * 12.0), (-70.0, s_ * 20.0), (-36.0, s_ * 16.0)], 40.0, 220.0) ^ (solid_fn(-1.0) - solid_fn(5.0))
         body = body + wedge - cav - mouth - hole
     # 4. slim vents behind the windows, shoulder louvres
     for s_ in (1, -1):

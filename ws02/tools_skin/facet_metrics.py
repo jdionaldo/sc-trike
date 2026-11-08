@@ -36,9 +36,26 @@ print(f"flat-panel coverage {cover:.1f} % of surface area (panels >= 50 mm2)")
 print(f"edges between panels: {len(ea)}; longer than 3 mm: {int(sig.sum())}")
 print(f"normal change at panel edges (>3 mm long): median {np.median(ea[sig]):.0f} deg, p95 {np.percentile(ea[sig],95):.0f} deg, max {ea[sig].max():.0f} deg")
 print(f"smooth blends (panel edge change < 15 deg, >3 mm long): {int((ea[sig] < 15).sum())} edges = {100*(ea[sig] < 15).mean():.1f} % of panel edges")
+try:                                                                     # edges cut by the frame-relief / swing channels (interface cuts, swept arcs) are reported separately
+    import mono_build as MB, w3_swing
+    ch = MB.to_trimesh(w3_swing.swing_channels())
+    mids = m.vertices[el[cross][sig]].mean(1)
+    iface = trimesh.proximity.closest_point(ch, mids)[1] < 0.4
+    sm = ea[sig] < 15
+    if len(sys.argv) > 2:
+        for q, a_ in zip(mids[sm & ~iface], ea[sig][sm & ~iface]): print('   own', np.round(q, 0).tolist(), round(float(a_), 0))
+    print(f"  of those, {int((sm & iface).sum())} lie on the frame-relief / swing-channel cuts (interface, swept arcs) and {int((sm & ~iface).sum())} on the skin itself = {100*(sm & ~iface).sum()/max(1, (~iface).sum()):.1f} % of the skin's own panel edges")
+except Exception as e:
+    print("  (channel split skipped:", e, ")")
 if len(sys.argv) > 2:
     mid = m.vertices[el[cross][sig][ea[sig] < 15]].mean(1)
     a = ea[sig][ea[sig] < 15]
     print("smooth-edge angles: <3:", int((a < 3).sum()), "3-8:", int(((a >= 3) & (a < 8)).sum()), "8-15:", int((a >= 8).sum()))
     h, e = np.histogram(mid[:, 0], bins=12, range=(-445, 65)); print("by x:", dict(zip(e[:-1].astype(int), h)))
     print("z>110:", int((mid[:, 2] > 110).sum()), " |y|>60:", int((abs(mid[:, 1]) > 60).sum()))
+if len(sys.argv) > 3:
+    sel = np.where(cross)[0][sig]; sel = sel[ea[sig] < 15]
+    xs0, xs1 = float(sys.argv[2]), float(sys.argv[3])
+    for k in sel:
+        mp = m.vertices[el[k]].mean(0)
+        if xs0 <= mp[0] <= xs1: print(np.round(mp, 1).tolist(), round(float(ang[k]), 1), round(float(np.linalg.norm(m.vertices[el[k][0]] - m.vertices[el[k][1]])), 1))
