@@ -14,7 +14,8 @@ from shapely.geometry import MultiPoint, Polygon
 import mono_build as MB
 from w3_stretch import fx, back, pts as _pts, STRETCH, RAXLE_Z
 
-OUT = Path("out/mono3")
+from skin_cfg import CONCEPT, MONO
+OUT = Path(MONO)
 KX, KY, DZ, XOFF = 1.0, 1.0, 0.0, 0.0           # the profile below is already in the assembly frame
 WALL = 2.4
 
@@ -29,6 +30,11 @@ ARC = [(WHEEL_C[0] + WHEEL_R * math.cos(math.radians(a_)), WHEEL_C[1] + WHEEL_R 
 SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [PEAK, (-70.0, 63.0)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail
 HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-122, 66), (-176, 86), (-293, 70), (-365, 76.5), (-382, 49), (-400, 44), (-438, 38.5)]   # plan: a side pod swelling to y 86 at x -176, tapering to the rear arch (traced from the owner's markup)
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]   # (y, z): flanks lean in toward the roof, with a 45-degree-ish shoulder bevel at z 50..58
+
+if CONCEPT:                                           # reference-concept shell: cowl hump on the roofline, crisper pod/shoulder facets, deeper shoulder crease
+    SIDE = SIDE[:-2] + [PEAK, (-215.0, 90.0), (-150.0, 80.0), (-70.0, 63.0)]
+    SIDE = [p for i, p in enumerate(SIDE) if i == 0 or p != SIDE[i - 1]]
+    HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-122, 66), (-150, 86), (-205, 86)] + HALF[7:]          # flat-sided pod with a hard rear corner instead of the single swelling peak
 
 
 def to_new(pts, kind):
@@ -72,7 +78,9 @@ def _hull_sections(xs, polys):
 
 
 POD = [(-122.0, 68.0, -9.3), (-176.0, 86.0, -9.0), (-293.0, 70.0, -11.0), (-365.0, 76.5, -15.0), (-382.0, 62.0, -15.0)]   # side pod stations (x, outer |y|, top z): the waist line peaks at x -176, flares out at the rear and tapers down
-SHOULDER = dict(stations=[(-440.0, 1.0), (-300.0, 1.0), (-120.0, 0.25)], z0=50.0, z1=58.0, depth=6.0)   # shoulder crease: full at the rear, tapering to nothing toward the front
+SHOULDER = dict(stations=[(-440.0, 1.0), (-300.0, 1.0), (-120.0, 0.25)], z0=50.0, z1=58.0, depth=6.0)
+if CONCEPT:
+    SHOULDER = dict(stations=[(-440.0, 1.0), (-250.0, 1.0), (-100.0, 0.3)], z0=50.0, z1=58.0, depth=6.0)   # shoulder crease: full at the rear, tapering to nothing toward the front
 
 
 def _tent_y(z):
@@ -188,6 +196,13 @@ def details(body):
     quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
     body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
     body = body - canopy_cut() + canopy_cage()
+    if CONCEPT:
+        body = body - pink_grooves()
+        for s_ in (1, -1):                                                           # vented hood over the motor: a second louvre bank
+            rect = [(-128.0, s_ * 5.0), (-92.0, s_ * 5.0), (-92.0, s_ * 37.0), (-128.0, s_ * 37.0)]
+            body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))
+        cuts2, wedges2, chans2 = roof_gills(-128.0, -92.0, 8.0, 34.0)
+        body = body - cuts2 + wedges2 - chans2
     # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
     for s_ in (1, -1):
         rect = [(back(-237.0), s_ * 5.0), (back(-205.0), s_ * 5.0), (back(-205.0), s_ * 37.0), (back(-237.0), s_ * 37.0)]
@@ -267,6 +282,33 @@ def canopy_cage():
             out = out + _strut((p[0], p[1], p[2] + 1.0), (q[0], q[1], q[2] + 1.0), 4.0)
     out = out + _strut((foot(xs_b, 12.6)[0], 12.6, zt(xs_b)), (xs_b, -12.6, zt(xs_b)), 4.0)
     return out
+
+
+GROOVE_W, GROOVE_D = 1.4, 0.7                       # pink accent lines as engraved grooves (paint colour regions): 1.4 wide, 0.7 deep (wall stays >= 1.7)
+FLANK_LINES = [((-60.0, -2.37), (-330.0, -2.37)), ((-215.0, -4.0), (-300.0, 40.0)), ((-30.0, 8.0), (-125.0, 56.0))]       # (x, z) polylines on the flanks
+ROOF_LINES = [((-8.0, 30.0), (-64.0, 30.0)), ((-255.0, 40.0), (-335.0, 40.0))]                                           # (x, |y|) lines on the hood and engine deck
+
+
+def _band(p, q, w):
+    d = np.array(q, float) - np.array(p, float)
+    d /= np.linalg.norm(d)
+    n = np.array([-d[1], d[0]]) * w / 2.0
+    return [tuple(np.array(p) + n), tuple(np.array(q) + n), tuple(np.array(q) - n), tuple(np.array(p) - n)]
+
+
+def pink_grooves():
+    """Shallow engraved lines that follow the skin: the outer 0.7 mm layer intersected with thin straight bands (flank bands in x-z, roof bands in x-y)."""
+    layer = solid(0.0) - solid(GROOVE_D)
+    cut = None
+    for p, q in FLANK_LINES:
+        for y0, y1 in ((45.0, 120.0), (-120.0, -45.0)):
+            c = MB.prism_xz(_band(p, q, GROOVE_W), y0, y1)
+            cut = c if cut is None else cut + c
+    for p, q in ROOF_LINES:
+        for s_ in (1, -1):
+            c = MB.prism_xy(_band((p[0], s_ * p[1]), (q[0], s_ * q[1]), GROOVE_W), 30.0, 200.0)
+            cut = cut + c
+    return layer ^ cut
 
 
 def front_window():

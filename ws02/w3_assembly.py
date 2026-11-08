@@ -13,7 +13,7 @@ import layout3wd as LY
 from parts import w3_chassis as C, w3_drive as D, w3_front as W
 
 STL = "out/stl"
-MONO = "out/mono3"
+from skin_cfg import MONO
 
 
 def _t(path, mat=None, shift=None):

@@ -38,7 +38,7 @@ def main():
     flagged = sorted([(d, k) for k, d in rows.items() if d < GAP])
     import glob
     bad = []
-    for f in sorted(glob.glob("out/stl/w3_*.stl") + glob.glob("out/mono3/body3_*.stl")):
+    for f in sorted(glob.glob("out/stl/w3_*.stl") + glob.glob(__import__("skin_cfg").MONO + "/body3_*.stl")):
         t = trimesh.load(f)
         if not (t.is_watertight and len(t.split(only_watertight=False)) == 1):
             bad.append(f)

@@ -2,6 +2,7 @@
 import numpy as np, trimesh
 from manifold3d import Manifold
 import mono_build as MB, validate
+from skin_cfg import MONO
 
 PIECES = ("front", "mid", "rear")
 CUTS = (-165.0, -300.0)               # x of the two cut planes (front|mid, mid|rear)
@@ -9,7 +10,7 @@ CUTS = (-165.0, -300.0)               # x of the two cut planes (front|mid, mid|
 
 def main():
     """Cut across x only (the left and right halves are welded: the 147 mm width fits the bed); a 0.025 mm gap at each cut."""
-    body = MB.man(trimesh.load("out/mono3/body3.stl"))
+    body = MB.man(trimesh.load(f"{MONO}/body3.stl"))
     his = (1000.0,) + CUTS
     los = CUTS + (-1000.0,)
     for part, hi, lo in zip(PIECES, his, los):
@@ -17,7 +18,7 @@ def main():
         box = Manifold.cube((x1 - x0, 400.0, 400.0), center=False).translate((x0, -200.0, -200.0))
         m = MB.to_trimesh(body ^ box); m.merge_vertices()
         m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
-        m.export(f"out/mono3/body3_{part}.stl")
+        m.export(f"{MONO}/body3_{part}.stl")
         pm = m.copy(); pm.apply_translation((0, 0, -pm.bounds[0][2]))
         print(part, len(m.faces), m.is_watertight, np.round(m.extents, 1).tolist(), validate.check_bed(pm, 3.0))
 
