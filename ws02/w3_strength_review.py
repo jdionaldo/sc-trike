@@ -285,6 +285,8 @@ def frame():
     seen = set()
     for a, b, r, ta, tb in F.EDGES:
         for sg in "+-":
+            if sg == "-" and (a, b) in getattr(F, "NEG_DROP_EDGES", ()):
+                continue
             na, nb = nm[a + sg], nm[b + sg]
             key = frozenset((na, nb))
             if key in seen or na == nb:
@@ -296,6 +298,10 @@ def frame():
                 removed.append(f"{a}-{b}{sg}")
                 continue
             t.edge(na, nb, r)
+    for k, p_ in F.NODES_NEG.items():                              # bypass nodes and tubes outboard of the motor can (-y side only)
+        t.node(k + "-", p_); nm[k + "-"] = k + "-"
+    for a, b, r, ta, tb in F.EDGES_NEG:
+        t.edge(nm[a + "-"], nm[b + "-"], r)
     INFO["frame_removed"] = removed
 
     def split(a, b, name, frac):

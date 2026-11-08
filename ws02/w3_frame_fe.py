@@ -14,8 +14,14 @@ def graph():
     for k, p in N.items():
         nodes[k + "+"] = np.array(p, float)
         nodes[k + "-"] = np.array(mir(p), float)
+    for k, p in F.NODES_NEG.items():
+        nodes[k + "-"] = np.array(p, float)
     for a, b, r, ta, tb in F.EDGES:
-        edges.append((a + "+", b + "+", r)); edges.append((a + "-", b + "-", r))
+        edges.append((a + "+", b + "+", r))
+        if (a, b) not in F.NEG_DROP_EDGES:
+            edges.append((a + "-", b + "-", r))
+    for a, b, r, ta, tb in F.EDGES_NEG:
+        edges.append((a + "-", b + "-", r))
     return nodes, edges
 
 

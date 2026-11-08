@@ -103,24 +103,49 @@ EDGES = [("PE1", "PS2", 3.0, 0, 0), ("PS2", "PM", 3.0, 0, 0), ("PM", "PS1", 3.0,
          ("PS1", "FN", 4.5, 0, 0), ("FN", "PL", 4.5, 0, 6.0), ("PM", "PL", 3.0, 0, 6.0),
          ("PS2", "FP1", 3.0, 0, 0), ("B1", "FPB", 5.5, 0, 0), ("R1", "FPR", 4.5, 0, 0), ("PS1", "FPF", 3.5, 0, 0),
          ("PE1", "B1", 5.5, 7.0, 0), ("B1", "R1", 5.5, 0, 0), ("R1", "RW", 4.5, 0, 0), ("RW", "R2", 4.5, 0, 0),
-         ("HT", "PH", 5.5, 0, 6.0), ("PH", "PL", 6.0, 0, 0), ("HT", "C100", 5.5, 0, 0), ("HT", "HT2", 5.5, 0, 0), ("HT2", "MU", 5.5, 0, 0), ("MU", "R3", 5.5, 0, 0), ("R3", "R2", 5.5, 0, 0), ("R2", "C262", 5.5, 0, 0),
+         ("HT", "PH", 5.5, 0, 6.0), ("PH", "PL", 6.0, 0, 0), ("HT", "HT2", 5.5, 0, 0), ("HT2", "MU", 5.5, 0, 0), ("MU", "R3", 5.5, 0, 0), ("R3", "R2", 5.5, 0, 0), ("R2", "C262", 5.5, 0, 0),
          ("MU", "XN", 4.5, 0, 0), ("XN", "R2m", 4.5, 0, 0),
-         ("PH", "C40", 4.5, 6.0, 0), ("HT", "XH", 3.5, 0, 0), ("XH", "PHm", 3.5, 0, 6.0),
-         ("FT", "C29", 5.5, 0, 0), ("FT", "HT", 5.5, 0, 0), ("FT", "FN", 4.5, 0, 0),
+                  ("FT", "C29", 5.5, 0, 0), ("FT", "HT", 5.5, 0, 0), ("FT", "FN", 4.5, 0, 0),
          ("NB", "BT", 3.5, 0, 0), ("FN", "BT", 4.0, 0, 0), ("FT", "BT", 4.5, 0, 0), ("BT", "CBT", 5.5, 0, 0), ("FS", "NA", 3.5, 0, 0), ("NA", "NB", 3.0, 0, 0), ("FP1", "K1", 3.0, 0, 0), ("K1", "HT2", 3.0, 0, 0), ("R3", "K2", 5.5, 0, 0), ("K2", "FPB", 5.0, 0, 0)]
-BALLS = {"BT": 5.5, "FS": 3.5, "XH": 3.5, "C40": 4.5, "R1": 5.5, "RW": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 5.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 5.5, "FPR": 4.5, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 5.5}
+BALLS = {"BT": 5.5, "FS": 3.5, "R1": 5.5, "RW": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 5.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 5.5, "FPR": 4.5, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 5.5}
 FEET = {"FS": 8.0, "FP1": 7.0, "FPB": 11.0, "FPR": 8.0, "FPF": 10.0}      # foot pad diameters, screwed down into the base plate
+
+# The Fusion SE motor sits on the -y side (see motor_envelope), so the -y copies of these tubes and nodes are dropped and replaced by a bypass that runs outboard of the can
+# (tube centres at least 23 mm from the motor axis = can radius 18 + 2 mm clearance + tube radius 3).  The +y copies stay as they were.
+NEG_DROP_EDGES = {("HT", "PH"), ("HT", "HT2"), ("HT2", "MU"), ("FT", "HT"), ("K1", "HT2")}
+NEG_DROP_BALLS = {"HT", "HT2"}
+NODES_NEG = {"N1": (-100.0, -48.0, 54.0), "N2": (-135.9, -50.0, 57.5)}      # hoop corner beside the can, roof rail corner beside the can
+BALLS_NEG = {"N1": 4.0, "N2": 4.0}
+# (a, b, radius, trim a, trim b): names in NODES_NEG are used as given, all others are the mirrored (-y) copy of the +y node
+EDGES_NEG = [("PH", "N1", 3.0, 0, 0), ("N1", "FT", 3.0, 0, 0), ("N1", "N2", 3.0, 0, 0), ("N2", "MU", 3.0, 0, 0), ("K1", "N2", 3.0, 0, 0), ("PH", "N2", 3.0, 0, 0)]
+
+
+def neg_pos(k):
+    if k in NODES_NEG:
+        return NODES_NEG[k]
+    x, y, z = nodes()[k]
+    return (x, -y, z)
 
 
 def frame(relief=False):
     N = nodes()
     g = RELIEF_G if relief else 0.0
     parts = []
+    plus_only = []                                                               # tubes and balls that exist on the +y side only (the motor is on -y)
     for a, b, r, ta, tb in EDGES:
         nc = (a, b) == ("PH", "PL")                                              # the pivot pad stack: a plain cylinder, no rounded ends
-        parts.append(tube(N[a], N[b], r + g, ta + (1e-6 if nc else 0.0), tb + (1e-6 if nc else 0.0)))
+        tb_ = tube(N[a], N[b], r + g, ta + (1e-6 if nc else 0.0), tb + (1e-6 if nc else 0.0))
+        (plus_only if (a, b) in NEG_DROP_EDGES else parts).append(tb_)
     for k, r in BALLS.items():
-        parts.append(ball(N[k], r + g))
+        (plus_only if k in NEG_DROP_BALLS else parts).append(ball(N[k], r + g))
+    neg_only = [tube(neg_pos(a), neg_pos(b), r + g, ta, tb) for a, b, r, ta, tb in EDGES_NEG]
+    neg_only += [ball(NODES_NEG[k], r + g) for k, r in BALLS_NEG.items()]
+    extra = Manifold()
+    for m_ in plus_only:
+        extra = extra + m_
+    extra_neg = Manifold()
+    for m_ in neg_only:
+        extra_neg = extra_neg + m_
     if relief:
         parts.append(_disc(PIVOT[0], PIVOT[1], 45.0, Y0, 17.6))
     else:
@@ -151,7 +176,7 @@ def frame(relief=False):
             x, y, _ = N[k]
             side = side - Manifold.cube((30.0, 30.0, 20.0), center=False).translate((x - 15.0, y - 15.0, FOOT_Z - 20.0))
     if relief:
-        return side + side.mirror((0.0, 1.0, 0.0))
+        return side + side.mirror((0.0, 1.0, 0.0)) + extra + extra_neg
     cuts = []
     for x, z in ((-86.9, -19.0), (-86.5, -9.5), (-84.5, -23.8), (-84.5, -13.8)):
         cuts.append(_disc(x, z, Y0 - 0.1, Y1 + 4.0, 2.4))
@@ -165,7 +190,7 @@ def frame(relief=False):
     cuts.append(Manifold.cylinder(8.0, HINGE_D / 2, HINGE_D / 2, 28).rotate((-90.0, 0.0, 0.0)).translate((HINGE_PIN[0], HINGE_LUG[0] - 2.0, HINGE_PIN[1])))   # hinge pin hole through the lug
     for c in cuts:
         side = side - c
-    both = side + side.mirror((0.0, 1.0, 0.0))
+    both = side + side.mirror((0.0, 1.0, 0.0)) + extra + extra_neg
     PE1 = N["PE1"]          # the front diff case has its rear-ear screw on the +y side only: the pad and its pilot exist there alone (the tube end on -y is a plain ball)
     ear = _disc(PE1[0], PE1[2], Y0, Y1, 15.0) + Manifold.batch_hull([_disc(PE1[0], PE1[2], Y0, Y1, 15.0), ball(PE1, R)])
     return both + ear - _disc(PE1[0], PE1[2], Y0 - 0.1, Y1 + 4.0, 2.7) + shock_tab() - motor_envelope()
