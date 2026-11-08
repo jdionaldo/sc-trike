@@ -108,6 +108,9 @@ def frame_fe():
         t.node(k + "+", p); t.node(k + "-", mir(p))
     for a, b, r, ta, tb in F.EDGES:
         t.edge(a + "+", b + "+", r); t.edge(a + "-", b + "-", r)
+    for k, p in N.items():                      # nodes within 1 mm of y = 0 (MC, 0.4 mm off the plane): the cross tube joins the two copies
+        if 0.0 < abs(p[1]) < 1.0:
+            t.edge(k + "+", k + "-", 4.5)
     loads = [("PL+", np.array([0, 0, -N_f * 2.0])), ("PL-", np.array([0, 0, -N_f * 2.0]))]
     fixed = [k + sg for k in F.FEET for sg in "+-"]
     return t.solve(loads, fixed)
