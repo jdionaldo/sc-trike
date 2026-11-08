@@ -27,3 +27,23 @@ Not matched, and why: front shoulders (x +15..-123) stay at 52 mm: the front arm
 | bbox new | L 468 W 184 H 157 | | | | | |
 
 Skin printed total 879 g (was 848, +31 g; limit 900), total 2331 g, front share 63.9 %. 11 body/interior/assembly/mass tests pass, clearance clean, swing sweep 0 hits 0..35 deg (1 deg), body and pieces watertight. Thin-wall sample under 1.2 mm: 4.4 % (current 2.4 %).
+
+## Rev 3 - full silhouette match (merged mirrored cage a4c6502)
+Side polyline now follows the reference: nose 40, hood 62 at x -5, windscreen base 84 at x -72, roof 124..130 over x -151..-290, deck 122 at -327, 111 at -400, tail face to z 105 (was 83). Section flanks steeper (38 mm half width still at z 130), pods 92 mm with a shoulder plane at z 46..52 from x -150 to -335 (rear pods wider than the canopy), chisel nose 20 mm half width, hood 52 over the arm sweep, flare to 90 behind x -123, windows grown to 8 mm margin. Roof magnet tabs are unchanged in the frame (w3_frame untouched; top_z() still answers with the old roofline); posts rise from the pads to the taller roof (4.5 mm foot, slimmer post kept inside the flank). Wing (stepped, unchanged design) lifted 22 mm with the deck (parts/w3_tail.py DECK_DZ). Canopy cage slab 6 mm over the roof.
+Numbers (before / new / reference):
+| x | half-width cur | new | ref | top z cur | new | ref |
+|---|---|---|---|---|---|---|
+| 30 | nan | 24 | 38 | nan | 42 | 57 |
+| 0 | 44 | 52 | 60 | 48 | 59 | 72 |
+| -52 | 46 | 52 | 85 | 64 | 83 | 81 |
+| -105 | 52 | 53 | 90 | 68 | 101 | 101 |
+| -200 | 83 | 92 | 91 | 101 | 135 | 126 |
+| -290 | 70 | 92 | 91 | 95 | 130 | 130 |
+| -350 | 54 | 60 | 81 | 97 | 119 | 122 |
+| -400 | 49 | 49 | 40 | 89 | 111 | 111 |
+| bbox current | L 468 W 172 H 136 | | | | | |
+| bbox new | L 472 W 184 H 164 | | | | | |
+Skin pieces: 186 g -> 277 g; all printed parts 848 -> 940 g; total 2392 g, front share 63.6 %.
+Checks: pieces watertight and bed-sized (tallest piece 164 mm); swing sweep 0..35 deg at 1 deg: 0 hits; 132 tests pass (WS-03, drive, strength, balance), 1 xfail; clearance clean; thin-wall sample under 1.2 mm: 2.7 % (current 2.4 %).
+Pre-existing failures, also on a4c6502: tests/test_w3.py::test_strength_factors (singular FE matrix) and tests/test_assembly.py (legacy chassis).
+Hardpoints that cannot move: the front lean/steer linkage envelope (arms, uplinks, tie rods reach z 125 at x -30 and y 100), so the skin over x +15..-123 stays 52 mm half width (ref 60..90); the ref front shoulders there would sit inside the swinging arms.

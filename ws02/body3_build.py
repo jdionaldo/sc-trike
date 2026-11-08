@@ -31,10 +31,17 @@ SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [PEAK, (-70.0, 63.0)]  
 HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-122, 66), (-176, 86), (-293, 70), (-365, 76.5), (-382, 49), (-400, 44), (-438, 38.5)]   # plan: a side pod swelling to y 86 at x -176, tapering to the rear arch (traced from the owner's markup)
 SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]   # (y, z): flanks lean in toward the roof, with a 45-degree-ish shoulder bevel at z 50..58
 
-if CONCEPT:                                           # reference silhouette (plan from the top drawing, scaled 0.493 mm/px on the wheelbase)
-    HALF = [(30, 26), (10, 40), (-25, 52), (-50, 64), (-80, 68), (-122, 68), (-150, 86), (-205, 90)] + HALF[7:]     # chisel nose flaring into faceted shoulders, wide flat rear pods
-    HUMP = [(-135.0, 73.0), (-175.0, 112.0), (-260.0, 112.0), (-290.0, 95.5)]      # raked windscreen base, tall flat canopy block, falling rear deck: (x, top z)
-    HUMP_Y = (46.0, 40.0, 55.0)                                                       # half width at the foot, half width at the top, foot z
+SIDE_BASE = list(SIDE)                                  # the old roofline: top_z() keeps answering with it because the frame's roof tab nodes hang from it
+TENT_K = 1.0 / 3.615                                    # flank lean (y per mm of z) of the section prism
+SEC_TOP = (35.0, 110.0)                                 # (half width, z) of the section's flat top
+if CONCEPT:                                           # rev 3: reference silhouette (drawings 54/55, tools_skin/ref_outline.py)
+    DECK_DZ = 22.0                                      # the rear deck is this much higher than the old one (the wing is lifted with it)
+    TAIL = _pts([(-299.0, 50.0), (-341.5, 66.4)]) + [(-438.1, 83.3 + DECK_DZ)]
+    SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(-327.0, 100.4 + DECK_DZ), (-290.0, 130.0), (-151.0, 124.0), (-72.0, 84.0), (-5.0, 62.0)]   # low raked nose, raked windscreen, tall cabin roof, high hunched deck
+    HALF = [(34, 20), (3.5, 52), (-52, 52), (-123, 60), (-150, 90), (-205, 92)] + HALF[7:]      # chisel nose, narrow hood over the arm sweep, shoulder flare behind it, flat wide pods
+    TENT_K = 30.0 / 139.3                               # steeper flanks: 38 mm half width still at z 130
+    SEC_TOP = (68.0 - TENT_K * 144.3, 135.0)
+    SECTION = [(-68, -40), (68, -40), (68, -9.3), (SEC_TOP[0], SEC_TOP[1]), (-SEC_TOP[0], SEC_TOP[1]), (-68, -9.3)]
 
 
 def to_new(pts, kind):
@@ -87,14 +94,14 @@ def _hull_sections(xs, polys):
 POD = [(-122.0, 68.0, -9.3), (-176.0, 86.0, -9.0), (-293.0, 70.0, -11.0), (-365.0, 76.5, -15.0), (-382.0, 62.0, -15.0)]   # side pod stations (x, outer |y|, top z): the waist line peaks at x -176, flares out at the rear and tapers down
 SHOULDER = dict(stations=[(-440.0, 1.0), (-300.0, 1.0), (-120.0, 0.25)], z0=50.0, z1=58.0, depth=6.0)
 if CONCEPT:
-    POD = [(-80.0, 68.0, -9.3), (-122.0, 78.0, -9.3), (-176.0, 92.0, -9.0), (-293.0, 92.0, -11.0), (-335.0, 84.0, -13.0), (-365.0, 76.5, -15.0), (-382.0, 62.0, -15.0)]   # wider, thicker rear pods
+    POD = [(-123.0, 62.0, 30.0), (-150.0, 92.0, 46.0), (-205.0, 92.0, 50.0), (-293.0, 92.0, 52.0), (-335.0, 86.0, 46.0), (-365.0, 76.5, -15.0), (-382.0, 62.0, -15.0)]   # rear pods with a shoulder plane at z 46..52
 
 if CONCEPT:
     SHOULDER = dict(stations=[(-440.0, 1.0), (-250.0, 1.0), (-100.0, 0.3)], z0=50.0, z1=58.0, depth=6.0)   # shoulder crease: full at the rear, tapering to nothing toward the front
 
 
 def _tent_y(z):
-    return 68.0 - (max(z, -9.3) + 9.3) / 3.615
+    return 68.0 - (max(z, -9.3) + 9.3) * TENT_K
 
 
 def pods(inset=0.0):
@@ -115,7 +122,7 @@ def shoulder_cut(inset=0.0):
     polys = []
     for _, k in S["stations"]:
         ap = _tent_y(S["z1"]) - S["depth"] * k
-        bev = Polygon([(-68, -40), (68, -40), (68, -9.3), (_tent_y(S["z0"]), S["z0"]), (ap, S["z1"]), (35, 110), (-35, 110), (-ap, S["z1"]), (-_tent_y(S["z0"]), S["z0"]), (-68, -9.3)]).buffer(-inset, join_style=2)
+        bev = Polygon([(-68, -40), (68, -40), (68, -9.3), (_tent_y(S["z0"]), S["z0"]), (ap, S["z1"]), (SEC_TOP[0], SEC_TOP[1]), (-SEC_TOP[0], SEC_TOP[1]), (-ap, S["z1"]), (-_tent_y(S["z0"]), S["z0"]), (-68, -9.3)]).buffer(-inset, join_style=2)
         d = tent.difference(bev)
         d = max([g for g in d.geoms if g.geom_type == "Polygon" and g.centroid.x > 0.0], key=lambda g: g.area) if hasattr(d, "geoms") else d                      # drop numerical slivers
         pts = [c for c in d.buffer(0.3, join_style=2).exterior.coords if c[0] > 0.0]               # a hair past the tent: no coplanar faces
@@ -143,8 +150,6 @@ def solid(inset=0.0, belly=False):
     sidep = MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0)
     s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ sidep ^ prism_yz(list(sec.exterior.coords)[:-1], -500.0, 100.0)
     s = s - shoulder_cut(inset) + ((fenders(inset) + pods(inset)) ^ sidep)
-    if CONCEPT:
-        s = s + hump(inset)
     if belly:                                        # open belly: remove the floor with a straight prism of the cavity's plan (no stepped sweep: the lower edge stays clean)
         floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((296.2 + STRETCH, 400.0, 100.0), center=False).translate((-296.6 - STRETCH, -200.0, -80.0))
         s = s + floor
@@ -163,16 +168,15 @@ def _poly(kind, inset):
 
 
 def top_z(x, inset=0.0):
-    g = LineString([(x, -500), (x, 500)]).intersection(_poly("side", inset))
+    """Old roofline (frame-facing: the roof tab nodes hang from it)."""
+    g = LineString([(x, -500), (x, 500)]).intersection(Polygon(to_new(SIDE_BASE, "side")).buffer(-inset, join_style=2))
     return g.bounds[3]
 
 
 def _tz(x, inset=0.0):
-    """Actual skin top at the centre line (the old roof, or the concept's canopy block where it is taller); top_z stays the old roof for the frame's tab stations."""
-    z = top_z(x, inset)
-    if CONCEPT and HUMP[0][0] >= x >= HUMP[-1][0]:
-        z = max(z, float(np.interp(x, [p[0] for p in HUMP][::-1], [p[1] for p in HUMP][::-1])) - inset)
-    return z
+    """Actual skin top at the centre line."""
+    g = LineString([(x, -500), (x, 500)]).intersection(_poly("side", inset))
+    return g.bounds[3]
 
 
 def hw_in(x, inset=WALL):
@@ -198,7 +202,11 @@ def details(body):
         ztop = 50.6 if not CONCEPT else _tz(tx, WALL) + 0.8                  # concept: posts reach up to the (taller) roof underside
         for s in (1, -1):
             zb = tz + FR.TAB_BOSS
-            body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
+            if CONCEPT:                                                      # foot of 4.5 mm radius round the magnet, a slimmer post up to the taller roof (kept inside the flank)
+                rp = max(2.5, min(4.5, _tent_y(ztop) - abs(ty) - 1.0))
+                body = body + cyl_m((tx, s * ty, zb + 4.0), 4.5, 8.0) + cyl_m((tx, s * ty, 0.5 * (zb + 4.0 + ztop)), rp, ztop - zb - 4.0)
+            else:
+                body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
             body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
     scoop, cavity = flank_intake()
     body = body + scoop - cavity
@@ -218,11 +226,6 @@ def details(body):
     body = body - canopy_cut() + canopy_cage()
     if CONCEPT:
         body = body - pink_grooves()
-        for s_ in (1, -1):                                                           # vented hood over the motor: a second louvre bank
-            rect = [(-128.0, s_ * 5.0), (-92.0, s_ * 5.0), (-92.0, s_ * 37.0), (-128.0, s_ * 37.0)]
-            body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))
-        cuts2, wedges2, chans2 = roof_gills(-128.0, -92.0, 8.0, 34.0)
-        body = body - cuts2 + wedges2 - chans2
     # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
     for s_ in (1, -1):
         rect = [(back(-237.0), s_ * 5.0), (back(-205.0), s_ * 5.0), (back(-205.0), s_ * 37.0), (back(-237.0), s_ * 37.0)]
@@ -279,7 +282,7 @@ def _strut(a, b, w=4.0):
     return Manifold.hull_points(np.array(pts, float))
 
 
-CAGE = dict(h=16.0, t=3.0, yr=21.5, ro=34.5)
+CAGE = dict(h=6.0 if CONCEPT else 16.0, t=3.0, yr=21.5, ro=34.5)
 
 
 def canopy_cage():
@@ -306,7 +309,7 @@ def canopy_cage():
 
 GROOVE_W, GROOVE_D = 1.4, 0.7                       # pink accent lines as engraved grooves (paint colour regions): 1.4 wide, 0.7 deep (wall stays >= 1.7)
 FLANK_LINES = [((-60.0, -2.37), (-330.0, -2.37)), ((-215.0, -4.0), (-300.0, 40.0)), ((-30.0, 8.0), (-125.0, 56.0))]       # (x, z) polylines on the flanks
-ROOF_LINES = [((-8.0, 30.0), (-64.0, 30.0)), ((-255.0, 40.0), (-335.0, 40.0))]                                           # (x, |y|) lines on the hood and engine deck
+ROOF_LINES = [((-8.0, 30.0), (-64.0, 30.0)), ((-255.0, 31.0), (-335.0, 31.0))]                                           # (x, |y|) lines on the hood and engine deck
 
 
 def _band(p, q, w):
@@ -339,7 +342,7 @@ def front_window():
         for n, m, k in S.scene(float(ph)):
             if n.startswith(("arm_", "pod_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
                 pts += [(float(x), float(z)) for x, y, z in m.vertices[::7]]
-    hull = MultiPoint(pts).convex_hull.buffer(5.5, join_style=2).simplify(2.0)
+    hull = MultiPoint(pts).convex_hull.buffer(8.0 if CONCEPT else 5.5, join_style=2).simplify(2.0)
     return hull
 
 

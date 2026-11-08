@@ -14,6 +14,8 @@ from manifold3d import Manifold
 import mono_build as MB
 from parts.w3_style import MeshPart, _clean, _tb
 from w3_stretch import back, fx, STRETCH
+from skin_cfg import CONCEPT
+DECK_DZ = 22.0 if CONCEPT else 0.0          # concept skin: the rear deck (and the wing on it) is 22 mm higher
 
 STEP_Y, STEP_DZ, RISER = (), 6.0, 4.0     # step stations (|y|), height of each step, riser width (an angled step, about 56 degrees)
 SPAN = 134.5                       # half span = half the front track (269 / 2)
@@ -52,11 +54,11 @@ def _z_le_from_roof():
     return z_roof - (-u * math.sin(ALPHA) + w * math.cos(ALPHA))
 
 
-Z_LE = _z_le_from_roof()
+Z_LE = _z_le_from_roof() + DECK_DZ
 
 
 def hood_top(x):
-    return 97.0 + (97.0 - 83.3) / 89.1 * (x - fx(-259.0))
+    return 97.0 + (97.0 - 83.3) / 89.1 * (x - fx(-259.0)) + DECK_DZ
 
 
 def foot_z():
