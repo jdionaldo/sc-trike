@@ -22,6 +22,8 @@ def graph():
             edges.append((a + "-", b + "-", r))
     for a, b, r, ta, tb in F.EDGES_NEG:
         edges.append((a + "-", b + "-", r))
+    used = {n for e in edges for n in e[:2]}
+    nodes = {k: v for k, v in nodes.items() if k in used}                       # orphan nodes (C100, C40, XH after the motor bypass) would make K singular
     return nodes, edges
 
 
