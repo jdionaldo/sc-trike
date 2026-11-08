@@ -39,6 +39,7 @@ def main():
     L += ["", "Frame members removed from the FE because the motor can opens the hoop: " + ", ".join(R.INFO.get("frame_removed", [])) + ".",
           f"Assumed (not in the CAD): {R.EAR_SHARE:.0%} of the front arm's pivot reaction enters the cage through the servo-ear plate, the rest goes into the base plate through the housing bolts; "
           "pivot pin size 3 mm steel inferred from the 3.4 mm pad hole; skin + wing 0.25 kg. Frame feet are modelled as pinned (translations fixed)."]
+    L += ["", "## Decisions", "", "- "+"Accepted abuse case: the rear swing arm's 1 m drop onto the rear wheel (FS 0.41 against 1.0) stays a documented xfail. A 1 m drop puts about 7.8 J into the rear wheel; the shock and tyre absorb under 1 J, so no printed arm survives it. The arm is good for a flat drop of about 0.1 to 0.15 m: do not drop-test the rear. A stock progressive bump rubber on the rear shock shaft (see the BOM) softens the bottom-out.", "- "+'The ballast and small-mass numbers behind the 64.4 % front share (42 g tungsten plate, 8 g printed carrier and lid, wing and tail at 8 % infill, receiver, wires, bump rubber) are estimates: weigh the real parts and update the inventory in `w3_mass.py` before trusting the front share.']
     open("WS03_STRENGTH.md", "w").write("\n".join(L) + "\n")
     print(len(rows), "rows,", len(low), "below minimum")
 

@@ -84,6 +84,14 @@ def assembly(phi_deg=0.0, steer=None):
     import mono_build as MB
     from parts import w3_shock as SK
     items.append(("b_rear_shock", MB.to_trimesh(SK.shock_manifold(0.0)), "bought"))     # stock 1/10 coilover, left side, at rest
+    from parts import w3_balance as BAL                                                # nose ballast: printed carrier and lid (built in the assembly frame) plus the tungsten plate
+    if BAL.BALLAST_ON:
+        items.append(("w3_ballast_carrier", MB.to_trimesh(BAL.carrier_man()), "printed"))
+        items.append(("w3_ballast_lid", MB.to_trimesh(BAL.lid_man()), "printed"))
+        pc = BAL.plate_centre()
+        pl = trimesh.creation.box(extents=BAL.PLATE)
+        pl.apply_translation(pc)
+        items.append(("w3_ballast_plate", pl, "bought"))
     return items
 
 

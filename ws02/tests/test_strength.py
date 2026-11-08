@@ -19,7 +19,8 @@ KEYS = [R.row_key(r) for r in ROWS]
 @pytest.mark.parametrize("r,key", list(zip(ROWS, KEYS)), ids=[k[:90] for k in KEYS])
 def test_minimum(r, key, request):
     if BASE.get(key, 1e9) < r["min"]:
-        request.applymarker(pytest.mark.xfail(reason="known below minimum, see WS03_STRENGTH_FIXES.md", strict=False))
+        why = "accepted abuse case: no printed arm survives a 1 m drop on the rear wheel (7.8 J vs under 1 J absorbed), see WS03_STRENGTH_FIXES.md" if "1 m drop" in key else "known below minimum, see WS03_STRENGTH_FIXES.md"
+        request.applymarker(pytest.mark.xfail(reason=why, strict=False))
     assert r["fs"] >= r["min"], f"{key}: FS {r['fs']:.2f} < {r['min']}"
 
 

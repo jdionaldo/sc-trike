@@ -128,3 +128,12 @@ Front share 63.0 % to 64.4 % (target 64 to 65 %; equal load on all three tyres w
 | 3S pack 125 g (75 x 35 x 25) | 1 | was 120 g; no room to move it forward (fit scan: 1.5 mm) |
 
 Assumptions to weigh: small masses (85 g) now placed from an inventory (`MISC_ITEMS` in `w3_mass.py`); wing and tail print at 8 % infill (slicer setting). Optional: a rear tyre insert 15 g lighter would add +0.4 points.
+
+## Final-merge additions and decisions (2026-11-08)
+
+| item | qty | notes |
+|---|---|---|
+| Progressive bump rubber (stock 1/10 shock-shaft bump stop, about 10 mm) | 1 | on the rear shock shaft; softens bottom-out so the rear arm survives a flat drop of about 0.1 to 0.15 m |
+
+- Accepted abuse case: the rear swing arm's 1 m drop onto the rear wheel (FS 0.41 against 1.0) stays a documented xfail. A 1 m drop puts about 7.8 J into the rear wheel; the shock and tyre absorb under 1 J, so no printed arm survives it. The arm is good for a flat drop of about 0.1 to 0.15 m: do not drop-test the rear. A stock progressive bump rubber on the rear shock shaft (see the BOM) softens the bottom-out.
+- The ballast and small-mass numbers behind the 64.4 % front share (42 g tungsten plate, 8 g printed carrier and lid, wing and tail at 8 % infill, receiver, wires, bump rubber) are estimates: weigh the real parts and update the inventory in `w3_mass.py` before trusting the front share.
