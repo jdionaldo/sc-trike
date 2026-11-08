@@ -120,38 +120,44 @@ def ball_rod(p0, p1, r=1.5, rb=3.2):
     return m
 
 
-def lean_psi(th, phi_deg=0.0):
-    """Servo angle (rad) that holds both rod lengths for arm angles th = {1: left, -1: right}: the least-error root near the linear guess."""
-    lugs = {}
+def shock_mesh(p0, p1):
+    """Coilover envelope (bought): eyes at both ends, body from the lower eye, spring around the middle, shaft to the upper eye."""
+    p0, p1 = np.asarray(p0, float), np.asarray(p1, float)
+    d = p1 - p0
+    u = lambda t: p0 + d * t
+    parts = [trimesh.creation.cylinder(radius=3.2, segment=[u(0.0), u(0.45)], sections=20),
+             trimesh.creation.cylinder(radius=4.2, segment=[u(0.2), u(0.8)], sections=24),
+             trimesh.creation.cylinder(radius=1.75, segment=[u(0.45), u(1.0)], sections=12)]
+    for c in (p0, p1):
+        parts.append(trimesh.creation.icosphere(subdivisions=2, radius=3.5).apply_translation(c))
+    return trimesh.util.concatenate(parts)
+
+
+def lean_geometry(phi):
+    """Servo angle (rad), lug positions and eye-to-eye shock lengths for body lean phi (rad): the servo sets psi = -K_SERVO * phi."""
+    th = dict(zip((1, -1), F.arm_angles(phi)))
     a = math.atan2(W.LUG[1], W.LUG[0]); rho = math.hypot(*W.LUG)
-    for s, t in th.items():
-        lugs[s] = np.array([F.P[0] + rho * math.cos(a + t), s * (55.0 + W.YS), F.P[1] + rho * math.sin(a + t)])
-    guess = -math.radians(1.175) * phi_deg
-    best = None
-    for psi in np.linspace(-0.55, 0.55, 1101):
-        (yl, zl), (yr, zr) = LN.tips(psi)
-        e = max(abs(np.linalg.norm(lugs[1] - [LN.XR, yl, zl]) - LN.ROD_L), abs(np.linalg.norm(lugs[-1] - [LN.XR, yr, zr]) - LN.ROD_L))
-        sc = e + 0.02 * abs(psi - guess)
-        if best is None or sc < best[0]:
-            best = (sc, psi, e)
-    return best[1], best[2], lugs
+    lugs = {s: np.array([F.P[0] + rho * math.cos(a + t), s * (55.0 + W.YS), F.P[1] + rho * math.sin(a + t)]) for s, t in th.items()}
+    psi = -LN.K_SERVO * phi
+    (yl, zl), (yr, zr) = LN.tips(psi)
+    tips = {1: np.array([LN.XR, yl, zl]), -1: np.array([LN.XR, yr, zr])}
+    return psi, lugs, tips, {s: float(np.linalg.norm(lugs[s] - tips[s])) for s in (1, -1)}
 
 
 def lean_items(phi, th):
     """One lean servo on the centreline, its horn, the V rocker and the two ball-link rods."""
-    psi, err, lugs = lean_psi(th, math.degrees(phi))
-    (yl, zl), (yr, zr) = LN.tips(psi)
+    psi, lugs, tips, _ = lean_geometry(phi)
     ax = np.array([LN.XR, 0.0, LN.ZC])
     out = []
-    rk = load("w3_lean_rocker", T(LN.XR - 2.0, 0, LN.ZC) @ Rx(psi, (0.0, 0.0)) @ np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1.0]]))
+    rk = load("w3_lean_rocker", T(LN.XR + 2.0 - LN.PLATE, 0, LN.ZC) @ Rx(psi, (0.0, 0.0)) @ np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1.0]]))
     out.append(("lean_rocker_c", rk, "printed"))
     out.append(("lean_mount_c", load("w3_lean_tower", T(0, 0, LN.TWR_Z0)), "printed"))
     out.append(("battery_tray_c", load("w3_battery_tray", T(0, 0, -23.0)), "printed"))
-    out.append(("lean_horn_c", trimesh.creation.cylinder(radius=8.0, segment=[[LN.XR + 2.0, 0, LN.ZC], [LN.TOP_X, 0, LN.ZC]], sections=32), "bought"))
+    out.append(("lean_horn_c", trimesh.creation.cylinder(radius=7.0, segment=[[LN.XR + 2.0, 0, LN.ZC], [LN.TOP_X, 0, LN.ZC]], sections=32), "bought"))
     out.append(("lean_servo_c", flat_box((LN.TOP_X + LN.SV_H / 2, -LN.SV_OFF, LN.ZC), (LN.SV_H, LN.SV_L, LN.SV_W)), "bought"))
     out.append(("lean_ears_c", flat_box((LN.TWR_X[1] + 1.25, -LN.SV_OFF, LN.ZC), (2.5, LN.SV_EAR, LN.SV_W)), "bought"))
-    out.append(("lean_rod_1", ball_rod([LN.XR, yl, zl], lugs[1]), "bought"))
-    out.append(("lean_rod_-1", ball_rod([LN.XR, yr, zr], lugs[-1]), "bought"))
+    for s_ in (1, -1):
+        out.append((f"b_lean_shock_{s_}", shock_mesh(tips[s_], lugs[s_]), "bought"))
     return out
 
 
@@ -210,7 +216,7 @@ def scene(phi_deg, steer=None):
     return items
 
 
-OK_PAIRS = [("battery_tray", "b_battery"), ("lean_rod", "lean_rocker"), ("lean_rod", "lean_horn"), ("lean_rocker", "lean_horn"), ("lean_mount_c", "lean_servo"), ("lean_mount_c", "lean_ears"), ("lean_rocker", "lean_servo"), ("mock_axle", "knuckle"), ("mock_joint", "knuckle"), ("mock_joint", "carrier"), ("mock_hub", "knuckle"), ("mock_rimdisc", "knuckle"), ("mock_tire", "knuckle"), ("mock_rim", "knuckle"), ("wing", "tip_shaft"), ("wing", "carrier"), ("tip_shaft", "carrier"), ("tip_shaft", "knuckle"), ("tip_shaft", "tire"), ("tip_shaft", "arm"), ("tip_shaft", "cover"),
+OK_PAIRS = [("w3_ballast", "w3_deck"), ("w3_ballast", "w3_ballast"), ("w3_ballast", "b_ballast"), ("battery_tray", "b_battery"), ("b_lean_shock", "lean_rocker"), ("b_lean_shock", "lean_horn"), ("b_lean_shock", "arm"), ("lean_rocker", "lean_horn"), ("lean_mount_c", "lean_servo"), ("lean_mount_c", "lean_ears"), ("lean_rocker", "lean_servo"), ("mock_axle", "knuckle"), ("mock_joint", "knuckle"), ("mock_joint", "carrier"), ("mock_hub", "knuckle"), ("mock_rimdisc", "knuckle"), ("mock_tire", "knuckle"), ("mock_rim", "knuckle"), ("wing", "tip_shaft"), ("wing", "carrier"), ("tip_shaft", "carrier"), ("tip_shaft", "knuckle"), ("tip_shaft", "tire"), ("tip_shaft", "arm"), ("tip_shaft", "cover"),
             ("diff_out", "arm"), ("diff_out", "tub_wall"), ("diff_out", "front_diff"), 
             ("tire", "knuckle"), ("lean_rod", "lean_horn"), ("tie_rod", "steer_horn"), ("lean_rod", "arm"),
             ("tie_rod", "knuckle"), ("tire", "carrier")]

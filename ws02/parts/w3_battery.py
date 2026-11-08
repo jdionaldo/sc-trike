@@ -10,7 +10,7 @@ from parts.w3_style import MeshPart, _clean
 Z0 = -23.0                                  # base plate top
 T = 2.4                                     # wall
 FL = 3.0                                    # floor thickness
-RIB_X = (BX0 + 11.0, BX1 - 6.0 - T)                          # first rib clear of the lean tower's feet
+RIB_X = (BX0 + 16.0, BX1 - 6.0 - T)                          # first rib clear of the lean tower's feet
 TABS = [(rx + T / 2, y) for rx in RIB_X for y in (BY1 + T + 4.0,)]   # (x, y) screw positions in the base plate
 
 

@@ -64,7 +64,7 @@ def swing_channels(theta_max=THETA_MAX, step=STEP):
     skin leaves open-ended channels the tubes slide out of as the skin swings up."""
     rel = FR.relief() + FR.frame()                               # grown tubes plus the pads, lugs and plates (the real frame solid)
     for n, m in fixed_parts():                                   # inner printed parts the skin's lower rear (below the hinge axis it swings rearward) would also hit
-        if n in ("w3_rbc_upper", "w3_rbc_lower", "w3_deck_front", "b_rear_shaft", "b_rear_shock", "b_battery", "battery_tray_c"):
+        if n in ("w3_rbc_upper", "w3_rbc_lower", "w3_deck_front", "b_rear_shaft", "b_rear_shock", "b_battery", "battery_tray_c") or n.startswith("b_lean_shock"):
             rel = rel + m
     for n, m in fixed_parts():                                   # the rear arm lies against the wall's lower part: carve it (and a 0.4 mm margin) at rest and along the swing
         if n == "w3_rear_arm":
@@ -116,7 +116,7 @@ def rear_travel_channels(up_mm=25.0, down_mm=20.0, margin=3.0):
     r_arm = math.hypot(cx - XP, cz - ZP)
     a0, a1 = -math.degrees(math.asin(down_mm / r_arm)), math.degrees(math.asin(up_mm / r_arm))
     # the arm's inner face lies inside the skin wall at the pivot; clear the wall right through around the hub so no sliver of wall is left
-    pad = Manifold.cylinder(42.0, 13.0, 13.0, 48).rotate((0.0, 0.0, 3.75)).rotate((-90.0, 0.0, 0.0))      # polygon turned half a facet: a vertex line at x = pivot + 13, z = 0 pinched an edge against the frame pad face at y 57.6.translate((XP, 38.0, ZP))
+    pad = Manifold.cylinder(42.0, 13.0, 13.0, 48).rotate((0.0, 0.0, 3.75)).rotate((-90.0, 0.0, 0.0)).translate((XP, 38.0, ZP))      # polygon turned half a facet: a vertex line at x = pivot + 13, z = 0 pinched an edge against the frame pad face at y 57.6
     arm_env = arm_env + pad
     for n, m, k in __import__("w3_assembly").assembly(0.0, 0.0):                                  # the belt and its pulleys move with the arm too
         if n in ("mock_rear_belt", "mock_rear_pulley_pivot", "mock_rear_pulley_axle"):

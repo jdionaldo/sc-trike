@@ -75,7 +75,7 @@ def test_interior_inside_body(body_built):
 
 def test_mass_plausible(body_built):
     g = A.mass_g(A.assembly(0.0))
-    assert 600.0 < g < 1800.0, g
+    assert 600.0 < g < 2400.0, g      # solid-volume mass of the printed parts (before infill), plausibility bound
 
 
 def test_strength_factors():
@@ -89,7 +89,7 @@ def test_strength_factors():
 def test_mass_and_cg():
     import w3_mass
     rows, total, cg = w3_mass.run()
-    assert 1000.0 < total < 2200.0, total
+    assert 1000.0 < total < 2400.0, total
     from w3_stretch import WHEELBASE as WB
     front = (cg[0] + WB) / WB
     assert 0.45 < front < 0.70, front
@@ -140,3 +140,19 @@ def test_rear_shock_clear(dz, body_built):
         mv = n.startswith(("mock_rear_", "w3_rear_arm"))
         part = SW.rot_pivot(MB.man(mesh), ang) if mv else MB.man(mesh)
         assert (shock ^ part).volume() < 0.5, (n, dz)
+
+
+def test_lean_shock_stroke():
+    """The two lean coilovers stay inside their stroke (3 mm spare at each end) over the full lean range and sit near 70 % extension at lean 0."""
+    import math
+    import parts.w3_lean as LN
+    lo, hi = LN.SHOCK["lmin"] + 3.0, LN.SHOCK["lmax"] - 3.0
+    for ph in np.linspace(-20.0, 20.0, 41):
+        _, _, _, ln = S.lean_geometry(math.radians(ph))
+        assert all(lo <= v <= hi for v in ln.values()), (ph, ln)
+    _, _, _, l0 = S.lean_geometry(0.0)
+    ext = (l0[1] - LN.SHOCK["lmin"]) / LN.SHOCK["stroke"]
+    assert 0.65 <= ext <= 0.75, ext
+    for ph in (0.0, 20.0, -20.0):
+        names = [n for n, _, _ in S.scene(ph)]
+        assert "b_lean_shock_1" in names and "b_lean_shock_-1" in names

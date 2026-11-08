@@ -100,16 +100,16 @@ def nodes():
 
 # (a, b, tube radius, trim at a, trim at b): angled tubes only; the roof members are thicker (inboard, no clearance problem)
 EDGES = [("PE1", "PS2", 3.0, 0, 0), ("PS2", "PM", 3.0, 0, 0), ("PM", "PS1", 3.0, 0, 0), ("PS2", "PL", 3.0, 0, 6.0), ("PE1", "PL", 3.0, 0, 6.0),
-         ("PS1", "FN", 3.0, 0, 0), ("FN", "PL", 3.0, 0, 6.0),
-         ("PS2", "FP1", 3.0, 0, 0), ("B1", "FPB", 4.0, 0, 0), ("R1", "FPR", 4.0, 0, 0), ("PS1", "FPF", 3.5, 0, 0),
-         ("PE1", "B1", 4.5, 7.0, 0), ("B1", "R1", 4.5, 0, 0), ("R1", "RW", 4.5, 0, 0), ("RW", "R2", 4.5, 0, 0),
+         ("PS1", "FN", 4.5, 0, 0), ("FN", "PL", 4.5, 0, 6.0), ("PM", "PL", 3.0, 0, 6.0),
+         ("PS2", "FP1", 3.0, 0, 0), ("B1", "FPB", 5.5, 0, 0), ("R1", "FPR", 4.5, 0, 0), ("PS1", "FPF", 3.5, 0, 0),
+         ("PE1", "B1", 5.5, 7.0, 0), ("B1", "R1", 5.5, 0, 0), ("R1", "RW", 4.5, 0, 0), ("RW", "R2", 4.5, 0, 0),
          ("HT", "PH", 5.5, 0, 6.0), ("PH", "PL", 6.0, 0, 0), ("HT", "C100", 5.5, 0, 0), ("HT", "HT2", 5.5, 0, 0), ("HT2", "MU", 5.5, 0, 0), ("MU", "R3", 5.5, 0, 0), ("R3", "R2", 5.5, 0, 0), ("R2", "C262", 5.5, 0, 0),
          ("MU", "XN", 4.5, 0, 0), ("XN", "R2m", 4.5, 0, 0),
          ("PH", "C40", 4.5, 6.0, 0), ("HT", "XH", 3.5, 0, 0), ("XH", "PHm", 3.5, 0, 6.0),
          ("FT", "C29", 5.5, 0, 0), ("FT", "HT", 5.5, 0, 0), ("FT", "FN", 4.5, 0, 0),
-         ("NB", "BT", 3.5, 0, 0), ("FN", "BT", 4.0, 0, 0), ("FT", "BT", 4.5, 0, 0), ("BT", "CBT", 4.5, 0, 0), ("FS", "NA", 3.5, 0, 0), ("NA", "NB", 3.0, 0, 0), ("FP1", "K1", 3.0, 0, 0), ("K1", "HT2", 3.0, 0, 0), ("R3", "K2", 4.0, 0, 0), ("K2", "FPB", 4.0, 0, 0)]
-BALLS = {"BT": 4.5, "FS": 3.5, "XH": 3.5, "C40": 4.5, "R1": 4.5, "RW": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 4.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 4.0, "FPR": 4.0, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 4.0}
-FEET = {"FS": 8.0, "FP1": 7.0, "FPB": 9.0, "FPR": 7.6, "FPF": 10.0}      # foot pad diameters, screwed down into the base plate
+         ("NB", "BT", 3.5, 0, 0), ("FN", "BT", 4.0, 0, 0), ("FT", "BT", 4.5, 0, 0), ("BT", "CBT", 5.5, 0, 0), ("FS", "NA", 3.5, 0, 0), ("NA", "NB", 3.0, 0, 0), ("FP1", "K1", 3.0, 0, 0), ("K1", "HT2", 3.0, 0, 0), ("R3", "K2", 5.5, 0, 0), ("K2", "FPB", 5.0, 0, 0)]
+BALLS = {"BT": 5.5, "FS": 3.5, "XH": 3.5, "C40": 4.5, "R1": 5.5, "RW": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 5.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 5.5, "FPR": 4.5, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 5.5}
+FEET = {"FS": 8.0, "FP1": 7.0, "FPB": 11.0, "FPR": 8.0, "FPF": 10.0}      # foot pad diameters, screwed down into the base plate
 
 
 def frame(relief=False):
@@ -146,6 +146,10 @@ def frame(relief=False):
     side = parts[0]
     for p in parts[1:]:
         side = side + p
+    if not relief:                                                               # the fattened rear foot nodes (r 5.5) would dip into the base plate: trim them at its top face
+        for k in ("FPB", "FPR"):
+            x, y, _ = N[k]
+            side = side - Manifold.cube((30.0, 30.0, 20.0), center=False).translate((x - 15.0, y - 15.0, FOOT_Z - 20.0))
     if relief:
         return side + side.mirror((0.0, 1.0, 0.0))
     cuts = []

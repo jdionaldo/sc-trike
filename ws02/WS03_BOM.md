@@ -8,19 +8,19 @@ All sizes below are assumptions from the 1/10 and 1/18 RC parts we planned aroun
 | Servo, 12 kg short body 40 x 20 x 19.3 | 2 | steer x2 (one per side at x -100, unchanged); a single central steering servo was ruled out, see WS03_LEAN.md |
 | Servo horn 25T, aluminium, small round (lean) | 1 | the printed V rocker screws to it with 4 x M2 (the horn sits on the 4.5 mm spline stub; the rocker is 4 mm thick, so no standoff is needed) |
 | Servo horn, 12 mm (steer) | 2 | aluminium horns, M2 ball studs |
-| Motor: Hobbywing QuicRun Fusion SE 36 x 58.1 mm, 201 g, ESC built in | 1 | replaces the 2830 motor; at x -122, y -21, z 41 (see Motor placement) |
+| Motor: Hobbywing QuicRun Fusion SE **1800KV** (HW30404317) 36 x 58.1 mm, 201 g, ESC built in | 1 | replaces the 2830 motor; at x -122, y -21, z 41 (see Motor placement) |
 | ESC | 0 | none: built into the Fusion SE |
 | LiPo 3S 1300 mAh 75 x 35 x 25 | 1 | on the printed cradle beside the drive shaft (x -77.5..-2.5, y -37.5..-2.5) |
 | Receiver 6 ch with mixing | 1 | lean, steer, throttle mixes |
-| Spur gears module 0.8: 15T pinion, 45T diff ring | 1 + 1 | centre distance 24 mm |
-| Spur gear diff (45T ring) | 1 | centre diff, axis along the body |
-| Bevel sets module 1.0, 12T pinion / 30T ring | 2 | front diff and rear bevel case |
-| Bevel gear diff carrier (front), outputs 5 mm | 1 | ring on the +y end |
-| Shafts 5 mm (about 40, 55, 52 mm) and 5 mm output stubs | 5 | front pinion, rear, outputs |
-| Bearings 5 x 11 x 4 | about 14 | every shaft seat and arm pivot |
+| Spur gears 32 DP (drivetrain redraw, see WS03_DRIVETRAIN.md): 13T motor pinion (5 mm bore), 2 x 27T idlers (AXI232033), 40T ring (AXI232034) | 1 + 1 + 1 | motor to centre-diff ring, 3.077 : 1 |
+| Differential carrier, AR45 6-bolt, with AXI232002 locker on the centre one | 2 + 1 | front and centre diff |
+| AXI232003 6-bolt HD gear set (30T ring / 8T pinion) | 2 | front diff and rear bevel case |
+| Shaft coupler 3.175 to 5 mm | 1 | motor stub to the 5 mm rod |
+| Shafts 5 mm: 2 x 102 mm (front pinion shaft, rear shaft; Arrma ARA330574 class), 1 x 50 mm (motor extension), 2 x 22 mm (idler pins), 1 x 70 mm (rear output) | 6 | uncut; lengths from `w3_stock.py` |
+| Bearings 5 x 11 x 4 | about 30 | every shaft seat (28 in the new drivetrain) and arm pivot |
 | Bearings 4 x 8 x 3 | 4 | arm tip and carrier |
 | Bearing 8 x 16 x 5 | 2 | rear axle |
-| GT2 3 mm belts and pulleys | 4 belts | front 20T to 16T (x2), rear 20T to 22T (x1), spare |
+| GT2 3 mm belts and pulleys | 4 belts | front 20T to 16T (x2), rear 22T to 20T (x1, swapped for the ratio match), spare |
 | Dogbone / CVD with universal joint on the kingpin axis | 2 | about 25 mm lateral room |
 | Wheels: skinny off-road 83 x 24 (front) | 2 | 4 mm axle |
 | Wheel: thick off-road 112 x 62 (rear) | 1 | 8 mm axle, 8 mm hex |
@@ -72,6 +72,19 @@ Consequence: the motor pinion can no longer mesh directly with the centre-diff r
 
 The 3S 1300 mAh pack (75 x 35 x 25) now lies at x -77.5..-2.5, y -37.5..-2.5, z -11..14 on a printed cradle (`w3_battery_tray`: 3 mm floor on two ribs, end stops, short side lips, two pairs of strap slots, two screws into the base plate on the centreline side, grooved around the frame tubes). The centreline is free for the lean servo and its tower, which is open under the servo window. The skin has open channels for the pack's swing path. CG y +0.7 mm (was +1.4), CG x -167.8, front share 62.7 %. A 105 mm 3S 2200 mAh pack fits nowhere (fit scan); it needs about 30 mm more free length between the diff case (x -80) and the nose frame nodes (x -5), i.e. the front end ahead of the diff 30 mm longer. Buy: 2 hook-and-loop or silicone battery straps, 10 mm wide.
 
+### Lean coilovers (2026-11-07)
+
+The two rigid lean rods are replaced by two small coilovers from the rocker tips to the arm lugs; the single INJS15 sets the lean (servo angle 1.013 deg per degree of lean, +-20.3 deg for +-20 deg), the shocks give spring and damping.
+
+| part | qty | notes |
+|---|---|---|
+| Micro coilover shock, 3 mm eyes, eye to eye 51.5 mm compressed / 75.5 mm extended (24 mm stroke), spring about 8 mm OD, 25 g | 2 | stock part: any 1:10 / 1:12 aluminium 'short' shock with that length, or a Redcat/Axial 70 mm class shock shortened by 5 mm; fit with oil 30-35 wt |
+| Spring, 3-6 N/mm (17-34 lb/in) | 2 | stiffer than stock RC springs (0.3-1.2 N/mm): see below |
+| Shock oil 30-35 wt (50 cSt) | 1 | damps the arm swing |
+| M3 bolts 10 mm + nylon nuts | 4 | rocker tips and arm lugs (the printed eye holes are 3.2 mm) |
+
+Geometry (neutral): rocker axis x -82, z 34.5; tip radius 17.3 mm, V half angle 71.9 deg; eye to eye 68.5 mm at lean 0 (71 % extension), 67.9 to 69.9 mm over lean +-20 deg at any steer (steer does not move the lugs), so the shocks keep 13 mm of compression and 5 mm of extension in hand. Torque: holding 20 deg of lean against the weight takes 3.9 kg.cm at the servo (about 11.8 N in each shock), 4.5 times under the 17.7 kg.cm of the INJS15; spring rate 3 to 6 N/mm keeps the sag under about 2 to 4 mm, 1 N/mm is only workable with the servo closed-loop on an IMU.
+
 ### Belt cross-over (2026-11-03)
 
 The motor (y -21, z 41) cannot mesh the centre-diff ring (axis y 21, z 0) directly: 58.7 mm apart, with the diff cases filling z < 22 from x -205 to -80, so no spur idler fits. Instead the motor shaft runs aft above the case (x -151 to -218, 4 mm, needs a bearing block on the cage: not yet drawn) to a 16T GT2 pulley at x -213; a 6 mm GT2 belt (about 190 mm, to be matched to the pulley pair) runs to a 40T pulley on a countershaft at y 21, z 24 (4 mm shaft, x -218..-197) whose 15T pinion meshes the ring. Ratio 2.5 : 1 from the pulleys; the stock pinion/ring then add 3 : 1. Buy: 16T and 40T GT2 pulleys (5 mm / 4 mm bore as fitted), one GT2 belt, two 4 mm bearings. Added mass about 24 g behind the CG: front share 62.6 %.
@@ -97,3 +110,30 @@ Merged: 450 mm wheelbase and 4 deg rake with the caret swing arm and hoop-mounte
 - Rear shaft block spans about x -205 to -347: buy 5 x 150 mm stock for the centre-to-rear-bevel shaft (nothing cut).
 - Tyres: all three 112 x 62 per the latest decision; the 83 x 24 and 8 mm / 4 mm axle lines above are from the earlier layout and must be re-checked when the front wheel part is final.
 - Printed mass 671 g, bought 1184 g, total about 1965 g; front weight share 63.8 %, CG x -162.9 mm, 53.1 mm above ground (WS03_MASS_CG.md).
+
+## Drivetrain redraw around stock parts (ws03-drivetrain, 2026-11-07)
+
+Full part table, assumptions, ratio chain and shaft lengths are in `WS03_DRIVETRAIN.md`; all dimensions are in `w3_stock.py`. Stock numbers in use: AXI232003 (x2),
+AXI232002 (x1), AXI232034 (40T spur, x1), AXI232033 (two 27T), AXI232027/232028 axle shafts (diff outputs, length to be checked), 5 x 11 x 4 bearings,
+Hobbywing HW30404317 (1800KV). The earlier "Spur gears module 0.8", "Bevel sets module 1.0" and belt cross-over rows no longer apply.
+
+## Weight balance (ws03-balance)
+
+Front share 63.0 % to 64.4 % (target 64 to 65 %; equal load on all three tyres would be 66.7 %), total 2262 g to 2294 g, CG x -166.7 to -160.4, y 1.1, z 12.7 to 10.8 (CG height above ground 54.2 to 52.3 mm). Ladder in `WS03_MASS_CG.md`, `python w3_mass.py`.
+
+| Item | Qty | Notes |
+|---|---|---|
+| Tungsten alloy plate 40 x 20 x 3 mm (about 17.5 g/cc, 42 g) | 1 | nose ballast, fills the carrier cavity (40.6 x 20.6 x 3.6). Lead instead: 40 x 20 x 4.6 mm for 41 g, needs the cavity and carrier 1.2 mm deeper (`PLATE` in `parts/w3_balance.py`) |
+| Ballast carrier + lid (`w3_ballast_carrier`, `w3_ballast_lid`, PETG, 8 g) | 1 + 1 | hangs under the front deck (x -50..-5, y -12.6..12.6, z -35.7..-29, about 25 mm above the ground), floor against the deck underside, lid faces down; 3M VHB tape on the floor plus 2 zip ties through the floor slots round the deck. Not in `w3_parts.all_parts` yet: the integrator adds `w3_balance.build(P)` |
+| 3S pack 125 g (75 x 35 x 25) | 1 | was 120 g; no room to move it forward (fit scan: 1.5 mm) |
+
+Assumptions to weigh: small masses (85 g) now placed from an inventory (`MISC_ITEMS` in `w3_mass.py`); wing and tail print at 8 % infill (slicer setting). Optional: a rear tyre insert 15 g lighter would add +0.4 points.
+
+## Final-merge additions and decisions (2026-11-08)
+
+| item | qty | notes |
+|---|---|---|
+| Progressive bump rubber (stock 1/10 shock-shaft bump stop, about 10 mm) | 1 | on the rear shock shaft; softens bottom-out so the rear arm survives a flat drop of about 0.1 to 0.15 m |
+
+- Accepted abuse case: the rear swing arm's 1 m drop onto the rear wheel (FS 0.41 against 1.0) stays a documented xfail. A 1 m drop puts about 7.8 J into the rear wheel; the shock and tyre absorb under 1 J, so no printed arm survives it. The arm is good for a flat drop of about 0.1 to 0.15 m: do not drop-test the rear. A stock progressive bump rubber on the rear shock shaft (see the BOM) softens the bottom-out.
+- The ballast and small-mass numbers behind the 64.4 % front share (42 g tungsten plate, 8 g printed carrier and lid, wing and tail at 8 % infill, receiver, wires, bump rubber) are estimates: weigh the real parts and update the inventory in `w3_mass.py` before trusting the front share.

@@ -11,19 +11,21 @@ from manifold3d import Manifold
 import mono_build as MB
 from parts.w3_style import MeshPart, _clean
 
-XR, ZC = -88.5, 30.52                  # rocker axis (x, z): along x, on the centreline
-R, BETA = 17.865, 0.894                 # tip radius, V half angle at rest (rad above horizontal)
-ROD_L = 61.06                          # ball-link centre to centre
-PLATE = 4.0                            # rocker thickness
+XR, ZC = -82.0, 34.5                  # rocker axis (x, z): along x, on the centreline
+R, BETA = 17.29, 1.2548                 # tip radius, V half angle at rest (rad above horizontal)
+K_SERVO = 1.0132                       # servo angle per degree of lean (the servo sets the lean: psi = -K_SERVO * phi)
+SHOCK = dict(lmin=51.5, lmax=75.5, stroke=24.0, rest=68.3, eye=3.0, mass_g=25.0)   # coilover link: eye to eye compressed / extended, 70 % extended at rest
+ROD_L = SHOCK['rest']
+PLATE = 6.0                            # rocker thickness (grows aft: the +x face stays against the servo horn)
 TOP_X = XR + 2.0 + 4.5                 # servo top face (horn plate, then the 4.5 mm of spline)
 SV_L, SV_W, SV_H, SV_EAR, SV_OFF = 23.0, 12.0, 27.5, 32.0, 4.5   # body along y, along z, along x; ears; shaft offset (body centre at y = -SV_OFF)
 FLANGE_DX = 5.0                        # ear plane below the top face
-TWR_X = (TOP_X + FLANGE_DX - 2.5, TOP_X + FLANGE_DX)       # tower plate, ears sit on its forward face
-TWR_Y = (-24.0, 26.0)
+TWR_X = (TOP_X + FLANGE_DX - 5.0, TOP_X + FLANGE_DX)       # tower plate 5 mm (was 2.5), ears sit on its forward face
+TWR_Y = (-21.5, 12.5)
 LEG_Y0 = 0.3                          # the plate hangs from one leg on the +y side; below z 12.5 it is open to the battery
 TWR_Z0, TWR_Z1 = -23.0, ZC + 10.0
 FOOT_X = (TWR_X[0], TWR_X[0] + 9.0)
-FEET = [(-76.5, 4.0), (-73.0, 4.0), (-76.5, 21.0), (-73.0, 21.0)]   # M2 screws into the base plate (portal legs straddle the battery)
+FEET = [(TWR_X[0] + 5.8, 4.5), (TWR_X[0] + 5.8, 10.0)]   # M2 screws into the base plate (portal legs straddle the battery)
 EAR_Y = (-SV_OFF - 14.0, -SV_OFF + 14.0)
 
 
@@ -48,7 +50,7 @@ def rocker(p):
             arms = a if arms is None else arms + a
         body = arms + hub
         for y, z in ((yl, zl - ZC), (yr, zr - ZC)):
-            body = body - Manifold.cylinder(PLATE + 2.0, 1.2, 1.2, 24).translate((y, z, -1.0))                  # ball stud, M2
+            body = body - Manifold.cylinder(PLATE + 2.0, 1.6, 1.6, 24).translate((y, z, -1.0))                  # shock eye bolt, M3
         body = body - Manifold.cylinder(PLATE + 2.0, 1.7, 1.7, 24).translate((0.0, 0.0, -1.0))                  # horn screw
         for k in range(4):
             a = math.radians(45.0 + 90.0 * k)
