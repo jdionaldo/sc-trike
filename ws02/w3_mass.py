@@ -12,12 +12,12 @@ BOUGHT = {   # g, assumptions to verify
     "lean_servo": 55, "lean_ears": 0, "lean_rod": 3, "steer_servo": 45, "b_motor": 201, "b_battery": 120, "mock_receiver": 6,
     "mock_tire": 95, "mock_rim": 22, "mock_rimdisc": 14, "mock_hub": 10, "mock_axle": 4, "mock_joint": 6,
     "mock_rear_tire_ring": 95, "mock_rear_rim": 22, "mock_rear_rim_disc": 14, "mock_rear_hub": 10, "mock_rear_axle": 12,
-    "mock_cdiff_carrier": 38, "mock_cdiff_ring": 12, "mock_motor_pinion": 3, "mock_fdiff_carrier": 28, "mock_bevel_pinion": 4,
+    "mock_cdiff_carrier": 40, "mock_cdiff_ring": 30, "mock_xover_pinion": 4, "mock_xover_idler": 14, "mock_xover_pin": 3, "mock_bearing": 1.5, "mock_fdiff_carrier": 28, "mock_bevel_pinion": 4,
     "mock_fpulley": 3, "mock_xover_pulley": 7, "mock_xover_belt": 4, "mock_xover_shaft": 6, "mock_rear_pulley": 4, "mock_fbelt": 3, "mock_rear_belt": 5, "mock_front_out": 3,
-    "b_front_ring": 8, "b_rear_ring": 8, "b_rear_shaft": 22, "b_front_pinion_shaft": 5, "b_motor_shaft": 2,
+    "b_front_ring": 18, "b_rear_ring": 18, "b_rear_shaft": 16, "b_front_pinion_shaft": 16, "b_motor_shaft": 14,
     "b_rear_shock": 25, "diff_out": 6, "tip_shaft": 5, "lean_horn": 6, "steer_horn": 3,
 }
-MISC_G = 110.0                      # screws, inserts, bearings, pins, wiring (placed at the centroid)
+MISC_G = 85.0                      # screws, inserts, bearings, pins, wiring (placed at the centroid)
 
 
 def printed_mass(mesh, body):
