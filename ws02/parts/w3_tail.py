@@ -13,15 +13,15 @@ from manifold3d import Manifold
 
 import mono_build as MB
 from parts.w3_style import MeshPart, _clean, _tb
-from w3_stretch import back, fx
+from w3_stretch import back, fx, STRETCH
 
-STEP_Y, STEP_DZ, RISER = (92.0,), 6.0, 4.0     # step stations (|y|), height of each step, riser width (an angled step, about 56 degrees)
+STEP_Y, STEP_DZ, RISER = (), 6.0, 4.0     # step stations (|y|), height of each step, riser width (an angled step, about 56 degrees)
 SPAN = 134.5                       # half span = half the front track (269 / 2)
 X_LE = back(-325.0)                      # leading edge (assembly x)
 Z_LE = 120.0                       # lower-face height at the leading edge (set below so the blade top lies on the front roofline plane)
 CHORD = 72.0
 ROOF_P = (33.7, 40.4)              # front roofline: z = 40.4 + ROOF_K * (33.7 - x), from the nose top to the roof peak
-ROOF_K = (97.0 - 40.4) / (33.7 - fx(-259.0))
+ROOF_K = (97.0 - 40.4) / (33.7 + 259.0)           # the pre-stretch roof slope: the wing keeps its old pitch and height
 SLOPE = ROOF_K                     # the blade lies in the front roofline's plane
 ALPHA = math.atan(SLOPE)
 SPLIT = 66.0
@@ -31,18 +31,18 @@ FORK_SCREW_U = (-30.0, -46.0, -58.0)      # chord positions of the two screws th
 CH = 2.0                           # channel depth in the blade (top and bottom)
 PR = 3.0                           # prong thickness: CH sits in the channel, the rest stands 1 mm proud of the blade surface
 CLR = 0.15                         # prong-to-channel clearance
-PROF_TOP = [(2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-72.0, 2.5)]
+PROF_TOP = [(2.0, -0.5), (-55.0, 6.5), (-72.0, 11.5)]      # straight rise (about 7 deg over the blade pitch) then an upturned flick over the last 17 mm
 FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
 FOOT_X = (back(-314.0), back(-300.0))          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
 HOLE_X = back(-307.0)                    # foot screw, from below (the access hole is in the hood underside)
-TZ = {"center": 3.0, "left": 36.0, "right": 36.0}     # STL lift per piece (end plates hang 34 mm below the blade's lower face)
+TZ = {"center": 3.0, "left": 3.0, "right": 3.0}     # STL lift per piece (no end plates)
 
 
 
 def _z_le_from_roof():
     """Z_LE such that the blade's top surface at the centre of the chord lies on the roofline plane extended rearward."""
-    u, w = -35.0, 5.5 + 12.0                                       # mid-chord top of the blade at y = 0 (profile top 5.5 + arch 12)
-    x = X_LE + u * math.cos(ALPHA) + w * math.sin(ALPHA)
+    u, w = -35.0, 4.0 + 12.0                                       # mid-chord top of the blade at y = 0 (profile top 5.5 + arch 12)
+    x = X_LE + u * math.cos(ALPHA) + w * math.sin(ALPHA) + STRETCH           # evaluated at the pre-stretch x: same height as before the stretch
     z_roof = ROOF_P[1] + ROOF_K * (ROOF_P[0] - x)
     return z_roof - (-u * math.sin(ALPHA) + w * math.cos(ALPHA))
 
@@ -71,6 +71,7 @@ def _box(x0, x1, y0, y1, z0, z1):
 ARCH, SWEEP = 12.0, -8.0           # angular dihedral: flat centre |y| <= FLAT, outer panels slope down by ARCH and sweep FORWARD by 8 mm (negative = forward)
 FLAT = 50.0
 FIN = 3.0
+T_BLADE = 6.0                       # uniform blade thickness (a bent sheet following the top profile; the prong channels take 2 mm each side)
 
 
 def _warp_pt(u, y, w):
@@ -102,25 +103,31 @@ def topw(u):
     return float(np.interp(u, us, ws))
 
 
+def botw(u):
+    """Blade lower-face height (local w): the top profile shifted down by the one thickness."""
+    return topw(u) - T_BLADE
+
+
+ST = [3.0, -55.0, -66.15]      # chord stations the channels and prongs follow
+
+
 def _blade():
-    prof = [(2.0, -3.0), (2.0, -0.5), (-8.0, 3.5), (-35.0, 5.5), (-CHORD, 2.5), (-CHORD, -3.0)]
+    prof = list(PROF_TOP) + [(u, botw(u)) for u, _ in reversed(PROF_TOP)]
     centre = MB.prism_xz(prof, -FLAT, FLAT)                           # plain blade centre (no raised cap)
     # snug channels for the fork prongs (top follows the blade profile, bottom is flat) and blind pilots for the prong screws
     ya, yb = LEG_Y - 5.3, LEG_Y + 5.3
-    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH), (-8.0, topw(-8.0) - CH), (-35.0, topw(-35.0) - CH), (-66.15, topw(-66.15) - CH),
-               (-66.15, 30.0), (3.0, 30.0)]
-    bot_pts = [(3.0, -3.5), (-66.15, -3.5), (-66.15, -3.0 + CH), (3.0, -3.0 + CH)]
+    top_pts = [(3.0, topw(2.0) - CH), (2.0, topw(2.0) - CH)] + [(u, topw(u) - CH) for u in ST[1:]] + [(-66.15, 30.0), (3.0, 30.0)]
+    bot_pts = [(u, botw(u) - 0.5) for u in ST] + [(u, botw(u) + CH) for u in reversed(ST)]
     for sg in (1, -1):
         y0, y1 = (ya, yb) if sg > 0 else (-yb, -ya)
         centre = centre - MB.prism_xz(top_pts, y0, y1) - MB.prism_xz(bot_pts, y0, y1)
         for u in FORK_SCREW_U:
-            centre = centre - Manifold.cylinder(4.0, 1.0, 1.0, 24).translate((u, sg * LEG_Y, -3.0 + CH - 0.1))
+            centre = centre - Manifold.cylinder(4.0, 1.0, 1.0, 24).translate((u, sg * LEG_Y, botw(u) + CH - 0.1))
     body = centre.translate((0.0, 0.0, ARCH))
     # stepped wing: the centre sits at +ARCH; each outer panel is flat and one STEP lower, joined by an angled riser (a ziggurat, no dihedral slope)
     k = 1.0 / (SPAN - FLAT)
     sweep = np.array([[1.0, -SWEEP * k, 0.0, SWEEP * k * FLAT], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0]])
     slab = lambda y0, y1, z: MB.prism_xz(prof, y0, y1).translate((0.0, 0.0, z))
-    fin = [(8.0, -3.0), (8.0, 3.5), (-30.0, 6.0), (-CHORD - 2.0, 5.0), (-CHORD - 2.0, -28.0), (-40.0, -20.0), (-12.0, -9.0)]   # swept fin that hangs DOWN from the blade's end
     side = None
     edges = [FLAT] + list(STEP_Y) + [SPAN]
     prev = ARCH
@@ -129,7 +136,6 @@ def _blade():
         part = slab(ya + RISER, yb, z) + Manifold.batch_hull([slab(ya - 0.05, ya + 0.01, prev), slab(ya + RISER - 0.01, ya + RISER, z)])
         side = part if side is None else side + part
         prev = z
-    side = side + MB.prism_xz(fin, SPAN - FIN, SPAN).translate((0.0, 0.0, prev))
     side = side.transform(sweep)
     body = body + side + side.mirror((0.0, 1.0, 0.0))
     return body
@@ -174,7 +180,7 @@ def _centre_matrix():
 
 def _lower_z(x):
     """Blade lower-face height at y = 0 (assembly) at chord position x."""
-    a, b = blade_pt(-30.0, 0.0, -3.0), blade_pt(-60.0, 0.0, -3.0)
+    a, b = blade_pt(-30.0, 0.0, botw(-30.0)), blade_pt(-60.0, 0.0, botw(-60.0))
     return a[2] + (b[2] - a[2]) * (x - a[0]) / (b[0] - a[0])
 
 
@@ -196,7 +202,7 @@ def _hanger_left():
     A = lambda u, y, w: (Mc @ np.array([u, y, w, 1.0]))[:3]
     y0f, y1f = LEG_Y - 5.0, LEG_Y + 5.0
     c = CLR
-    us = [2.0, -8.0, -35.0, -66.0]
+    us = [2.0, -55.0, -66.0]
     pd = PR - CH
     fl = lambda u: topw(u) - CH + c
     w_a, w_b = topw(-8.0) + pd, topw(2.0) + pd
@@ -205,10 +211,11 @@ def _hanger_left():
     ue = us[-1]
     uf = 2.9                                                              # prongs start inside the web face
     upper = [(uf, wl(uf)), (2.0, topw(2.0) + pd)] + [(u, topw(u) + pd) for u in us[1:-1]] + [(ue + d, topw(ue + d) + pd), (ue, topw(ue))] + [(u, fl(u)) for u in reversed(us)] + [(uf, fl(2.0))]
-    lower = [(uf, -3.0 - pd), (ue + d, -3.0 - pd), (ue, -3.0), (ue, -3.0 + CH - c), (uf, -3.0 + CH - c)]
+    sts = [uf] + [u for u in ST[1:-1]] + [ue + d]
+    lower = [(u, botw(u) - pd) for u in sts] + [(ue, botw(ue)), (ue, botw(ue) + CH - c)] + [(u, botw(u) + CH - c) for u in reversed(sts)]
     fork = MB.prism_xz(upper, y0f, y1f) + MB.prism_xz(lower, y0f, y1f)
     for u in FORK_SCREW_U:
-        fork = fork - Manifold.cylinder(CH + 2.0, 1.35, 1.35, 24).translate((u, LEG_Y, -3.5))              # clear hole through the lower prong
+        fork = fork - Manifold.cylinder(CH + 2.0, 1.35, 1.35, 24).translate((u, LEG_Y, botw(u) - 0.5))              # clear hole through the lower prong
     fork = fork.transform(Mc[:3, :4])
     # web: front edge on the blade-top line down to the hood, rear edge straight to the lower prong's front
     a = A(-8.0, LEG_Y, w_a)[[0, 2]]
@@ -220,7 +227,7 @@ def _hanger_left():
         p = p + dv * 0.05
     p0 = (float(p[0]), float(h(p[0])))
     p1 = (FOOT_X[0], float(h(FOOT_X[0])))
-    rl = A(2.4, LEG_Y, -3.0)
+    rl = A(2.4, LEG_Y, botw(2.4))
     cc = A(2.4, LEG_Y, wl(2.4))
     web = _chamfered([p0, p1, (rl[0], rl[2]), (cc[0], cc[2])], y0f, y1f, 1.2)
     x0, x1 = FOOT_X

@@ -24,10 +24,11 @@ NOSE_LOW = (-1.0, -26.0)                              # where the nose underside
 NOSE_TH = math.atan2(53.0, 35.0)                      # underside slope (56.6 deg)
 TAIL = _pts([(-299.0, 50.0), (-341.5, 66.4), (-348.1, 83.3)])                # new tail from the owner's markup: underside rising to the tail-light face, then the roof
 WHEEL_C, WHEEL_R = (back(-360.0), RAXLE_Z), 62.0                                           # rear tyre (radius 56) plus 6 mm: the skin's rear edge follows this radius over the wheel
+PEAK = (fx(-237.0), 100.4)                             # roof peak, moved forward along the tail's own descent line (z 97 at old x -259): one straight line from here to the tail light
 ARC = [(WHEEL_C[0] + WHEEL_R * math.cos(math.radians(a_)), WHEEL_C[1] + WHEEL_R * math.sin(math.radians(a_))) for a_ in (math.degrees(math.asin(max(-1.0, min(1.0, (-26.0 - WHEEL_C[1]) / WHEEL_R)))), 12, 20, 30, 40, 50, 60, 70)]   # the arc starts where the radius meets the skin floor (z -26)
-SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(fx(-259.0), 97), (-70.0, 63.0)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail   # straight roofline, flat vertical nose face, short raked tail
-HALF = _pts([(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-120, 66), (-189, 74), (-229, 60), (-245, 61), (-254, 59), (-258, 57.5), (-266, 47.5), (-280, 43.5), (-300, 42.5), (-340, 40), (-348, 38.5)])
-SECTION = [(-68, -40), (68, -40), (68, -9.3), (51.6, 50), (45.6, 58), (35, 110), (-35, 110), (-45.6, 58), (-51.6, 50), (-68, -9.3)]   # (y, z): flanks lean in toward the roof, with a 45-degree-ish shoulder bevel at z 50..58
+SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [PEAK, (-70.0, 63.0)]   # straight roofline, flat vertical nose face, wheel-arch rear edge, short raked tail
+HALF = [(30, 38), (20, 44), (-28, 44), (-73.5, 47), (-91.3, 60), (-122, 66), (-176, 86), (-293, 70), (-365, 76.5), (-382, 49), (-400, 44), (-438, 38.5)]   # plan: a side pod swelling to y 86 at x -176, tapering to the rear arch (traced from the owner's markup)
+SECTION = [(-68, -40), (68, -40), (68, -9.3), (35, 110), (-35, 110), (-68, -9.3)]   # (y, z): flanks lean in toward the roof, with a 45-degree-ish shoulder bevel at z 50..58
 
 
 def to_new(pts, kind):
@@ -49,7 +50,6 @@ def prism_yz(pts, x0, x1):
     return MB.man(m)
 
 
-SILLS = [dict(b=8.0, z0=-26.0, z1=-8.0), dict(b=4.5, z0=-16.0, z1=8.0)]   # stepped sills: out by b, 45-degree chamfer at the foot, vertical face, angled back into the flank at z1
 FENDER = [(back(-284.0), 47.0), (back(-304.0), 58.0), (back(-346.0), 50.0)]               # rear fender flare: (x, half width) stations; hulled, so plan edges are straight diagonals
 FENDER_Z = (-20.0, 34.0, 58.0, 9.0)                                      # foot z, start of the top chamfer, top z, chamfer run in y
 
@@ -71,26 +71,38 @@ def _hull_sections(xs, polys):
     return out
 
 
-def rocker(inset=0.0):
-    """Stepped, angled sills along the lower flank: two stacked convex layers (a 8 mm foot sill and a 4.5 mm upper step), each a 45-degree
-    chamfer out, a vertical face and an angled return into the flank.  Hulls of cross-sections at the plan's breakpoints: flat faces only."""
-    xs = sorted({x for x, _ in HALF if fx(-229.0) < x < -28.0} | {fx(-229.0), -42.0, -28.0})
-    def scale(x):                                                       # full from x -189 forward, tapering to nothing at x -229 and at the front windows
-        return float(np.clip((x - fx(-229.0)) / (40.0 + STRETCH), 0.0, 1.0) * np.clip((-28.0 - x) / 14.0, 0.0, 1.0))
-    def layers(x):
-        w0 = min(_plan_hw(x), 68.0)
-        res = []
-        for L in SILLS:
-            b = max(L["b"] * scale(x), 0.05)
-            fy = min(w0, 68.0 - (L["z1"] + 9.3) / 3.615)
-            p = Polygon([(w0 - 12.0, L["z0"]), (w0, L["z0"]), (w0 + b, L["z0"] + b), (w0 + b, L["z1"] - b), (fy, L["z1"]), (fy - 12.0, L["z1"])])
-            res.append(p.buffer(-inset, join_style=2) if inset else p)
-        return res
-    out = None
-    for k in range(len(SILLS)):
-        h = _hull_sections(xs, [layers(x)[k] for x in xs])
-        out = h if out is None else out + h
-    return out
+POD = [(-122.0, 68.0, -9.3), (-176.0, 86.0, -9.0), (-293.0, 70.0, -11.0), (-365.0, 76.5, -15.0), (-382.0, 62.0, -15.0)]   # side pod stations (x, outer |y|, top z): the waist line peaks at x -176, flares out at the rear and tapers down
+SHOULDER = dict(stations=[(-440.0, 1.0), (-300.0, 1.0), (-120.0, 0.25)], z0=50.0, z1=58.0, depth=6.0)   # shoulder crease: full at the rear, tapering to nothing toward the front
+
+
+def _tent_y(z):
+    return 68.0 - (max(z, -9.3) + 9.3) / 3.615
+
+
+def pods(inset=0.0):
+    """Side pods below the shoulder: hull between stations of a (y, z) profile with a vertical outer face and an angled top returning into the flank."""
+    polys = []
+    for _, yo, zt in POD:
+        yf = _tent_y(zt)
+        zb = -26.0 - (30.0 if inset else 0.0)
+        p = Polygon([(30.0, zb), (max(yo, yf + 0.5), zb), (max(yo, yf + 0.5), zt - 6.0), (yf, zt), (30.0, zt)])
+        polys.append(p.buffer(-inset, join_style=2) if inset else p)
+    return _hull_sections([x for x, _, _ in POD], polys)
+
+
+def shoulder_cut(inset=0.0):
+    """The shoulder crease: the thin triangle between the plain flank tent and a bevelled one, hulled between stations so it tapers out toward the front."""
+    tent = Polygon(to_new(SECTION, "sec")).buffer(-inset, join_style=2)
+    S = SHOULDER
+    polys = []
+    for _, k in S["stations"]:
+        ap = _tent_y(S["z1"]) - S["depth"] * k
+        bev = Polygon([(-68, -40), (68, -40), (68, -9.3), (_tent_y(S["z0"]), S["z0"]), (ap, S["z1"]), (35, 110), (-35, 110), (-ap, S["z1"]), (-_tent_y(S["z0"]), S["z0"]), (-68, -9.3)]).buffer(-inset, join_style=2)
+        d = tent.difference(bev)
+        d = max([g for g in d.geoms if g.geom_type == "Polygon" and g.centroid.x > 0.0], key=lambda g: g.area) if hasattr(d, "geoms") else d                      # drop numerical slivers
+        pts = [c for c in d.buffer(0.3, join_style=2).exterior.coords if c[0] > 0.0]               # a hair past the tent: no coplanar faces
+        polys.append(MultiPoint(pts).convex_hull)
+    return _hull_sections([x for x, _ in S["stations"]], polys)
 
 
 def fenders(inset=0.0):
@@ -112,7 +124,7 @@ def solid(inset=0.0, belly=False):
     sec = Polygon(to_new(SECTION, "sec")).buffer(-inset, join_style=2)
     sidep = MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0)
     s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ sidep ^ prism_yz(list(sec.exterior.coords)[:-1], -500.0, 100.0)
-    s = s + rocker(inset) + (fenders(inset) ^ sidep)
+    s = s - shoulder_cut(inset) + ((fenders(inset) + pods(inset)) ^ sidep)
     if belly:                                        # open belly: remove the floor with a straight prism of the cavity's plan (no stepped sweep: the lower edge stays clean)
         floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((296.2 + STRETCH, 400.0, 100.0), center=False).translate((-296.6 - STRETCH, -200.0, -80.0))
         s = s + floor
@@ -160,9 +172,8 @@ def details(body):
             zb = tz + FR.TAB_BOSS
             body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
             body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
-    tri = [(back(-226.0), 8), (back(-190.0), 8), (back(-208.0), 47)]                                   # one large exhaust vent per flank: recessed pocket, hole, covering scoop
-    hole, wedge, chan = flank_vent(tri)
-    body = body - hole + wedge - chan
+    scoop, cavity = flank_intake()
+    body = body + scoop - cavity
     for k in (-1, 0, 1):                                              # nose light bar: 3 LED holes (3.2 mm) centred between the hinge ears, 7 mm pitch
         body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 33.5))
     wedge, cav = hood_scoop()
@@ -176,8 +187,7 @@ def details(body):
     p0, p1 = np.array([bx, bz]) + dvec * 3.0, np.array([cx_, cz_]) - dvec * 3.0
     quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
     body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
-    body = body + windscreen()
-    body = body - canopy_cut()
+    body = body - canopy_cut() + canopy_cage()
     # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
     for s_ in (1, -1):
         rect = [(back(-237.0), s_ * 5.0), (back(-205.0), s_ * 5.0), (back(-205.0), s_ * 37.0), (back(-237.0), s_ * 37.0)]
@@ -193,48 +203,70 @@ def details(body):
     _tl = __import__('parts.w3_tail', fromlist=['screw_holes'])
     body = body + _tl.screw_bosses() - _tl.screw_holes()                       # wing feet screw onto the hood from inside, so the wing flips up with the skin
     body = body - __import__('parts.w3_frame', fromlist=['relief']).relief()
-    body.num_tri()                                                             # evaluate now: the lazily batched boolean chain leaves sliver triangles (an open edge loop on the arm's inner-face plane) at the 4 deg rake
+    body.num_tri()                                                             # evaluate now: the lazily batched boolean chain leaves sliver triangles at the 4 deg rake
     _sw = __import__('w3_swing')
-    body = body - _sw.rear_travel_channels()                                   # wheel arch: the rear tyre and swing arm over their full travel (25 mm up, 20 mm down)
+    env = _sw.rear_travel_channels()
+    hp = MultiPoint([(float(x), float(z)) for x, y, z in MB.to_trimesh(env).vertices if abs(y) > 40.0]).convex_hull.simplify(1.0)
+    body = body - MB.prism_xz(list(hp.exterior.coords)[:-1], 30.0, 100.0) - MB.prism_xz(list(hp.exterior.coords)[:-1], -100.0, -30.0)   # one straight-edged trim over the full wheel/arm travel envelope
     body.num_tri()
-    body = body - _sw.swing_channels().translate((0.0031, 0.0017, 0.0023))       # a few microns off: exact coincidence with the frame relief left a pinched edge                                         # open-ended channels: the frame tubes slide out as the skin swings up on the nose hinge
+    body = body - env                                                          # wheel arch: the rear tyre and swing arm over their full travel (25 mm up, 20 mm down)
+    body.num_tri()
+    body = body - _sw.swing_channels().translate((0.0031, 0.0017, 0.0023))       # a few microns off: exact coincidence with the frame relief left a pinched edge; open-ended channels for the frame tubes
     return body
 
 
-CANOPY_HALF = [(-198, 18), (-189, 27), (-178, 27), (-165, 17), (-152, 27), (-141, 27), (-132, 18)]   # hourglass opening (y > 0 side), pinched at x -165
-RIM = 4.0                                                                  # 45-degree rim chamfer width
-SCREEN = dict(xf=-96.0, xr=-132.0, wf=20.0, wr=32.0, h=16.0, top_in=7.0)   # windscreen: raked wedge rising rearward to a header over the canopy front edge
+CX_WAIST, CX_K = -211.0, STRETCH / 360.0 + 1.0          # canopy centred at 52 % of the stretched body length, 1.25 x its old length
+CANOPY_HALF = [(CX_WAIST + (x - -165.0) * CX_K, y) for x, y in [(-198, 18), (-189, 27), (-178, 27), (-165, 17), (-152, 27), (-141, 27), (-132, 18)]]   # hourglass opening (y > 0 side), pinched at the waist
+CX_FRONT, CX_REAR = CANOPY_HALF[-1][0], CANOPY_HALF[0][0]
+RIM = 3.0                                                                  # 45-degree rim chamfer width
+
+
+def _cage_feet():
+    """Where the canopy pillars meet the hull (x, |y|): rear outer, front outer, windscreen base; shared by the cut-out and the cage."""
+    return dict(xo_r=CX_REAR - 20.0, yo_r=34.5, xo_f=CX_FRONT, yo_f=34.0, xs_b=CX_FRONT + 21.4, ys_b=12.6, xs_c=CX_FRONT + 28.0, ys_c=23.0)
 
 
 def canopy_cut():
-    """Open canopy: a pinched (hourglass) opening cut through the roof with a 45-degree rim chamfer on the sides and rear (the front edge stays
-    vertical, it is the screen header).  Two convex halves joined at the waist, each a prism plus a chamfer hull following the sloped roof."""
-    pts = CANOPY_HALF + [(x, -y) for x, y in reversed(CANOPY_HALF)]
+    """The opening under the canopy: a convex polygon through the pillar feet (rear outer, front outer, windscreen base), cut through the roof with a 45-degree rim."""
+    f = _cage_feet()
+    pts = [(f["xo_r"], f["yo_r"]), (f["xo_f"], f["yo_f"]), (f["xs_b"], f["ys_b"]), (f["xs_b"], -f["ys_b"]), (f["xo_f"], -f["yo_f"]), (f["xo_r"], -f["yo_r"])]
     cut = MB.prism_xy(pts, 45.0, 200.0)
-    xw = -165.0
-    for x0, x1 in ((-198.0, xw), (xw, -132.0)):
-        half = [p for p in pts if x0 - 1e-6 <= p[0] <= x1 + 1e-6]
-        a = MultiPoint(half).convex_hull
-        grown = a.buffer(RIM + 0.5, join_style=2)
-        grown = grown.intersection(Polygon([(-1e3, -1e3), (-132.0, -1e3), (-132.0, 1e3), (-1e3, 1e3)]))   # keep the front edge vertical
-        P = [(x, y, top_z(x, 0.0) - RIM) for x, y in list(a.exterior.coords)[:-1]]
-        Q = [(x, y, top_z(x, 0.0) + 0.5) for x, y in list(grown.exterior.coords)[:-1]]
-        cut = cut + Manifold.hull_points(np.array(P + Q, float))
-    return cut
+    grown = Polygon(pts).buffer(RIM + 0.5, join_style=2)
+    P = [(x, y, top_z(x, 0.0) - RIM) for x, y in pts]
+    Q = [(x, y, top_z(x, 0.0) + 0.5) for x, y in list(grown.exterior.coords)[:-1]]
+    return cut + Manifold.hull_points(np.array(P + Q, float))
 
 
-def windscreen():
-    """Raked windscreen: a hollow wedge that starts flush with the hood and rises rearward to a header at the canopy's front edge, narrower at the top
-    (leaning sides).  Its cavity opens down into the shell."""
-    c = SCREEN
-    def hull(m, dz):
-        zf, zr = top_z(c["xf"], 0.0), top_z(c["xr"], 0.0)
-        pts = []
-        for sg in (1, -1):
-            pts += [(c["xf"] - m, sg * (c["wf"] - m), zf - 3.0), (c["xr"] + m, sg * (c["wr"] - m), zr - 3.0),
-                    (c["xr"] + m, sg * (c["wr"] - c["top_in"] - m), zr + c["h"] - dz), (c["xf"] - m, sg * (c["wf"] - 2.0 - m), zf - dz)]
-        return Manifold.hull_points(np.array(pts, float))
-    return hull(0.0, 0.0) - hull(WALL * 1.1, WALL * 1.2)
+def _strut(a, b, w=4.0):
+    """Square-section strut between two points (hull of two small boxes)."""
+    h = w / 2.0
+    pts = [(x + dx, y + dy, z + dz) for (x, y, z) in (a, b) for dx in (-h, h) for dy in (-h, h) for dz in (-h, h)]
+    return Manifold.hull_points(np.array(pts, float))
+
+
+CAGE = dict(h=16.0, t=3.0, yr=21.5, ro=34.5)
+
+
+def canopy_cage():
+    """Covered canopy as a cage: a flat roof slab (parallel to the roofline) held by diagonal pillars that run to the roof surface, with open side
+    windows and an open windscreen between the pillars; low rails ring the foot of the screen.  Top view follows the owner's sketch."""
+    c = CAGE
+    zt = lambda x: top_z(x, 0.0)
+    zr = lambda x: zt(x) + c["h"]
+    xa, xb = CX_REAR - 8.0, CX_FRONT - 23.0                                 # roof slab rear and front edges
+    f = _cage_feet()
+    xo_r, xo_f, xs_c, xs_b = f["xo_r"], f["xo_f"], f["xs_c"], f["xs_b"]    # outer feet (rear, front), windscreen corner and base
+    out = MB.prism_xz([(xa, zr(xa)), (xb, zr(xb)), (xb, zr(xb) + c["t"]), (xa, zr(xa) + c["t"])], -c["yr"] - 2.0, c["yr"] + 2.0)
+    foot = lambda x, y: (x, y, zt(x) - 1.0)
+    for s_ in (1, -1):
+        top = lambda x: (x, s_ * c["yr"], zr(x))
+        for p, q in ((top(xa), foot(xo_r, s_ * c["ro"])), (top(xb), foot(xo_f, s_ * 34.0)), (top(xb), foot(xs_b, s_ * 12.6))):
+            out = out + _strut(p, q)
+        ring = [foot(xo_f, s_ * 34.0), foot(xs_c, s_ * 23.0), foot(xs_b, s_ * 12.6)]       # low rails along the foot of the screen
+        for p, q in zip(ring, ring[1:]):
+            out = out + _strut((p[0], p[1], p[2] + 1.0), (q[0], q[1], q[2] + 1.0), 4.0)
+    out = out + _strut((foot(xs_b, 12.6)[0], 12.6, zt(xs_b)), (xs_b, -12.6, zt(xs_b)), 4.0)
+    return out
 
 
 def front_window():
@@ -249,51 +281,39 @@ def front_window():
     return hull
 
 
-TENT_K = 68.0, -9.3, 3.615           # flank tent: y = 68 - (z + 9.3) / 3.615 above z -9.3
+INTAKE = dict(x_rear=-205.0, x_front=-140.0, z_top=40.0, z_bot=8.0, x_bot_in=14.0, h=9.0)   # flank air intake: trapezoid narrowing downward, grows out of the flank at its rear edge, mouth opens forward
 
 
-def _flank_y(x, z):
-    """Skin outer surface |y| at (x, z): the smaller of the plan half width and the tent."""
-    tent = TENT_K[0] - (z - TENT_K[1]) / TENT_K[2]
-    return min(hw_in(min(max(x, fx(-299.0)), 29.0), 0.0), min(68.0, tent))
+def _intake_poly(inset=0.0):
+    c = INTAKE
+    poly = Polygon([(c["x_rear"], c["z_top"]), (c["x_front"], c["z_top"]), (c["x_front"] - c["x_bot_in"], c["z_bot"]), (c["x_rear"] + c["x_bot_in"], c["z_bot"])])
+    return poly.buffer(-inset, join_style=2) if inset else poly
 
 
-def _shear_y(m, s, zc):
-    """Shear a flank solid so it follows the tent: |y| shrinks by 1/3.615 per mm of height above zc (left s=+1, right s=-1)."""
-    k = 1.0 / TENT_K[2]
-    mat = np.array([[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, -s * k, s * k * zc], [0.0, 0.0, 1.0, 0.0]])
-    return m.transform(mat)
+def _intake_h(x):
+    c = INTAKE
+    return c["h"] * (x - c["x_rear"]) / (c["x_front"] - c["x_rear"])
 
 
-def flank_vent(tri, blade=4.5):
-    """One big exhaust vent per flank: the triangle is cut through the skin, covered by a scoop that grows out of the skin at its front edge and
-    rises 4.5 mm at the rear; a channel inside the scoop opens to the rear only (the top, bottom and ends stay closed).  Returns (hole, scoop, channel)."""
-    poly = Polygon(tri)
-    xs = [p[0] for p in tri]
-    xf, xr = max(xs) + 1.0, min(xs) - 2.0
-    zc = poly.centroid.y
-    ysf, ysr = _flank_y(xf, zc), _flank_y(xr, zc)
-    yl = lambda x: ysf + (ysr - ysf) * (x - xf) / (xr - xf)                   # the flank's |y| along the vent (the plan is straight across this span)
-    inner = list(poly.buffer(-1.2).exterior.coords)[:-1]
-    grown = list(poly.buffer(1.0).exterior.coords)[:-1]
-    hole = scoop = chan = None
-    for s in (1, -1):
-        h = _shear_y(MB.prism_xz(inner, 0.0 if s > 0 else -130.0, 130.0 if s > 0 else 0.0), s, zc)
-        ramp = MB.prism_xy([(xf, s * (yl(xf) - 2.2)), (xr, s * (yl(xr) - 2.2)), (xr, s * (yl(xr) + blade)), (xf, s * (yl(xf) + 0.6))], zc - 40.0, zc + 40.0)
-        sc = _shear_y(ramp, s, zc) ^ MB.prism_xz(grown, -200.0, 200.0)
-        cq = MB.prism_xy([(xf - 1.0, s * (yl(xf - 1.0) - 4.0)), (xr + 3.0, s * (yl(xr + 3.0) - 4.0)), (xr + 3.0, s * (yl(xr + 3.0) + blade - 1.3)), (xf - 1.0, s * (yl(xf - 1.0) + 0.3))], zc - 40.0, zc + 40.0)
-        ch = _shear_y(cq, s, zc) ^ MB.prism_xz(inner, -200.0, 200.0)
-        # exit: a channel above the skin that runs out through the scoop's rear face, so the vent really opens to the rear
-        ext = list(Polygon(inner).union(Polygon([(x - 10.0, z) for x, z in inner])).convex_hull.exterior.coords)[:-1]
-        xe = xr + 0.7 * (xf - xr)
-        tp = lambda x: 0.6 + (xf - x) / (xf - xr) * (blade - 0.6) - 1.3              # inner roof of the scoop above the flank at x
-        ex = MB.prism_xy([(xr - 1.0, s * (yl(xr - 1.0) + 0.1)), (xe, s * (yl(xe) + 0.1)), (xe, s * (yl(xe) + tp(xe))), (xr - 1.0, s * (yl(xr - 1.0) + tp(xr - 1.0)))], zc - 40.0, zc + 40.0)
-        ex = _shear_y(ex, s, zc) ^ MB.prism_xz(ext, -200.0, 200.0)
-        ch = ch + ex
-        hole = h if hole is None else hole + h
-        scoop = sc if scoop is None else scoop + sc
-        chan = ch if chan is None else chan + ch
-    return hole, scoop, chan
+def flank_intake():
+    """One big air intake per flank: a faceted scoop that is flush with the flank at its rear edge and stands c.h out at the front, where the mouth
+    opens forward; its cavity cuts through the flank into the shell.  Returns (scoop, cavity)."""
+    out = cav = None
+    outer, inner = _intake_poly(0.0), _intake_poly(WALL)
+    for s_ in (1, -1):
+        po = []
+        for x, z in list(outer.exterior.coords)[:-1]:
+            po += [(x, s_ * (_tent_y(z) - 1.0), z), (x, s_ * (_tent_y(z) + _intake_h(x)), z)]
+        pc = []
+        for x, z in list(inner.exterior.coords)[:-1]:
+            pc += [(x, s_ * (_tent_y(z) - 6.0), z), (x, s_ * (_tent_y(z) + _intake_h(x) - WALL), z)]
+        for x, z in list(inner.exterior.coords)[:-1]:                      # out through the front wall
+            if x > INTAKE["x_front"] - INTAKE["x_bot_in"] - 1.0:
+                pc += [(x + 5.0, s_ * (_tent_y(z) - 6.0), z), (x + 5.0, s_ * (_tent_y(z) + INTAKE["h"] - WALL), z)]
+        o, c_ = Manifold.hull_points(np.array(po, float)), Manifold.hull_points(np.array(pc, float))
+        out = o if out is None else out + o
+        cav = c_ if cav is None else cav + c_
+    return out, cav
 
 
 def hood_scoop(xf=-36.0, xr=-76.0, hw=22.0, h=10.0, lean=6.0):
