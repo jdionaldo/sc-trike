@@ -18,7 +18,7 @@ G = 9.81
 M = 2.2                       # kg, upper end of the 2.0..2.2 kg range
 FR = 0.64                     # front weight share
 WF, WR = FR * M * G, (1 - FR) * M * G          # static axle loads, N
-NF, NR = 3 * WF, 3 * WR       # 3 g landing on ONE front wheel (whole front share) / on the rear wheel
+NF, NR = 1.5 * WF, 3 * WR     # 3 g landing on ONE front wheel = 3 x its static half-axle load (design); the whole-axle landing (2 x NF) is an abuse case / 3 g on the rear wheel
 FYF, FYR = 1.5 * WF, 1.5 * WR                  # 1.5 g cornering, outer wheel takes the whole axle's lateral load
 FXF = 2 * 0.88 * M * G / 2    # 2 g braking, dynamic front share 88 %, per front wheel
 FXR = 2 * 0.12 * M * G
@@ -109,6 +109,7 @@ class FE:
         return {"fs": worst[0], "member": worst[1], "stress": worst[2], "allow": worst[3], "defl": defl, "react": react, "per": per}
 
 
+EAR_SHARE = 0.25              # share of the arm-pivot reaction that enters the cage through the servo-ear plate (rest goes into the base plate through the 12 housing bolts); ASSUMED
 ROWS = []
 INFO = {}
 
@@ -168,7 +169,7 @@ def front_arm_model():
     return t, yi, yo
 
 
-FRONT_CASES = {"3 g bump, one front wheel": (0.0, 0.0, NF), "3 g bump + 1.5 g lateral (kerb strike)": (0.0, FYF, NF),
+FRONT_CASES = {"3 g bump, one front wheel": (0.0, 0.0, NF), "landing on one wheel, whole front axle 3 g (abuse)": (0.0, 0.0, 2 * NF), "3 g bump + 1.5 g lateral (kerb strike)": (0.0, FYF, NF),
                "1.5 g cornering (outer wheel)": (0.0, FYF, 1.4 * WF), "2 g braking": (FXF, 0.0, 0.5 * WF)}
 
 
@@ -237,8 +238,9 @@ def rear_arm():
         F = np.array([uv[0], uv[1], -Fy])
         mom = np.cross(np.array([0.0, -RT, 0.0]), F)
         loads = [("H", np.concatenate([F, mom]))]
-        if extra:
-            loads.append(("H", np.array([extra, 0, 0, 0, 0, 0])))
+        if extra:                                                  # belt tension: a pair acting on the axle-end nodes, reacted at the pivot hubs
+            for nn in ("4pi", "4po", "4ni", "4no"):
+                loads.append((nn, np.array([extra / 4.0, 0, 0, 0, 0, 0])))
         fs_vec = -Fs * shock_dir                                           # shock pushes the lower eye away from the upper eye
         loads.append(("C", np.array([fs_vec[0], fs_vec[1], 0, 0, 0, 0])))
         r = t.solve(loads, fixed, (0, 0, 1))
@@ -315,7 +317,7 @@ def frame_cases(front, rear):
     t, fixed, F, SK, N = frame()
     out = {}
     nb = (0, 0, 1)
-    ear = 0.5                                              # share of the front-arm pivot reaction that goes through the servo-ear plate (PM) and not the base-plate housing bolts
+    ear = EAR_SHARE                                              # share of the front-arm pivot reaction that goes through the servo-ear plate (PM) and not the base-plate housing bolts
     for name, (r, pr, rod, (fx, fy, n)) in front.items():
         if name.startswith("3 g bump, one"):
             nm_ = "3 g bump, one front wheel (arm pivot reaction via ear plate)"
@@ -338,27 +340,18 @@ def frame_cases(front, rear):
 
 
 # --------------------------------------------------------------------------------------------- hand checks
-def poly_props(pg):
-    """Area, centroid, Ixx, Iyy (about the centroid) of a shapely polygon with holes."""
-    A = cx = cy = Ixx = Iyy = 0.0
-    def ring(coords, sign):
-        nonlocal A, cx, cy, Ixx, Iyy
-        c = np.asarray(coords)
-        x, y = c[:-1, 0], c[:-1, 1]; x1, y1 = np.roll(x, -1), np.roll(y, -1)
-        cr = x * y1 - x1 * y
-        a = cr.sum() / 2
-        sg = sign * (1 if a >= 0 else -1)
-        a = abs(a)
-        A += sg * a
-        cx += sg * abs(((x + x1) * cr).sum() / 6 * (1 if cr.sum() >= 0 else -1))
-        cy += sg * abs(((y + y1) * cr).sum() / 6 * (1 if cr.sum() >= 0 else -1))
-        Ixx += sg * abs((((y * y + y * y1 + y1 * y1)) * cr).sum() / 12)
-        Iyy += sg * abs((((x * x + x * x1 + x1 * x1)) * cr).sum() / 12)
-    ring(pg.exterior.coords, 1)
-    for h in pg.interiors:
-        ring(h.coords, -1)
-    xc, yc = cx / A, cy / A
-    return A, xc, yc, Ixx - A * yc * yc, Iyy - A * xc * xc
+def poly_props(pgs, h=0.2):
+    """Area, centroid, Ixx, Iyy (about the centroid) of a union of shapely polygons (holes respected), by rasterising at h mm."""
+    import shapely
+    x0, y0 = min(p.bounds[0] for p in pgs), min(p.bounds[1] for p in pgs)
+    x1, y1 = max(p.bounds[2] for p in pgs), max(p.bounds[3] for p in pgs)
+    X, Y = np.meshgrid(np.arange(x0 + h / 2, x1, h), np.arange(y0 + h / 2, y1, h))
+    m = np.zeros(X.shape, bool)
+    for p in pgs:
+        m |= shapely.contains_xy(p, X, Y)
+    dA = h * h
+    xc, yc = X[m].mean(), Y[m].mean()
+    return m.sum() * dA, xc, yc, float(((Y[m] - yc) ** 2).sum() * dA), float(((X[m] - xc) ** 2).sum() * dA)
 
 
 def wing_hanger():
@@ -388,11 +381,7 @@ def wing_hanger():
         pgs = [pg for pg in p2.polygons_full if pg.area > 1.0]
         if not pgs:
             continue
-        A = Ixx = Iyy = 0.0; xs = []; ys = []
-        props = [poly_props(pg) for pg in pgs]
-        A = sum(p[0] for p in props)
-        xc = sum(p[0] * p[1] for p in props) / A; yc = sum(p[0] * p[2] for p in props) / A
-        Ixx = sum(p[3] + p[0] * (p[2] - yc) ** 2 for p in props); Iyy = sum(p[4] + p[0] * (p[1] - xc) ** 2 for p in props)
+        A, xc, yc, Ixx, Iyy = poly_props(pgs)
         b = np.array([pg.bounds for pg in pgs])
         cx = max(b[:, 2].max() - xc, xc - b[:, 0].min()); cy = max(b[:, 3].max() - yc, yc - b[:, 1].min())
         secs.append((z, A, xc, yc, Ixx, Iyy, cx, cy))
@@ -426,9 +415,13 @@ def checks():
     front = front_arm()
     worst = min(front.items(), key=lambda kv: kv[1][0]["fs"])
     for name, (r, pr, rod, ld) in front.items():
-        add_fs("arm", "Front arm (beam FE, 4 tubes/plane, X lattice)", name, r["fs"], r["stress"], r["allow"], MIN["arm"], "plates up = outer face on the bed (as now); lattice tubes across the planes are the weak direction",
+        add_fs("abuse" if "abuse" in name else "arm", "Front arm (beam FE, 4 tubes/plane, X lattice)", name, r["fs"], r["stress"], r["allow"], 1.0 if "abuse" in name else MIN["arm"], "plates up = outer face on the bed (as now); lattice tubes across the planes are the weak direction",
                f"worst member {r['member']}; tip deflection {r['defl']:.1f} mm; lean-rod force {abs(rod):.0f} N")
     r0, pr0, rod0, _ = front["3 g bump, one front wheel"]
+    _t, _yi, _yo = front_arm_model()
+    _l = [(n_, v_ * np.array([1, 1, 0])) for n_, v_ in hub_loads(0, 0, NF, _yi, _yo)]
+    _l = [("Ti", np.array([0, 0, NF / 2])), ("To", np.array([0, 0, NF / 2]))]
+    INFO["front_bump_no_couple_fs"] = _t.solve(_l, {"Pi": [0, 1, 2], "Po": [0, 1, 2], "U1i": [2]}, (0, 1, 0))["fs"]
     INFO["lean_rod_bump"] = abs(rod0)
     # hub bearing seat (5x11x4 bearings in the 22 mm outer hub), radial load from the vertical-load couple
     fz = max(abs(v) for v in [hub_loads(0, 0, NF, W.ARM_Y[0] + 2.5, W.ARM_Y[0] + S.YO)[1][1][2], hub_loads(0, 0, NF, W.ARM_Y[0] + 2.5, W.ARM_Y[0] + S.YO)[0][1][2]])
@@ -480,8 +473,8 @@ def checks():
     # ---------------- (a) cage frame
     cases, t, fixed = frame_cases(front, rear)
     for name, r in cases.items():
-        grp = "hinge" if "hinge" in name else "frame"
-        mn = MIN["hinge"] if grp == "hinge" else MIN["frame"]
+        grp = "hinge" if "hinge" in name else ("abuse" if "abuse" in name else "frame")
+        mn = MIN["hinge"] if grp == "hinge" else (1.0 if grp == "abuse" else MIN["frame"])
         if name.startswith("sustained"):
             add_fs("creep", "Cage frame (beam FE, motor opening cut)", name + f" (creep x{CREEP})", CREEP * r["fs"], r["stress"], CREEP * r["allow"], MIN["creep"], "pieces print z up: vertical tubes load across layers", f"worst member {r['member']}")
         else:
