@@ -74,3 +74,47 @@ New this rev: nose beak to x 55 (ref 55) with an 18 mm half-width chisel tip; sh
 | deck z at x -400 | 90 | 112 | 111 |
 Skin 283 g (was 186), all printed 946 g, total 2398 g. 132 tests pass (+1 xfail); clearance clean; swing 0 hits 0..35 deg at 1 deg; pieces watertight, largest 220 x 184 x 154 (no extra split needed); wall sample under 1.2 mm: 2.0 % (current 2.4 %).
 Still short of the reference: front shoulders at x -52 (52 vs 85 mm, 33 mm short) and x -105 (75 vs 90), because the lean linkage swings to z 120 at x -40 inside y 52..115; tail ends x -438 (ref -468, 30 mm short) at the rear wheel arch limit; top-view tail taper 49 vs 40 mm at x -400.
+
+## Rev 5 - old skin features stripped, reference features as geometry (image 59)
+Removed from the concept skin: old flank intake scoops, nose LED holes, hood scoop, roof gill banks, hourglass canopy cut and cage, shoulder bevel (shoulder_cut) and the old rear fender flare. Kept: shell, hinge ears and pin, frame relief, wheel and swing channels, 3-piece split (cuts now x -150 / -300: the front piece was 227 mm, bed is 220), tab posts, wing mounts, tail-lamp face recess.
+Feature checklist (ref_features() in body3_build.py):
+| reference feature | state |
+|---|---|
+| hexagonal glazing opening, 45 deg rim, raised bezel | present (cut + 3.6 mm bezel struts), opening is 70 mm wide (roof flat is 76), ref glass is ~136 wide |
+| raked windscreen | present as the raked roof panel (z 84 at x -72 to 124 at -151), opening cut through it |
+| side window with angular lower edge | present, 0.8 mm recess in the flank |
+| door panel with big diagonal crease | present as a raised 4 mm ridge on the diagonal, not a two-plane panel |
+| second sill panel, stepped thick pod, rivet dots | present: 3 mm step panel z -25..-6 and r 1.6 mm domes every 14 mm on both sides |
+| door intake grille (louvred slots) | present: 4 through-slots 30 x 2.4 mm each side |
+| slim vent behind the door | present: 3 vertical through-slots each side |
+| hood/shoulder vent grille | present as 3 slots in the shoulder shelf at x -306..-322 (ref has it at the rear shoulder; no front one: arm sweep) |
+| mirror / lamp pods on roof corners | present (10 x 10 x 7 mm blocks at x -150, y +-36) |
+| roof ridge, integrated roll bar, rear lamp bar | present: 2.5 mm ridge x -236..-296; roll bar 15 mm tall at x -240 braced back to the deck; lamp bar 3 mm proud on the tail face |
+| open engine bay with vented hood cutout, mesh grille | present: 60 x 60 mm opening in the deck x -300..-360 and a 3 x 11 cell mesh across its rear edge x -360..-375 |
+| rear fender, big polygonal wheel arch | arch present (straight-edged hull trim over the tyre and arm travel); the old flare is gone and no new fender flare was added |
+| angular tail and tail lamp | present (tail face to z 105, lamp recess + bar) |
+| chisel nose, centre badge boss, lower splitter | present: beak to x 62, 5 mm boss, 3-sided splitter wedge |
+| shoulder facets running into the arch | partial: one shelf stepping down from the cowl, cut into arches by the arm window; no extra facet planes |
+| pink accent lines, 1.4 x 0.7 mm grooves | present: door diagonal, sill, rear fender, shoulder shelf, deck stripes (not the front shoulder wedges) |
+| x | half-width cur | new | ref | top z cur | new | ref |
+|---|---|---|---|---|---|---|
+| 30 | nan | 29 | 38 | nan | 51 | 57 |
+| 0 | 44 | 52 | 60 | 48 | 61 | 72 |
+| -52 | 46 | 52 | 85 | 64 | 77 | 81 |
+| -105 | 52 | 75 | 90 | 68 | 104 | 101 |
+| -200 | 83 | 95 | 91 | 101 | 128 | 126 |
+| -290 | 70 | 95 | 91 | 95 | 133 | 130 |
+| -350 | 54 | 60 | 81 | 97 | 119 | 122 |
+| -400 | 49 | 44 | 40 | 89 | 111 | 111 |
+| bbox current | L 468 W 172 H 136 | | | | | |
+| bbox new | L 502 W 190 H 171 | | | | | |
+
+| dimension (mm) | before | new | reference |
+|---|---|---|---|
+| length | 468 | 502 | 523 |
+| width | 172 | 190 | 182 |
+| height above floor | 136 | 171 | 156 |
+| nose tip x | 30 | 62 | 55 |
+| canopy top z | 110 | 145 | 130 |
+| deck z at x -400 | 90 | 112 | 111 |
+Skin 283 g, all printed 946 g, total 2398 g. 132 tests pass, clearance clean, swing 0 hits 0..35 deg at 1 deg, pieces watertight, headroom 25-76 mm (13 mm at the beak tip). Wall sample under 1.2 mm: 3.6 % (was 2.0 %): the slots, mesh cells and ridge edges; not tuned yet.

@@ -73,6 +73,7 @@ def outline(im, sc, c, size, pts, mirror=False):
 
 
 def drawing(n, size, crop):
+    n = "59"
     im = Image.open(f"/private/tmp/claude-501/-Users-johndionaldo-Library-Application-Support-Claude-scratch-workspaces-8645d517-f4a3-433c-8998-fd7c0e49ba87-a748fb05-e298-40e2-a797-544bc288ae5f-scratch-2026-10-30-ec4193/0d275d42-fddc-4cbd-9c02-604bf37928ec/images/{n}.webp").convert("RGB").crop(crop)
     return im.resize((size[0], int(im.height * size[0] / im.width)))
 
@@ -112,9 +113,9 @@ def main(out):
             ImageDraw.Draw(im).text((8, 6), f"{name} - {kind}" + (" (red = reference outline)" if kind in ("top", "side") else ""), fill=(0, 0, 0), font=font)
             cols.append(im)
         if kind == "top":
-            r = drawing("54", (900, 340), (60, 30, 1244, 540))
+            r = drawing("54", (900, 340), (60, 575, 1160, 1050))
         elif kind == "side":
-            r = drawing("55", (900, 360), (100, 20, 1344, 552))
+            r = drawing("55", (900, 360), (90, 30, 1160, 545))
         else:
             r, _, _ = render(ref, kind, size, (120, 160, 120))
         ImageDraw.Draw(r).text((8, 6), f"reference - {kind}" + (" (drawing)" if kind in ("top", "side") else " (Shapecast GLB)"), fill=(0, 0, 0), font=font)

@@ -2,10 +2,10 @@
 import numpy as np, trimesh
 from manifold3d import Manifold
 import mono_build as MB, validate
-from skin_cfg import MONO
+from skin_cfg import MONO, CONCEPT
 
 PIECES = ("front", "mid", "rear")
-CUTS = (-165.0, -300.0)               # x of the two cut planes (front|mid, mid|rear)
+CUTS = (-150.0, -300.0) if CONCEPT else (-165.0, -300.0)               # x of the two cut planes (front|mid, mid|rear)
 
 
 def main():

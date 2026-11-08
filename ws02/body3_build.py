@@ -149,7 +149,10 @@ def solid(inset=0.0, belly=False):
     sec = Polygon(to_new(SECTION, "sec")).buffer(-inset, join_style=2)
     sidep = MB.prism_xz(list(side.exterior.coords)[:-1], -120.0, 120.0)
     s = MB.prism_xy(list(plan.exterior.coords)[:-1], -120.0, 140.0) ^ sidep ^ prism_yz(list(sec.exterior.coords)[:-1], -500.0, 100.0)
-    s = s - shoulder_cut(inset) + ((fenders(inset) + pods(inset)) ^ sidep)
+    if CONCEPT:
+        s = s + (pods(inset) ^ sidep)                                     # no old bevel or fender flare: the reference shoulder shelf and pods carry the width
+    else:
+        s = s - shoulder_cut(inset) + ((fenders(inset) + pods(inset)) ^ sidep)
     if belly:                                        # open belly: remove the floor with a straight prism of the cavity's plan (no stepped sweep: the lower edge stays clean)
         floor = MB.prism_xy(list(plan.exterior.coords)[:-1], -80.0, -26.0 + inset + 0.01) ^ Manifold.cube((296.2 + STRETCH, 400.0, 100.0), center=False).translate((-296.6 - STRETCH, -200.0, -80.0))
         s = s + floor
@@ -208,12 +211,13 @@ def details(body):
             else:
                 body = body + cyl_m((tx, s * ty, 0.5 * (zb + ztop)), 4.5, ztop - zb)
             body = body - cyl_m((tx, s * ty, zb + 0.95), FR.MAG_D / 2, 2.2)                      # matching pocket for the magnet
-    scoop, cavity = flank_intake()
-    body = body + scoop - cavity
-    for k in (-1, 0, 1):                                              # nose light bar: 3 LED holes (3.2 mm) centred between the hinge ears, 7 mm pitch
-        body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 33.5))
-    wedge, cav = hood_scoop()
-    body = body + wedge - cav                                         # hood scoop, 50 % of the hood width
+    if not CONCEPT:
+        scoop, cavity = flank_intake()
+        body = body + scoop - cavity
+        for k in (-1, 0, 1):                                              # nose light bar: 3 LED holes (3.2 mm) centred between the hinge ears, 7 mm pitch
+            body = body - Manifold.cylinder(24.0, 1.6, 1.6, 24).rotate((0.0, 90.0, 0.0)).translate((20.0, 7.0 * k, 33.5))
+        wedge, cav = hood_scoop()
+        body = body + wedge - cav                                         # hood scoop, 50 % of the hood width
     # tail-light face: a 0.8 mm recess across the short vertical face at the end of the roof (painted red/black)
     (bx, bz), (cx_, cz_) = TAIL[2], TAIL[1]
     dvec = np.array([cx_ - bx, cz_ - bz]); dvec /= np.linalg.norm(dvec)
@@ -223,15 +227,17 @@ def details(body):
     p0, p1 = np.array([bx, bz]) + dvec * 3.0, np.array([cx_, cz_]) - dvec * 3.0
     quad = [tuple(p0 + nvec * 3.0), tuple(p1 + nvec * 3.0), tuple(p1 - nvec * 3.0), tuple(p0 - nvec * 3.0)]
     body = body - (MB.prism_xz(quad, -31.0, 31.0) - solid(0.8))
-    body = body - canopy_cut() + canopy_cage()
     if CONCEPT:
-        body = body - pink_grooves()
-    # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
-    for s_ in (1, -1):
-        rect = [(back(-237.0), s_ * 5.0), (back(-205.0), s_ * 5.0), (back(-205.0), s_ * 37.0), (back(-237.0), s_ * 37.0)]
-        body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))                    # shallow pocket so the blades blend into the roof
-    cuts, wedges, chans = roof_gills(back(-233.0), back(-209.0), 8.0, 34.0)
-    body = body - cuts + wedges - chans
+        body = ref_features(body)
+    else:
+        body = body - canopy_cut() + canopy_cage()
+    if not CONCEPT:
+        # roof gills over the motor: slanted slats, openings facing the rear; the slats run across y so both sides are mirror images
+        for s_ in (1, -1):
+            rect = [(back(-237.0), s_ * 5.0), (back(-205.0), s_ * 5.0), (back(-205.0), s_ * 37.0), (back(-237.0), s_ * 37.0)]
+            body = body - (MB.prism_xy(rect, -100.0, 200.0) - solid(0.8))                    # shallow pocket so the blades blend into the roof
+        cuts, wedges, chans = roof_gills(back(-233.0), back(-209.0), 8.0, 34.0)
+        body = body - cuts + wedges - chans
     import parts.w3_frame as _FR                                                           # hinge ears: the skin flips up on a pin through these and the frame's lugs
     for s in (1, -1):
         zt_ = top_z(_FR.HINGE_PIN[0], WALL) + 0.4
@@ -251,6 +257,64 @@ def details(body):
     body.num_tri()
     body = body - _sw.swing_channels().translate((0.0031, 0.0017, 0.0023))       # a few microns off: exact coincidence with the frame relief left a pinched edge; open-ended channels for the frame tubes
     return body
+
+
+def ref_features(body):
+    """Reference-drawing features as real geometry (raised, recessed or cut); replaces the old skin's scoops, grilles, gills and canopy cage."""
+    S0 = solid(0.0)
+    out12 = solid(-1.2) - S0
+    out30 = solid(-3.0) - S0
+    inl = S0 - solid(0.8)
+    sp = lambda poly, y0=36.0, y1=130.0: MB.prism_xz(poly, y0, y1) + MB.prism_xz(poly, -y1, -y0)
+    zt = lambda x: _tz(x, 0.0)
+    # 1. hexagonal glazing opening, 45 deg rim, raised bezel and roll bar
+    hexp = [(-88.0, 14.0), (-114.0, 35.0), (-205.0, 35.0), (-232.0, 24.0), (-232.0, -24.0), (-205.0, -35.0), (-114.0, -35.0), (-88.0, -14.0)]
+    cut = MB.prism_xy(hexp, 45.0, 220.0)
+    grown = Polygon(hexp).buffer(RIM + 0.5, join_style=2)
+    cut = cut + Manifold.hull_points(np.array([(x, y, zt(x) - RIM) for x, y in hexp] + [(x, y, zt(x) + 0.5) for x, y in list(grown.exterior.coords)[:-1]], float))
+    body = body - cut
+    loop = hexp + hexp[:1]
+    for (xa, ya), (xb, yb) in zip(loop, loop[1:]):
+        body = body + _strut((xa, ya, zt(xa) + 0.2), (xb, yb, zt(xb) + 0.2), 3.6)
+    for s_ in (1, -1):                                                       # roll bar behind the cabin, braced back to the deck
+        top = (-240.0, s_ * 28.0, zt(-240.0) + 15.0)
+        body = body + _strut((top[0], top[1], zt(-240.0) - 1.0), top, 4.0) + _strut(top, (-296.0, s_ * 28.0, zt(-296.0) - 1.0), 4.0)
+    body = body + _strut((-240.0, -28.0, zt(-240.0) + 15.0), (-240.0, 28.0, zt(-240.0) + 15.0), 4.0)
+    ridge = MB.prism_xy([(-236.0, -5.0), (-296.0, -5.0), (-296.0, 5.0), (-236.0, 5.0)], 40.0, 220.0) ^ out30                       # roof ridge
+    body = body + ridge
+    # 2. side window (recessed, angular lower edge), door crease, stepped sill panel with rivets
+    body = body - (sp([(-150.0, 70.0), (-160.0, 106.0), (-282.0, 110.0), (-282.0, 86.0), (-232.0, 78.0)]) ^ inl)
+    d = np.array([-268.0 + 125.0, 66.0 - 14.0]); d /= np.linalg.norm(d); n = np.array([-d[1], d[0]]) * 2.0
+    body = body + (sp([(-125.0 + n[0], 14.0 + n[1]), (-268.0 + n[0], 66.0 + n[1]), (-268.0 - n[0], 66.0 - n[1]), (-125.0 - n[0], 14.0 - n[1])], 30.0, 130.0) ^ out12)
+    body = body + (sp([(-128.0, -25.0), (-300.0, -25.0), (-300.0, -6.0), (-128.0, -6.0)], 30.0, 130.0) ^ out30)                    # second, thicker sill panel
+    for s_ in (1, -1):
+        for x in range(-160, -290, -14):
+            body = body + Manifold.sphere(1.6, 16).translate((float(x), s_ * 92.0, -2.0))                                   # rivet domes along the pod edge
+    # 3. intake grille on the door, slim vent behind it, shoulder vent grille
+    for s_ in (1, -1):
+        y0, y1 = (80.0, 100.0) if s_ > 0 else (-100.0, -80.0)
+        for k in range(4):
+            body = body - Manifold.cube((30.0, y1 - y0, 2.4), center=False).translate((-168.0, y0, 30.0 + 5.0 * k))
+        for k in range(3):
+            body = body - Manifold.cube((2.4, y1 - y0, 26.0), center=False).translate((-322.0 + 6.0 * k, y0, 14.0))
+        ya, yb = (64.0, 80.0) if s_ > 0 else (-80.0, -64.0)
+        for k in range(3):
+            body = body - Manifold.cube((2.4, yb - ya, 16.0), center=False).translate((-306.0 - 8.0 * k, ya, 44.0))
+    # 4. mirror / lamp pods on the roof corners
+    for s_ in (1, -1):
+        z0 = zt(-150.0)
+        pts = [(x, y, z) for x in (-157.0, -147.0) for y in ((31.0, 41.0) if s_ > 0 else (-41.0, -31.0)) for z in (z0 - 1.0, z0 + (7.0 if x < -150 else 4.0))]
+        body = body + Manifold.hull_points(np.array(pts, float))
+    # 5. open engine bay in the rear deck with a mesh grille across its rear edge
+    body = body - MB.prism_xy([(-300.0, -30.0), (-360.0, -30.0), (-360.0, 30.0), (-300.0, 30.0)], 60.0, 220.0)
+    for i in range(3):
+        for j in range(11):
+            body = body - MB.prism_xy([(-360.0 - 5.0 * i, -27.5 + 5.0 * j), (-363.4 - 5.0 * i, -27.5 + 5.0 * j), (-363.4 - 5.0 * i, -24.1 + 5.0 * j), (-360.0 - 5.0 * i, -24.1 + 5.0 * j)], 60.0, 220.0)
+    # 6. tail lamp bar, 7. nose badge boss and lower splitter
+    body = body + (MB.prism_xz([(-452.0, 90.0), (-420.0, 90.0), (-420.0, 97.0), (-452.0, 97.0)], -36.0, 36.0) ^ out30)
+    body = body + Manifold.cylinder(3.0, 5.0, 4.0, 32).translate((46.0, 0.0, zt(46.0) - 1.0))
+    body = body + Manifold.hull_points(np.array([(34, y, 27.0) for y in (-20, 20)] + [(55, y, 37.0) for y in (-20, 20)] + [(62, y, 34.0) for y in (-14, 14)] + [(40, y, 23.0) for y in (-20, 20)] + [(62, y, 31.0) for y in (-14, 14)], float))
+    return body - pink_grooves()
 
 
 CX_WAIST, CX_K = -211.0, STRETCH / 360.0 + 1.0          # canopy centred at 52 % of the stretched body length, 1.25 x its old length
@@ -308,8 +372,8 @@ def canopy_cage():
 
 
 GROOVE_W, GROOVE_D = 1.4, 0.7                       # pink accent lines as engraved grooves (paint colour regions): 1.4 wide, 0.7 deep (wall stays >= 1.7)
-FLANK_LINES = [((-60.0, -2.37), (-330.0, -2.37)), ((-215.0, -4.0), (-300.0, 40.0)), ((-30.0, 8.0), (-125.0, 56.0))]       # (x, z) polylines on the flanks
-ROOF_LINES = [((-8.0, 30.0), (-64.0, 30.0)), ((-255.0, 31.0), (-335.0, 31.0))]                                           # (x, |y|) lines on the hood and engine deck
+FLANK_LINES = [((-125.0, 14.0), (-268.0, 66.0)), ((-130.0, -3.0), (-300.0, -3.0)), ((-318.0, 10.0), (-352.0, 48.0))]       # (x, z): door diagonal, sill, rear fender
+ROOF_LINES = [((-100.0, 64.0), (-290.0, 84.0)), ((-240.0, 14.0), (-292.0, 14.0))]                                          # (x, |y|) plan lines: shoulder shelf, deck stripes
 
 
 def _band(p, q, w):
