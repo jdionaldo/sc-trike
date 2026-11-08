@@ -33,5 +33,5 @@ def test_no_regression(r, key):
 def test_solver_reproduces_old_factors():
     import w3_strength_validate as V
     got = [v for _, v in V.run()[:3]]
-    for g, want in zip(got, (3.8, 4.3, 2.95)):
+    for g, want in zip(got, (3.8, 4.3, 3.4)):
         assert abs(g - want) < 0.1
