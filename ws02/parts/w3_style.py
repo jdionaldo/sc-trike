@@ -96,20 +96,28 @@ def _join(ms):
     return out
 
 
+REAR_LAT = 4.3                # rear arm lateral X lattices in the top and bottom faces (belt hull r 8 at the axle, lattice offset 12.5)
 REAR_W = (2.4, 24.0)          # rear arm plane centres (w)
-RT, RO, RW = 2.4, 4.5, 3.5    # inner rails / outer rails (overbuilt, outside the belt in y) / outer web             # rail radii (inner plane / outer plane)
-YO = 15.5                     # outer plane offset from the arm's inner face (belt at +6..+9; the fat outer rails start at +11)
+RT, RO, RW = 2.4, 5.0, 4.0    # inner lower rails / outer rails (overbuilt, outside the belt in y) / outer web
+RTU, RTW = 3.2, 2.8          # inner upper rails (free above the belt) / inner zigzag
+
+
+def inner_r(a, b):
+    """Inner-plane member radius: the lower rails stay slim (tie rod passes under), the upper ones are fat."""
+    return RTU if (a[0] == 'U' and b[0] == 'U') else (RT if (a[0] == 'L' and b[0] == 'L') else RTW)
+
+YO = 25.0                     # outer plane offset from the arm's inner face (belt at +6..+9; the fat outer rails start at +11)
 # rail nodes (x, z); the lower rails stay above z = -11.4 so the tie rod passes under the arm at every lean angle
 ARM_NODES = {"L0": (-100.0, -9.0), "L1": (-60.0, -9.0), "L2": (0.0, -9.0),
-             "U0": (-100.0, 10.5), "U1": (-76.0, 17.5), "U2": (-38.0, 11.5), "U3": (0.0, 9.4)}
+             "U0": (-100.0, 14.6), "U1": (-76.0, 17.5), "U2": (-38.0, 11.5), "U3": (0.0, 12.2)}
 ARM_RAILS = [("L0", "L1"), ("L1", "L2"), ("U0", "U1"), ("U1", "U2"), ("U2", "U3")]
 ARM_WEB = [("L0", "U1"), ("U1", "L1"), ("L1", "U2"), ("U2", "L2")]          # zigzag in both side planes (the belt is between them)
-TIE_R = {"U0": 2.8, "U3": 2.8, "L0": 1.6, "L2": 2.4}              # hub-end ties across the belt gap (limited by the belt hull)
-LAT_TOP, LAT_BOT = 2.7, 1.6                                      # X lattice radii, top / bottom faces
+TIE_R = {"U0": 6.5, "U3": 5.6, "L0": 1.7, "L2": 2.4, "U1": 4.5, "U2": 3.8}              # hub-end ties across the belt gap (limited by the belt hull)
+LAT_TOP, LAT_BOT = 3.4, 1.6                                      # X lattice radii, top / bottom faces
 
 
 # outer-plane rail centres (x, z): fat tubes, bottoms held at z -11.3 so the tie rod still passes under at every lean angle
-ARM_OUTER = {"L0": (-100.0, -6.8), "L1": (-60.0, -6.8), "L2": (0.0, -6.8), "U0": (-100.0, 10.0), "U1": (-76.0, 15.5), "U2": (-38.0, 10.0), "U3": (0.0, 7.5)}
+ARM_OUTER = {"L0": (-100.0, -6.3), "L1": (-60.0, -6.3), "L2": (0.0, -6.3), "U0": (-100.0, 14.1), "U1": (-76.0, 15.5), "U2": (-38.0, 10.0), "U3": (0.0, 10.3)}
 
 
 def arm(p, side):
@@ -120,15 +128,15 @@ def arm(p, side):
     ya, yb = W.ARM_Y
     yi, yo = s * (ya + 2.5), s * (ya + YO)                # plane centres: 67.0 and 80.0
     yy = lambda a, b: (s * a, s * b)
-    ho = ya + 20.0                                         # outer face of the outer hubs
+    ho = ya + YO + 4.0                                         # outer face of the outer hubs
     def fn():
         P = lambda k, y: (ARM_NODES[k][0], y, ARM_NODES[k][1])
         Q = lambda k, y: (ARM_OUTER[k][0], y, ARM_OUTER[k][1])
         parts = []
         for a, b in ARM_RAILS + ARM_WEB:
-            parts.append(_tb(P(a, yi), P(b, yi), RT))
+            parts.append(_tb(P(a, yi), P(b, yi), inner_r(a, b)))
         for k in ARM_NODES:
-            parts.append(_ball(P(k, yi), RT))
+            parts.append(_ball(P(k, yi), RTU if k[0] == 'U' else RT))
         for a, b in ARM_RAILS:
             parts.append(_tb(Q(a, yo), Q(b, yo), RO))
         for a, b in ARM_WEB:
@@ -138,13 +146,14 @@ def arm(p, side):
         for rails, r in (([("U0", "U1"), ("U1", "U2"), ("U2", "U3")], LAT_TOP), ([("L0", "L1"), ("L1", "L2")], LAT_BOT)):   # lateral X lattices
             for a, b in rails:
                 parts += [_tb(P(a, yi), P(b, yo), r), _tb(P(b, yi), P(a, yo), r)]
-        for k in ("U0", "L0", "U3", "L2"):                                       # ties at the hub ends
-            parts.append(_tb(P(k, yi), P(k, yo), TIE_R[k]))
+        for k in TIE_R:                                                              # ties across the belt gap (hub ends and the upper apex nodes)
+            parts.append(_tb(P(k, yi), P(k, yo), TIE_R[k], caps=False))
         xp = -W.ARM_L
         parts += [_cy(xp, 0.0, *yy(ya, ya + 5.5), 20.0), _cy(0.0, 0.0, *yy(ya, ya + 5.5), 18.0)]                    # inner hubs
-        parts += [_cy(xp, 0.0, *yy(ya + 11.0, ho), 22.0), _cy(0.0, 0.0, *yy(ya + 11.0, ho), 20.0)]                  # outer hubs (r <= 11: rod clearance)
+        parts += [_cy(xp, 0.0, *yy(ya + 11.0, ho), 22.0), _cy(0.0, 0.0, *yy(ya + 11.0, ho), 20.0)]                  # outer hubs (r <= 11: rod clearance), out to the outer plane
         parts += [_cy(W.LUG[0] + xp, W.LUG[1], *yy(ya, ya + 5.0), 9.0)]                                             # lean-rod lug
         body = _join(parts)
+        body = body ^ Manifold.cube((400.0, ho - ya, 120.0), center=False).translate((-300.0, min(s * ya, s * ho), -60.0))      # square the plane ends: the inner face is the bed, the outer one stops short of the carrier
         for x, d1, d2 in ((xp, 11.15, 5.4), (0.0, 8.15, 4.4)):
             dep = 4.0 if x == xp else 3.0
             body = body - _cy(x, 0.0, *yy(ya - 0.1, ya + dep), d1)                                                  # inner bearing seat
@@ -158,13 +167,13 @@ def arm(p, side):
 
 
 def uplink(p, side):
-    """Spindle link: 6 mm round bar between two 9 mm pin bosses."""
+    """Spindle link: elliptical bar (6 mm thick in y, 9 mm deep in z) between two 9 mm pin bosses."""
     s = side
     ya = W.UP_Y[0]
     yc = s * (ya + 3.0)
     def fn():
         xp = -W.ARM_L
-        parts = [_tb((xp, yc, W.ZU), (0.0, yc, W.ZU), 3.0), _cy(xp, W.ZU, *sorted((s * ya, s * (ya + 6.0))), 9.0), _cy(0.0, W.ZU, *sorted((s * ya, s * (ya + 6.0))), 9.0)]
+        parts = [_tb((xp, yc, 0.0), (0.0, yc, 0.0), 3.0).scale((1.0, 1.0, 1.5)).translate((0.0, 0.0, W.ZU)), _cy(xp, W.ZU, *sorted((s * ya, s * (ya + 6.0))), 9.0), _cy(0.0, W.ZU, *sorted((s * ya, s * (ya + 6.0))), 9.0)]
         body = _join(parts)
         for x in (xp, 0.0):
             body = body - _cy(x, W.ZU, *sorted((s * (ya - 0.1), s * (ya + 6.1))), p.pin_dia + p.clr_slide)
@@ -172,7 +181,7 @@ def uplink(p, side):
     return MeshPart("w3_uplink_left" if s > 0 else "w3_uplink_right", fn, walls=False, supports=True)
 
 
-CAR_R0, CAR_R1, CAR_RC, CAR_RB = 6.0, 4.5, 4.5, 3.5          # carrier: post taper, kingpin cantilever, brace radii
+CAR_R0, CAR_R1, CAR_RC, CAR_RB = 6.0, 4.5, 7.5, 3.5          # carrier: post taper, kingpin cantilever, brace radii
 
 
 def carrier(p, side):
@@ -185,13 +194,14 @@ def carrier(p, side):
         kp = W.KP_Y
         parts = [_cy(0.0, 0.0, *yy(ya, yb), 18.0), _cy(0.0, W.ZU, *yy(ya, yb), 11.0),
                  _tb((0.0, yc, 0.0), (0.0, yc, W.ZU), CAR_R0, CAR_R1),                          # tapered post
-                 _tb((0.0, yc, 19.0), (0.0, s * kp, 19.0), CAR_RC),                              # cantilever to the kingpin
-                 Manifold.cylinder(11.0, 5.5, 5.5, 32).translate((0.0, s * kp, 13.5)),            # kingpin boss
+                 _tb((0.0, yc, 20.0), (0.0, s * kp, 20.0), CAR_RC),                              # cantilever to the kingpin
+                 Manifold.cylinder(11.0, 6.5, 6.5, 32).translate((0.0, s * kp, 13.5)),            # kingpin boss (wall 3.5 around the 5 mm pin)
                  _tb((0.0, yc, 34.0), (0.0, s * (kp - 4.0), 20.5), CAR_RB)]                      # angled brace
         body = _join(parts)
+        body = body ^ Manifold.cube((100.0, 120.0, 100.0), center=False).translate((-50.0, (ya if s > 0 else -ya - 120.0), -50.0))        # flat inner face on the bed: the fat tube's rounded end overhangs it
         body = body - _cy(0.0, 0.0, *yy(ya - 6.0, yb + 6.0), 8.15)                       # longer than the hub: the rounded tube ends overhang it
         body = body - _cy(0.0, W.ZU, *yy(ya - 6.0, yb + 6.0), p.pin_dia + p.clr_slide)
-        body = body - Manifold.cylinder(12.0, (W.KP_D + p.clr_press) / 2, (W.KP_D + p.clr_press) / 2, 32).translate((0.0, s * kp, 13.0))
+        body = body - Manifold.cylinder(17.0, (W.KP_D + p.clr_press) / 2, (W.KP_D + p.clr_press) / 2, 32).translate((0.0, s * kp, 12.0))
         return _local_to_print(body, W.mats(s, ya))
     return MeshPart("w3_carrier_left" if s > 0 else "w3_carrier_right", fn, walls=False, supports=True)
 
@@ -207,13 +217,13 @@ def knuckle(p, side):
         z_stud = W.ARM_A[2]
         parts = [Manifold.cylinder(y1 - y0, 11.0, 11.0, 40).rotate((-90.0, 0.0, 0.0)).translate((-1.0, min(s * y0, s * y1), 1.0)),
                  _cy(W.ARM_A[0], z_stud, *yy(y_in - 3.0, y_in + 3.0), 10.0),                       # ball-stud pad
-                 _tb((-7.0, kp, -5.0), (W.ARM_A[0], s * y_in, z_stud), 3.0),                      # V of two tubes: the tie-rod pull (along x)
-                 _tb((7.0, kp, -5.0), (W.ARM_A[0], s * y_in, z_stud), 3.0),                       # is axial in them, not bending
-                 _ball((-7.0, kp, -5.0), 3.0), _ball((7.0, kp, -5.0), 3.0)]
+                 _tb((-7.0, kp, -5.0), (W.ARM_A[0], s * y_in, z_stud), 3.5),                      # V of two tubes: the tie-rod pull (along x)
+                 _tb((7.0, kp, -5.0), (W.ARM_A[0], s * y_in, z_stud), 3.5),                       # is axial in them, not bending
+                 _ball((-7.0, kp, -5.0), 3.5), _ball((7.0, kp, -5.0), 3.5)]
         body = _join(parts)
         body = body - _cy(0.0, 0.0, *yy(W.KN_Y[0], y1 + 0.1), p.axle_dia + p.clr_slide + 0.6)
         body = body - Manifold.cylinder(26.0, (W.KP_D + p.clr_slide) / 2, (W.KP_D + p.clr_slide) / 2, 32).translate((0.0, kp, -12.0))
-        body = body - _cy(W.ARM_A[0], z_stud, *yy(y_in - 3.1, y_in + 3.0), p.ball_stud_dia + p.clr_press * 2)
+        body = body - _cy(W.ARM_A[0], z_stud, *yy(y_in - 4.2, y_in + 4.2), p.ball_stud_dia + p.clr_press * 2)
         km = np.eye(4)
         if s > 0:
             km[:3, :3] = [[1, 0, 0], [0, 0, -1], [0, 1, 0]]; km[1, 3] = W.KN_Y[1]
@@ -245,11 +255,11 @@ def rear_arm(p):
                 v0, v1 = (rv(1, a), rv(-1, b)) if i % 2 == 0 else (rv(-1, a), rv(1, b))
                 parts.append(_tb((a, v0, w), (b, v1, w), rw))
         for i, (a, b) in enumerate(zip(us, us[1:])):             # lateral X lattices in the top and bottom faces
-            for sgn, r in ((1, 3.0), (-1, 3.0)):
+            for sgn, r in ((1, REAR_LAT), (-1, REAR_LAT)):
                 parts += [_tb((a, lv(sgn, a), wi), (b, lv(sgn, b), wo), r), _tb((b, lv(sgn, b), wi), (a, lv(sgn, a), wo), r)]
         for u in (0.0, L):
             for sgn in (1, -1):
-                parts.append(_tb((u, sgn * VL, wi), (u, sgn * VL, wo), 3.2))
+                parts.append(_tb((u, sgn * VL, wi), (u, sgn * VL, wo), REAR_LAT))
         for u in (0.0, L):                                                      # second, wider tie pair at each end (carries the wheel's twist)
             for sgn in (1, -1):
                 for w in (wi, wo):
@@ -278,9 +288,9 @@ def _rail_top(x):
     return z0 + (z1 - z0) * (x - x0) / (x1 - x0) + RO
 
 
-POD_X = (-40.0, -13.0)
+POD_X = (-33.0, -13.0)
 POD_Z0 = _rail_top(POD_X[1]) + 0.1                              # lowest point of the pod bottom: the STL is shifted so this sits on the bed
-POD_SCREWS = (-35.0, -20.0)
+POD_SCREWS = (-29.0, -19.0)
 
 
 def pod(p):

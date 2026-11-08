@@ -26,8 +26,23 @@ def run():
     w3_beamfe.Truss = Truss2
     buf = io.StringIO()
     keep = open("WS03_STRENGTH.md").read()
-    with contextlib.redirect_stdout(buf):
-        import w3_strength as OLD
+    from parts import w3_style as S, w3_shock as SK
+    old = dict(YO=15.5, RT=2.4, RO=4.5, RW=3.5, LAT_TOP=2.7, LAT_BOT=1.6, CAR_RC=4.5,
+               ARM_NODES={"L0": (-100.0, -9.0), "L1": (-60.0, -9.0), "L2": (0.0, -9.0), "U0": (-100.0, 10.5), "U1": (-76.0, 17.5), "U2": (-38.0, 11.5), "U3": (0.0, 9.4)},
+               ARM_OUTER={"L0": (-100.0, -6.8), "L1": (-60.0, -6.8), "L2": (0.0, -6.8), "U0": (-100.0, 10.0), "U1": (-76.0, 15.5), "U2": (-38.0, 10.0), "U3": (0.0, 7.5)},
+               TIE_R={"U0": 2.8, "U3": 2.8, "L0": 1.6, "L2": 2.4})
+    keep_S = {k: getattr(S, k) for k in old}; keep_h = SK.HOOP_R
+    for k, v in old.items():
+        setattr(S, k, v)
+    SK.HOOP_R = 6.5                                  # the validated models are the pre-fix geometry: freeze it while they are evaluated
+    sys.modules.pop("w3_strength", None)
+    try:
+        with contextlib.redirect_stdout(buf):
+            import w3_strength as OLD
+    finally:
+        for k, v in keep_S.items():
+            setattr(S, k, v)
+        SK.HOOP_R = keep_h
     open("WS03_STRENGTH.md", "w").write(keep)
     return [(n, v) for n, v in OLD.rows]
 

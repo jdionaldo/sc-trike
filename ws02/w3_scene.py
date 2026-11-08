@@ -149,7 +149,7 @@ def lean_items(phi, th):
     psi, lugs, tips, _ = lean_geometry(phi)
     ax = np.array([LN.XR, 0.0, LN.ZC])
     out = []
-    rk = load("w3_lean_rocker", T(LN.XR - 2.0, 0, LN.ZC) @ Rx(psi, (0.0, 0.0)) @ np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1.0]]))
+    rk = load("w3_lean_rocker", T(LN.XR + 2.0 - LN.PLATE, 0, LN.ZC) @ Rx(psi, (0.0, 0.0)) @ np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1.0]]))
     out.append(("lean_rocker_c", rk, "printed"))
     out.append(("lean_mount_c", load("w3_lean_tower", T(0, 0, LN.TWR_Z0)), "printed"))
     out.append(("battery_tray_c", load("w3_battery_tray", T(0, 0, -23.0)), "printed"))

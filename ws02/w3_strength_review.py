@@ -150,7 +150,7 @@ def front_arm_model():
         xo, zo = S.ARM_OUTER[k]
         t.node(k + "o", (xo, yo, zo))
     for a, b in S.ARM_RAILS + S.ARM_WEB:
-        t.edge(a + "i", b + "i", S.RT)
+        t.edge(a + "i", b + "i", S.inner_r(a, b))
     for a, b in S.ARM_RAILS:
         t.edge(a + "o", b + "o", S.RO)
     for a, b in S.ARM_WEB:
@@ -158,7 +158,7 @@ def front_arm_model():
     for rails, r in (([("U0", "U1"), ("U1", "U2"), ("U2", "U3")], S.LAT_TOP), ([("L0", "L1"), ("L1", "L2")], S.LAT_BOT)):
         for a, b in rails:
             t.edge(a + "i", b + "o", r); t.edge(b + "i", a + "o", r)
-    for k in ("U0", "L0", "U3", "L2"):
+    for k in S.TIE_R:
         t.edge(k + "i", k + "o", S.TIE_R[k])
     for p_, y_ in (("i", yi), ("o", yo)):                       # hub centres (pivot at x -100, axle at x 0, both on z = 0), rigid bars to the plane's end nodes
         t.node("P" + p_, (-W.ARM_L, y_, 0.0)); t.node("T" + p_, (0.0, y_, 0.0))
@@ -205,10 +205,10 @@ def rear_arm():
             t.edge(f"{i}{a}{p_}", f"{i+1}{b}{p_}", rw)
     for i in range(4):
         for sg in "pn":
-            t.edge(f"{i}{sg}i", f"{i+1}{sg}o", 3.0); t.edge(f"{i+1}{sg}i", f"{i}{sg}o", 3.0)
+            t.edge(f"{i}{sg}i", f"{i+1}{sg}o", S.REAR_LAT); t.edge(f"{i+1}{sg}i", f"{i}{sg}o", S.REAR_LAT)
     for i in (0, 4):
         for sg in "pn":
-            t.edge(f"{i}{sg}i", f"{i}{sg}o", 3.2)
+            t.edge(f"{i}{sg}i", f"{i}{sg}o", S.REAR_LAT)
     for p_, (w, r, rw) in planes.items():                      # pivot and axle hubs
         t.node("P" + p_, (0.0, 0.0, w))
         for sg in "pn":
@@ -432,17 +432,17 @@ def checks():
     hoop = p * (ro ** 2 + ri ** 2) / (ro ** 2 - ri ** 2)
     add("arm", "Front arm hub, 11 mm bearing seat (22 mm hub)", f"3 g bump, radial bearing load {fz:.0f} N", KT * hoop, SIP, MIN["arm"], "ring in the layer plane: in-plane hoop stress, good")
     # upper link buckling
-    Pcr = math.pi ** 2 * E * (math.pi * 3 ** 4 / 4) / 100.0 ** 2
+    Pcr = math.pi ** 2 * E * (math.pi * 4.5 * 3 ** 3 / 4) / 100.0 ** 2            # elliptical bar 6 mm thick (y) x 9 mm deep (z): the weaker axis governs
     P_l = FXF * RT / 40.0 + FYF * RT / 40.0
-    add_fs("gen", "Upper link (6 mm round bar, 100 mm)", f"2 g braking + 1.5 g cornering, {P_l:.0f} N compression", Pcr / P_l, P_l, Pcr, MIN["gen"], "print flat; buckling, not material, limits it")
+    add_fs("gen", "Upper link (6 x 9 mm elliptical bar, 100 mm)", f"2 g braking + 1.5 g cornering, {P_l:.0f} N compression", Pcr / P_l, P_l, Pcr, MIN["gen"], "print flat; buckling, not material, limits it")
     # carrier kingpin cantilever tube (tube axis along y = print stacking direction)
     Mb = NF * 17.0; Tw = FXF * RT
     sb = Mb / (math.pi * S.CAR_RC ** 3 / 4); tau = Tw * S.CAR_RC / (math.pi * S.CAR_RC ** 4 / 2)
-    add("arm", "Carrier kingpin cantilever tube (R 4.5, 17 mm)", "3 g bump (bending) + 2 g braking torque", KT * math.sqrt(sb ** 2 + 3 * tau ** 2), allow(1.0), MIN["arm"],
+    add("arm", f"Carrier kingpin cantilever tube (R {S.CAR_RC:g}, 17 mm)", "3 g bump (bending) + 2 g braking torque", KT * math.sqrt(sb ** 2 + 3 * tau ** 2), allow(1.0), MIN["arm"],
         "tube axis is the bed normal now (stress across layers, 15 MPa): print the carrier on its side", f"bending {sb:.1f} MPa, torsion {tau:.1f} MPa before KT")
     # kingpin
     Fh = math.hypot(FYF, FXF)
-    add("gen", "Kingpin 4 mm steel (cantilever from the carrier tab)", f"1.5 g cornering + 2 g braking ({Fh:.0f} N horizontal at {RT + 12:.0f} mm)", Fh * (RT + 12.0) / (math.pi * 4.0 ** 3 / 32), 400.0, MIN["gen"], "steel; no print direction")
+    add("gen", f"Kingpin {W.KP_D:g} mm steel (cantilever from the carrier tab)", f"1.5 g cornering + 2 g braking ({Fh:.0f} N horizontal at {RT + 12:.0f} mm)", Fh * (RT + 12.0) / (math.pi * W.KP_D ** 3 / 32), 400.0, MIN["gen"], "steel; no print direction")
     # knuckle V tubes (stud force from the steering servo stall; geometry hypot(7, 16, 21) = 27.2)
     Fs_ = SERVO_STEER / 12.0
     Lt = math.hypot(7.0, 16.0, 21.0); Fa = Fs_ / (2 * 7.0 / Lt)
@@ -506,12 +506,12 @@ def checks():
     Rr = LN.R; bet = LN.BETA; w_root, tpl = 11.0, LN.PLATE
     for case, Ft in (("lean servo stall (17.7 kg.cm, 7.4 V)", SERVO_LEAN / Rr), ("3 g bump drives the rod (rod force)", INFO["lean_rod_bump"])):
         Mrt = Ft * math.cos(bet) * (Rr - 6.5); sax = Ft * math.sin(bet) / (w_root * tpl)
-        add("gen" if "stall" in case else "abuse", "Lean rocker V arm (4 mm plate, root of the arm)", f"{case}: {Ft:.0f} N at the tip", KT * (Mrt / (tpl * w_root ** 2 / 6) + sax), SIP,
+        add("gen" if "stall" in case else "abuse", f"Lean rocker V arm ({tpl:g} mm plate, root of the arm)", f"{case}: {Ft:.0f} N at the tip", KT * (Mrt / (tpl * w_root ** 2 / 6) + sax), SIP,
             MIN["gen"] if "stall" in case else 1.0, "plate flat on the bed (as now): loads in the layer plane, best direction")
     Ft = SERVO_LEAN / Rr
-    add("gen", "Lean rocker horn screws (4 x M2 at r 5.5)", f"servo stall, bearing in the 4 mm plate", SERVO_LEAN / (4 * 5.5) / (2.0 * tpl), SIP, MIN["gen"], "in-plane bearing")
+    add("gen", "Lean rocker horn screws (4 x M2 at r 5.5)", f"servo stall, bearing in the {tpl:g} mm plate", SERVO_LEAN / (4 * 5.5) / (2.0 * tpl), SIP, MIN["gen"], "in-plane bearing")
     Fe = SERVO_LEAN / 28.0
-    add("gen", "Servo tower plate (2.5 mm), ear screw bearing (2 x M2, 28 mm pitch)", f"lean servo stall, {Fe:.0f} N per screw along z", Fe / (1.9 * 2.5), SZ, MIN["gen"], "plate stands vertical: z loads are ACROSS the layers; print the tower on its back (x axis up)")
+    add("gen", f"Servo tower plate ({LN.TWR_X[1] - LN.TWR_X[0]:g} mm), ear screw bearing (2 x M2, 28 mm pitch)", f"lean servo stall, {Fe:.0f} N per screw along z", Fe / (1.9 * (LN.TWR_X[1] - LN.TWR_X[0])), SZ, MIN["gen"], "plate stands vertical: z loads are ACROSS the layers; print the tower on its back (x axis up)")
     Rb = INFO["lean_rod_bump"]
     pull = TAUT * math.pi * 2.0 * 4.5
     add("gen", "Servo tower feet (4 x M2 into the base plate, 4.5 mm engagement)", f"3 g bump rod reaction {Rb:.0f} N pulling up", Rb / 4.0, pull, MIN["gen"], "screws vertical", "thread shear 6 MPa x d x engagement")
@@ -530,7 +530,7 @@ def checks():
     Tcap = min(TAUT * math.pi * 2.5 * TL.PILOT_L, SZ * math.pi / 4 * (6.0 ** 2 - 3.2 ** 2))
     for name, T in foot_t.items():
         abuse = name.startswith("abuse")
-        add_fs("abuse" if abuse else "wing", "Wing foot screw + hood boss (M2.5, one per hanger)", name, Tcap / max(T, 1e-6), T, Tcap, 1.0 if abuse else MIN["wing"], "boss is across layers: head + M2.5 flat washer (OD 6) bearing 15 MPa x 20 mm2", f"worst of 2 screws per hanger (was 1), tension {T:.0f} N vs {Tcap:.0f} N")
+        add_fs("abuse" if abuse else "wing", "Wing foot screw + hood boss (M2.5, one per hanger)", name, Tcap / max(T, 1e-6), T, Tcap, 1.0 if abuse else MIN["wing"], "boss is across layers: head + M2.5 flat washer (OD 6) bearing 15 MPa x 20 mm2", f"screw tension {T:.0f} N vs {Tcap:.0f} N")
     # blade at the groove edge and prong screws, 10 N tip press
     Mtip = 10.0 * (TL.SPAN - TL.LEG_Y - 5.0)
     add("abuse", "Wing blade (6 mm sheet) at the hanger groove edge", "10 N press on the blade tip (core 2 mm inside the groove: 72 x 2 mm)", KT * Mtip / (TL.CHORD * 2.0 ** 2 / 6) / 3.0, SIP, 1.0, "blade printed flat: layers carry the bending", "/3: prongs fill the groove and share the section")

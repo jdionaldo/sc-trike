@@ -16,16 +16,16 @@ R, BETA = 17.29, 1.2548                 # tip radius, V half angle at rest (rad 
 K_SERVO = 1.0132                       # servo angle per degree of lean (the servo sets the lean: psi = -K_SERVO * phi)
 SHOCK = dict(lmin=51.5, lmax=75.5, stroke=24.0, rest=68.3, eye=3.0, mass_g=25.0)   # coilover link: eye to eye compressed / extended, 70 % extended at rest
 ROD_L = SHOCK['rest']
-PLATE = 4.0                            # rocker thickness
+PLATE = 6.0                            # rocker thickness (grows aft: the +x face stays against the servo horn)
 TOP_X = XR + 2.0 + 4.5                 # servo top face (horn plate, then the 4.5 mm of spline)
 SV_L, SV_W, SV_H, SV_EAR, SV_OFF = 23.0, 12.0, 27.5, 32.0, 4.5   # body along y, along z, along x; ears; shaft offset (body centre at y = -SV_OFF)
 FLANGE_DX = 5.0                        # ear plane below the top face
-TWR_X = (TOP_X + FLANGE_DX - 2.5, TOP_X + FLANGE_DX)       # tower plate, ears sit on its forward face
+TWR_X = (TOP_X + FLANGE_DX - 5.0, TOP_X + FLANGE_DX)       # tower plate 5 mm (was 2.5), ears sit on its forward face
 TWR_Y = (-21.5, 12.5)
 LEG_Y0 = 0.3                          # the plate hangs from one leg on the +y side; below z 12.5 it is open to the battery
 TWR_Z0, TWR_Z1 = -23.0, ZC + 10.0
-FOOT_X = (TWR_X[0], TWR_X[0] + 6.5)
-FEET = [(TWR_X[0] + 3.3, 4.5), (TWR_X[0] + 3.3, 10.0)]   # M2 screws into the base plate (portal legs straddle the battery)
+FOOT_X = (TWR_X[0], TWR_X[0] + 9.0)
+FEET = [(TWR_X[0] + 5.8, 4.5), (TWR_X[0] + 5.8, 10.0)]   # M2 screws into the base plate (portal legs straddle the battery)
 EAR_Y = (-SV_OFF - 14.0, -SV_OFF + 14.0)
 
 
