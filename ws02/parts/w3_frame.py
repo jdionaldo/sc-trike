@@ -81,6 +81,12 @@ def _tab_pos():
 
 
 def nodes():
+    d = _nodes()
+    d.update(BYPASS_NODES)
+    return d
+
+
+def _nodes():
     """Node coordinates for the +y half (the other half is the mirror image); y = 0 nodes are shared."""
     (fx, fy, fz), (hx, hy, hz), (mx, my, mz), (rx, ry, rz) = _tab_pos()
     Y = YT
@@ -103,21 +109,27 @@ EDGES = [("PE1", "PS2", 3.0, 0, 0), ("PS2", "PM", 3.0, 0, 0), ("PM", "PS1", 3.0,
          ("PS1", "FN", 4.5, 0, 0), ("FN", "PL", 4.5, 0, 6.0), ("PM", "PL", 3.0, 0, 6.0),
          ("PS2", "FP1", 3.0, 0, 0), ("B1", "FPB", 5.5, 0, 0), ("R1", "FPR", 4.5, 0, 0), ("PS1", "FPF", 3.5, 0, 0),
          ("PE1", "B1", 5.5, 7.0, 0), ("B1", "R1", 5.5, 0, 0), ("R1", "RW", 4.5, 0, 0), ("RW", "R2", 4.5, 0, 0),
-         ("HT", "PH", 5.5, 0, 6.0), ("PH", "PL", 6.0, 0, 0), ("HT", "HT2", 5.5, 0, 0), ("HT2", "MU", 5.5, 0, 0), ("MU", "R3", 5.5, 0, 0), ("R3", "R2", 5.5, 0, 0), ("R2", "C262", 5.5, 0, 0),
+         ("PH", "PL", 6.0, 0, 0), ("MU", "R3", 5.5, 0, 0), ("R3", "R2", 5.5, 0, 0), ("R2", "C262", 5.5, 0, 0),
          ("MU", "XN", 4.5, 0, 0), ("XN", "R2m", 4.5, 0, 0),
-                  ("FT", "C29", 5.5, 0, 0), ("FT", "HT", 5.5, 0, 0), ("FT", "FN", 4.5, 0, 0),
-         ("NB", "BT", 3.5, 0, 0), ("FN", "BT", 4.0, 0, 0), ("FT", "BT", 4.5, 0, 0), ("BT", "CBT", 5.5, 0, 0), ("FS", "NA", 3.5, 0, 0), ("NA", "NB", 3.0, 0, 0), ("FP1", "K1", 3.0, 0, 0), ("K1", "HT2", 3.0, 0, 0), ("R3", "K2", 5.5, 0, 0), ("K2", "FPB", 5.0, 0, 0)]
-BALLS = {"BT": 5.5, "FS": 3.5, "R1": 5.5, "RW": 4.5, "R2": 5.5, "HT": 5.5, "MU": 5.5, "FN": 4.5, "B1": 5.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 5.5, "FPR": 4.5, "FPF": 3.5, "HT2": 5.5, "K1": 3.0, "R3": 5.5, "K2": 5.5}
+                  ("FT", "C29", 5.5, 0, 0), ("FT", "FN", 4.5, 0, 0),
+         ("NB", "BT", 3.5, 0, 0), ("FN", "BT", 4.0, 0, 0), ("FT", "BT", 4.5, 0, 0), ("BT", "CBT", 5.5, 0, 0), ("FS", "NA", 3.5, 0, 0), ("NA", "NB", 3.0, 0, 0), ("FP1", "K1", 3.0, 0, 0), ("R3", "K2", 5.5, 0, 0), ("K2", "FPB", 5.0, 0, 0)]
+BALLS = {"BT": 5.5, "FS": 3.5, "R1": 5.5, "RW": 4.5, "R2": 5.5, "MU": 5.5, "FN": 4.5, "B1": 5.5, "FT": 5.5, "XN": 4.5, "FP1": 3.0, "FPB": 5.5, "FPR": 4.5, "FPF": 3.5, "K1": 3.0, "R3": 5.5, "K2": 5.5}
 FEET = {"FS": 8.0, "FP1": 7.0, "FPB": 11.0, "FPR": 8.0, "FPF": 10.0}      # foot pad diameters, screwed down into the base plate
 
 # The Fusion SE motor sits on the -y side (see motor_envelope), so the -y copies of these tubes and nodes are dropped and replaced by a bypass that runs outboard of the can
 # (tube centres at least 23 mm from the motor axis = can radius 18 + 2 mm clearance + tube radius 3).  The +y copies stay as they were.
-NEG_DROP_EDGES = {("HT", "PH"), ("HT", "HT2"), ("HT2", "MU"), ("FT", "HT"), ("K1", "HT2")}
-NEG_DROP_BALLS = {"HT", "HT2"}
-NODES_NEG = {"N1": (-100.0, -48.0, 54.0), "N2": (-135.9, -50.0, 57.5)}      # hoop corner beside the can, roof rail corner beside the can
-BALLS_NEG = {"N1": 4.0, "N2": 4.0}
-# (a, b, radius, trim a, trim b): names in NODES_NEG are used as given, all others are the mirrored (-y) copy of the +y node
-EDGES_NEG = [("PH", "N1", 3.0, 0, 0), ("N1", "FT", 3.0, 0, 0), ("N1", "N2", 3.0, 0, 0), ("N2", "MU", 3.0, 0, 0), ("K1", "N2", 3.0, 0, 0), ("PH", "N2", 3.0, 0, 0)]
+NEG_DROP_EDGES = set()            # kept for the FE hooks: the motor bypass is now mirror-symmetric, so nothing is -y only
+NEG_DROP_BALLS = set()
+NODES_NEG = {}
+BALLS_NEG = {}
+EDGES_NEG = []
+# Symmetric motor bypass (node coordinates are the +y half, mirrored like every other node): the inner roof / hoop rails run outboard of the motor can on BOTH sides
+# (tube centres >= 23 mm from the motor axis = can radius 18 + 2 mm clearance + tube radius 3), N1 = hoop corner, N2 = roof-rail corner, MC = roof cross tube behind the can.
+BYPASS_NODES = {"N1": (-100.0, 48.0, 54.0), "N2": (-135.9, 50.0, 57.5), "MC": (-180.0, 0.4, 63.1)}
+BYPASS_EDGES = [("PH", "N1", 3.0, 0, 0), ("N1", "FT", 3.0, 0, 0), ("N1", "N2", 3.0, 0, 0), ("N2", "MU", 3.0, 0, 0), ("K1", "N2", 3.0, 0, 0), ("PH", "N2", 3.0, 0, 0), ("MU", "MC", 4.5, 0, 0), ("PS2", "N2", 3.0, 0, 0), ("FP1", "N2", 3.0, 0, 0)]
+BYPASS_BALLS = {"N1": 4.0, "N2": 4.0}
+EDGES += BYPASS_EDGES
+BALLS.update(BYPASS_BALLS)
 
 
 def neg_pos(k):
