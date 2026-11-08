@@ -16,7 +16,7 @@ EYE_Y = (SHOCK_Y - 2.75, SHOCK_Y + 2.75)          # 5.5 mm eye
 BOSS_Y = (EYE_Y[1] + 0.4, EYE_Y[1] + 0.4 + 4.4)   # bolt boss (0.4 mm washer gap to the eye)
 PLATE_Y = (BOSS_Y[1], BOSS_Y[1] + 4.5)            # lug plates on the +y side of the bosses; their host tubes come from +y
 LUG_R, BOSS_R, PIN_D = 5.5, 4.6, 3.2
-HOOP_R, LEG_R = 6.5, 6.5          # cross tube / legs (13 mm OD)
+HOOP_R, LEG_R = 10.0, 7.0         # cross tube (20 mm OD) / legs (14 mm OD; thicker legs pull the load through the top lattice instead, see WS03_STRENGTH_FIXES.md)
 WOFF = 46.0 - BOSS_Y[0]           # arm print frame: w = y - (46 - WOFF) = y - BOSS_Y[0], so the lower bolt boss is the lowest layer on the bed
 
 
