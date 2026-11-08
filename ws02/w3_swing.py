@@ -64,7 +64,7 @@ def swing_channels(theta_max=THETA_MAX, step=STEP):
     skin leaves open-ended channels the tubes slide out of as the skin swings up."""
     rel = FR.relief() + FR.frame()                               # grown tubes plus the pads, lugs and plates (the real frame solid)
     for n, m in fixed_parts():                                   # inner printed parts the skin's lower rear (below the hinge axis it swings rearward) would also hit
-        if n in ("w3_rbc_upper", "w3_rbc_lower", "w3_deck_front", "b_rear_shaft", "b_rear_shock", "b_battery", "battery_tray_c"):
+        if n in ("w3_rbc_upper", "w3_rbc_lower", "w3_deck_front", "b_rear_shaft", "b_rear_shock", "b_battery", "battery_tray_c") or n.startswith("b_lean_shock"):
             rel = rel + m
     for n, m in fixed_parts():                                   # the rear arm lies against the wall's lower part: carve it (and a 0.4 mm margin) at rest and along the swing
         if n == "w3_rear_arm":

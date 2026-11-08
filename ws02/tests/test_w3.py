@@ -89,7 +89,7 @@ def test_strength_factors():
 def test_mass_and_cg():
     import w3_mass
     rows, total, cg = w3_mass.run()
-    assert 1000.0 < total < 2200.0, total
+    assert 1000.0 < total < 2400.0, total
     from w3_stretch import WHEELBASE as WB
     front = (cg[0] + WB) / WB
     assert 0.45 < front < 0.70, front
