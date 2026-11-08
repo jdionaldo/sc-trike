@@ -44,3 +44,38 @@ Rear arm cornering 2.12 / braking 2.76 / drive 2.27 (all limited by the B-C hoop
 
 ## Not low (for the record)
 Hinge lugs, pin and magnet pad (FS 7 to 138), frame foot screws 4.9, tower feet 7.9, base plate deck 3.7 under the tower/diff couple and 25 (inertia), front hub bearing seat 4.8, knuckle V 2.07 (just above its minimum), wing hangers 48 (aero), blade 2.8 and prong screws 5.6 (10 N press).
+
+---
+
+## Applied on `ws03-fix-arms` (arms, linkage and mounts)
+
+Before -> after (FS, min in brackets); the review was re-run on the new geometry (`python w3_strength_review.py`). Mass 2252 g (+31 g), front share 62.9 % (unchanged).
+
+| row | before | after | change |
+|---|---|---|---|
+| Front arm 3 g bump | 0.39 (3.0) | 3.09 | `YO` 15.5 -> 25 (outer plane 9.5 mm further out; 30 clashed with the tyre at full lean), U0/U3 nodes raised 4.1/2.8 mm so the hub-end ties could grow (U0 r 6.5, U3 r 5.6; L0 1.7, L2 2.4 stay belt-limited), new ties across the belt gap at U1 (r 4.5) and U2 (r 3.8), upper inner rails r 3.2, outer rails r 5.0, outer web r 4.0, top lattice r 3.4; outer hub extended to the outer plane; plane ends squared to the bed and to y = ya + YO + 4 |
+| Front arm abuse (3 g axle) | 0.20 (1.0) | 1.54 | same |
+| Front arm kerb strike / cornering / braking | 2.19 / 2.03 / 0.99 (3.0) | 4.22 / 4.60 / 7.18 | same |
+| Carrier kingpin tube | 0.73 (3.0) | 3.36 | `CAR_RC` 4.5 -> 7.5 at z 20 (the lower fix, R 6, only reached 1.7), boss r 6.5, kingpin hole through; print on its side would add x2 |
+| Kingpin | 1.32 (2.0) | 2.57 | `KP_D` 4 -> 5 mm steel |
+| Upper link | 1.69 (2.0) | 2.54 | elliptical bar 6 (y) x 9 (z) mm |
+| Knuckle V | 2.07 (2.0) | 2.9 | tubes r 3.0 -> 3.5, stud hole through the larger ball caps |
+| Lean rocker stall / servo-driven bump | 1.94 / 2.19 | 4.73 / 5.50 | `PLATE` 4 -> 6 mm, grown aft (the +x face stays against the horn; `w3_scene.py` places it at `XR + 2 - PLATE`) |
+| Servo tower ear screws | 1.15 (2.0) | 2.3 | tower plate 2.5 -> 5 mm (feet move with it so the screw holes stay at the same x) |
+| Rear arm 3 g bump / +lateral | 0.92 / 0.92 (3.0) | 2.48 / 2.27 | `HOOP_R` 6.5 -> 10 (20 mm cross tube), `LEG_R` 7.0, rear top/bottom lattices and end ties r 4.3 (belt hull r 8); STILL BELOW 3.0 |
+| Rear arm cornering / braking / drive | 2.12 / 2.76 / 2.27 | 4.13 / 6.29 / 3.89 | same |
+| Rear arm sustained | 0.68 (1.5) | 2.06 | same |
+| Rear arm 1 m drop | 0.12 (1.0) | 0.33 | not survivable (flat drop about 0.15 m); use bump stops, do not drop-test |
+
+Findings that differ from the list above: the proposed diagonal brace from the lug-plate end C to the leg foot A1 made the rear arm WORSE in the FE (bump 1.88 -> 1.38: it pulls the load through the top lattice tube 1pi-2po), so it was not built; thicker legs also shift the weak point to that lattice (leg r 8: 2.1). The rear arm bump factor is limited by the leg A1-B / lattice 1pi-2po at about 2.5; reaching 3.0 needs a shorter lug cantilever (move the shock lug plate towards the leg plane) which changes the shock geometry. Front lower ties (L0, L2) cannot grow: they sit between the belt hull (z -7.7) and the tie-rod pass-under (z -11.4).
+
+Print orientation (per part): arm outer face up as before (lattice and ties across the planes are the weak direction, all >= r 3.2 now); carrier on its side (kingpin tube axis horizontal) if possible, otherwise as before with FS 3.36 already computed across the layers; knuckle with the hub axis horizontal; rocker and uplink flat; tower on its back (x axis up) with supports under the feet; rear arm plane normal up as before.
+
+Not done here (other builders' files): cage frame rows (`w3_frame.py`), wing foot screw (`w3_tail.py`). `w3_frame.py` reads `SK.HOOP_R` for the rear upper shock lug disc (2 x HOOP_R), so that disc grows from 13 to 20 mm diameter with the new cross tube.
+
+### Rear arm follow-up (3 g bump 2.48 -> 3.06, + lateral 2.27 -> 3.09)
+`REAR_PL` rails 3.0 inner / 6.0 outer (zigzag 3.0 / 4.5), end ties 5.5 at offset VL 14 (`REAR_TIE`), lattices 5.0, `HOOP_R` 10, `LEG_R` 7. The FE now uses the same constants (the rail A2-axle stub and end ties were hard-coded before). Cornering 7.2, braking 9.1, drive 6.9, sustained 2.26. Added mass +9 g (2261 g total), front share 62.7 %. 1 m drop stays below 1.0 (abuse; use bump stops).
+
+### 1 m drop on the rear wheel (analysis, no geometry change)
+Energy balance: rear share 0.79 kg x 9.81 x 1 m = 7.8 J. The shock's stored spring energy over the full 25 mm stroke is about 0.5 J (49 N at the 3 g bump, 10 N preload) and the tyre squash (about 8 mm) adds under 0.3 J, so a bump stop and the arm take over 7 J. Average force over the 33 mm of stopping travel (25 mm stroke + 8 mm tyre, the review's own figure) is 7.8 J / 33 mm = 236 N, peak 243 N; the oil damper only adds to it. A softer stop lengthens the path but cannot go below E/s: +10 mm of rubber gives 181 N. Arm capacity at ultimate (1.4 x design) is about 100 N at the wheel (FS 3.06 at 23 N), so the row is 0.33-0.4 whichever way the load enters the arm, and no stop in the arm can fix it.
+Only a stop that bears on the cage near 0.6 L, with 10 mm of progressive rubber, would cut the bending moment in the arm to 0.4 x and the force to 181 N, giving about 1.1. That needs a cage pad above the arm (`w3_frame.py`, another builder's file), so it is NOT built here. Without it the row stays at 0.33 (abuse, minimum 1.0): treat 1 m drops as unsupported or add the cage pad plus rubber stop.

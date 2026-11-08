@@ -193,7 +193,7 @@ def rear_arm():
     WS = 46.0 - SK.BOSS_Y[0]                   # print frame of the shock-carrying arm: w' = y - BOSS_Y[0]
     V = 9.5
     t = FE()
-    planes = {"i": (S.REAR_W[0] + WS, 2.4, 2.4), "o": (S.REAR_W[1] + WS, 4.5, 3.5)}
+    planes = {"i": (S.REAR_W[0] + WS, *S.REAR_PL[0]), "o": (S.REAR_W[1] + WS, *S.REAR_PL[1])}
     for p_, (w, r, rw) in planes.items():
         for sg in (1, -1):
             for i, u in enumerate(us):
@@ -208,7 +208,7 @@ def rear_arm():
             t.edge(f"{i}{sg}i", f"{i+1}{sg}o", S.REAR_LAT); t.edge(f"{i+1}{sg}i", f"{i}{sg}o", S.REAR_LAT)
     for i in (0, 4):
         for sg in "pn":
-            t.edge(f"{i}{sg}i", f"{i}{sg}o", S.REAR_LAT)
+            t.edge(f"{i}{sg}i", f"{i}{sg}o", S.REAR_TIE)
     for p_, (w, r, rw) in planes.items():                      # pivot and axle hubs
         t.node("P" + p_, (0.0, 0.0, w))
         for sg in "pn":
@@ -223,7 +223,7 @@ def rear_arm():
     wo, wc = planes["o"][0], 0.5 * (SK.PLATE_Y[0] + SK.PLATE_Y[1]) - SK.BOSS_Y[0]
     t.node("B", (u_l, v_l, wo)); t.node("C", (u_l, v_l, wc))
     t.node("A2", (L - 4.0, V + SK.caret_rise(L - 4.0, L), wo))
-    t.edge("2po", "B", SK.LEG_R); t.edge("A2", "B", SK.LEG_R); t.edge("A2", "4po", 4.5); t.edge("B", "C", SK.HOOP_R)
+    t.edge("2po", "B", SK.LEG_R); t.edge("A2", "B", SK.LEG_R); t.edge("A2", "4po", S.REAR_PL[1][0]); t.edge("B", "C", SK.HOOP_R)
     Pm, d, n, _ = SK._geom()
     to_arm = lambda fx, fz: np.array([fx * d[0] + fz * d[1], fx * n[0] + fz * n[1]])
     dn, up = SK.travel_angles()
