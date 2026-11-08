@@ -130,6 +130,14 @@ def main(out):
         rows.append(f"| {x} | {hc:.0f} | {hn:.0f} | {R.half(x):.0f} | {zc:.0f} | {zn:.0f} | {R.top(x):.0f} |")
     for nm, m in (("current", cur), ("new", con)):
         e = m.bounds; rows.append(f"| bbox {nm} | L {e[1][0]-e[0][0]:.0f} W {e[1][1]-e[0][1]:.0f} H {e[1][2]-e[0][2]:.0f} | | | | | |")
+    def summ(m):
+        v = m.vertices; k = v[(v[:, 0] < -150) & (v[:, 0] > -290)]; d = v[(v[:, 0] < -380) & (v[:, 0] > -420)]
+        return dict(L=np.ptp(v[:, 0]), W=np.ptp(v[:, 1]), H=v[:, 2].max() + 26.0, nose=v[:, 0].max(), canopy=k[:, 2].max(), deck=d[:, 2].max())
+    sc_, sn_ = summ(cur), summ(con)
+    ref_ = dict(L=55 + 468, W=182, H=130 + 26.0, nose=55, canopy=130, deck=R.top(-400))
+    rows += ["", "| dimension (mm) | before | new | reference |", "|---|---|---|---|"]
+    for key, nm in (("L", "length"), ("W", "width"), ("H", "height above floor"), ("nose", "nose tip x"), ("canopy", "canopy top z"), ("deck", "deck z at x -400")):
+        rows.append(f"| {nm} | {sc_[key]:.0f} | {sn_[key]:.0f} | {ref_[key]:.0f} |")
     open(out / "table.md", "w").write(chr(10).join(rows)); print(chr(10).join(rows))
 
 

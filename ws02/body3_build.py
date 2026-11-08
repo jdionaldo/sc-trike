@@ -37,8 +37,8 @@ SEC_TOP = (35.0, 110.0)                                 # (half width, z) of the
 if CONCEPT:                                           # rev 3: reference silhouette (drawings 54/55, tools_skin/ref_outline.py)
     DECK_DZ = 22.0                                      # the rear deck is this much higher than the old one (the wing is lifted with it)
     TAIL = _pts([(-299.0, 50.0), (-341.5, 66.4)]) + [(-438.1, 83.3 + DECK_DZ)]
-    SIDE = [(34, 40), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(-327.0, 100.4 + DECK_DZ), (-290.0, 130.0), (-151.0, 124.0), (-72.0, 84.0), (-5.0, 62.0)]   # low raked nose, raked windscreen, tall cabin roof, high hunched deck
-    HALF = [(34, 20), (3.5, 52), (-52, 52), (-123, 60), (-150, 90), (-205, 92)] + HALF[7:]      # chisel nose, narrow hood over the arm sweep, shoulder flare behind it, flat wide pods
+    SIDE = [(55, 44), (55, 37), (34, 27), NOSE_LOW] + ARC + TAIL[1:] + [(-327.0, 100.4 + DECK_DZ), (-290.0, 130.0), (-151.0, 124.0), (-72.0, 84.0), (-5.0, 62.0)]   # low raked nose, raked windscreen, tall cabin roof, high hunched deck
+    HALF = [(55, 18), (34, 26), (3.5, 52), (-52, 52), (-123, 60), (-150, 90), (-205, 92)] + HALF[7:]      # chisel nose, narrow hood over the arm sweep, shoulder flare behind it, flat wide pods
     TENT_K = 30.0 / 139.3                               # steeper flanks: 38 mm half width still at z 130
     SEC_TOP = (68.0 - TENT_K * 144.3, 135.0)
     SECTION = [(-68, -40), (68, -40), (68, -9.3), (SEC_TOP[0], SEC_TOP[1]), (-SEC_TOP[0], SEC_TOP[1]), (-68, -9.3)]
@@ -94,7 +94,7 @@ def _hull_sections(xs, polys):
 POD = [(-122.0, 68.0, -9.3), (-176.0, 86.0, -9.0), (-293.0, 70.0, -11.0), (-365.0, 76.5, -15.0), (-382.0, 62.0, -15.0)]   # side pod stations (x, outer |y|, top z): the waist line peaks at x -176, flares out at the rear and tapers down
 SHOULDER = dict(stations=[(-440.0, 1.0), (-300.0, 1.0), (-120.0, 0.25)], z0=50.0, z1=58.0, depth=6.0)
 if CONCEPT:
-    POD = [(-123.0, 62.0, 30.0), (-150.0, 92.0, 46.0), (-205.0, 92.0, 50.0), (-293.0, 92.0, 52.0), (-335.0, 86.0, 46.0), (-365.0, 76.5, -15.0), (-382.0, 62.0, -15.0)]   # rear pods with a shoulder plane at z 46..52
+    POD = [(-85.0, 66.0, 76.0), (-123.0, 84.0, 70.0), (-150.0, 92.0, 60.0), (-205.0, 92.0, 52.0), (-293.0, 92.0, 52.0), (-335.0, 86.0, 46.0), (-365.0, 76.5, -15.0), (-382.0, 62.0, -15.0)]   # rear pods with a shoulder plane stepping down from the cowl (arm arches are cut out of it by the window cut)
 
 if CONCEPT:
     SHOULDER = dict(stations=[(-440.0, 1.0), (-250.0, 1.0), (-100.0, 0.3)], z0=50.0, z1=58.0, depth=6.0)   # shoulder crease: full at the rear, tapering to nothing toward the front

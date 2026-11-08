@@ -47,3 +47,30 @@ Skin pieces: 186 g -> 277 g; all printed parts 848 -> 940 g; total 2392 g, front
 Checks: pieces watertight and bed-sized (tallest piece 164 mm); swing sweep 0..35 deg at 1 deg: 0 hits; 132 tests pass (WS-03, drive, strength, balance), 1 xfail; clearance clean; thin-wall sample under 1.2 mm: 2.7 % (current 2.4 %).
 Pre-existing failures, also on a4c6502: tests/test_w3.py::test_strength_factors (singular FE matrix) and tests/test_assembly.py (legacy chassis).
 Hardpoints that cannot move: the front lean/steer linkage envelope (arms, uplinks, tie rods reach z 125 at x -30 and y 100), so the skin over x +15..-123 stays 52 mm half width (ref 60..90); the ref front shoulders there would sit inside the swinging arms.
+
+## Rev 4 - skin leads (frame and hardware untouched)
+Verified: frame, chassis, arm, drive and every other w3 part build byte-identical with and without WS03_SKIN=concept; only the wing hangers differ (the wing is 22 mm higher on the taller deck). parts/ differs from a4c6502 only in w3_tail.py (DECK_DZ).
+New this rev: nose beak to x 55 (ref 55) with an 18 mm half-width chisel tip; shoulder shelf from x -85 (z 76) stepping down to z 52 at x -205, half-width 75 at x -105 (arm arches are cut out of it by the window cut); gap scan: inner roof is 25-76 mm above the tallest internal part at every 40 mm station (13 mm only at the beak tip, x 40, ahead of any hardware; 19 mm over the hinge lug).
+| x | half-width cur | new | ref | top z cur | new | ref |
+|---|---|---|---|---|---|---|
+| 30 | nan | 29 | 38 | nan | 51 | 57 |
+| 0 | 44 | 52 | 60 | 48 | 61 | 72 |
+| -52 | 46 | 52 | 85 | 64 | 83 | 81 |
+| -105 | 52 | 75 | 90 | 68 | 101 | 101 |
+| -200 | 83 | 92 | 91 | 101 | 135 | 126 |
+| -290 | 70 | 92 | 91 | 95 | 130 | 130 |
+| -350 | 54 | 60 | 81 | 97 | 119 | 122 |
+| -400 | 49 | 49 | 40 | 89 | 111 | 111 |
+| bbox current | L 468 W 172 H 136 | | | | | |
+| bbox new | L 493 W 184 H 164 | | | | | |
+
+| dimension (mm) | before | new | reference |
+|---|---|---|---|
+| length | 468 | 493 | 523 |
+| width | 172 | 184 | 182 |
+| height above floor | 136 | 164 | 156 |
+| nose tip x | 30 | 55 | 55 |
+| canopy top z | 110 | 138 | 130 |
+| deck z at x -400 | 90 | 112 | 111 |
+Skin 283 g (was 186), all printed 946 g, total 2398 g. 132 tests pass (+1 xfail); clearance clean; swing 0 hits 0..35 deg at 1 deg; pieces watertight, largest 220 x 184 x 154 (no extra split needed); wall sample under 1.2 mm: 2.0 % (current 2.4 %).
+Still short of the reference: front shoulders at x -52 (52 vs 85 mm, 33 mm short) and x -105 (75 vs 90), because the lean linkage swings to z 120 at x -40 inside y 52..115; tail ends x -438 (ref -468, 30 mm short) at the rear wheel arch limit; top-view tail taper 49 vs 40 mm at x -400.
