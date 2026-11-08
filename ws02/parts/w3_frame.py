@@ -22,7 +22,7 @@ XS = -175.0                  # split across x
 HEAD = 2.9                   # screw-head clearance radius
 PIVOT = (-100.0, 40.0)
 HINGE = ((16.0, 26.8), (23.6, 33.0))      # lug plate extent (x range, z range)
-HINGE_LUG = (11.0, 14.0)                  # lug plate |y| range
+HINGE_LUG = (9.5, 14.0)                   # lug plate |y| range (4.5 mm thick: the inboard face is free of the skin)
 HINGE_EAR = (14.2, 17.2)                  # skin ear |y| range (beside the lug)
 HINGE_PIN = (21.4, 29.5)                  # pin axis (x, z), along y
 HINGE_D = 3.2
@@ -30,6 +30,7 @@ RELIEF_G = 0.35                           # clearance around tubes where they pa
 MAG_D = 6.3                               # magnet pocket diameter (6 mm disc, 2 mm thick)
 FOOT_Z = -23.0               # top of the base plate
 TAB_PAD = (2.5, 6.5)         # skin-tab pad z range above the node z
+TAB_PAD_D = 10.4             # hood-tab pad diameter (1.05 mm of wall round the 6.3 mm magnet pocket would be too thin at 9)
 TAB_BOSS = 6.8               # boss on the skin starts this far above the node z
 
 
@@ -69,8 +70,9 @@ def _vcyl(x, y, z0, z1, d):
     return Manifold.cylinder(z1 - z0, d / 2, d / 2, 28).translate((x, y, z0))
 
 
-def _stadium(x, z0, z1, y0, y1, r):
-    return _disc(x, z0, y0, y1, 2 * r) + _disc(x, z1, y0, y1, 2 * r) + MB.prism_xz([(x - r, z0), (x + r, z0), (x + r, z1), (x - r, z1)], y0, y1)
+def _rrect_xz(x0, x1, z0, z1, r, y0, y1):
+    """Plate in the x-z plane with rounded corners (radius r), y0..y1."""
+    return Manifold.batch_hull([_disc(x, z, y0, y1, 2 * r) for x in (x0 + r, x1 - r) for z in (z0 + r, z1 - r)])
 
 
 def _tab_pos():
@@ -122,12 +124,12 @@ def frame(relief=False):
     if relief:
         parts.append(_disc(PIVOT[0], PIVOT[1], 45.0, Y0, 17.6))
     else:
-        PE1, PS2, PM, PS1, PL = N["PE1"], N["PS2"], N["PM"], N["PS1"], N["PL"]
-        parts += [_disc(PE1[0], PE1[2], Y0, Y1, 15.0), _stadium(PS2[0], -19.0, -9.0, Y0, Y1, 4.5), _stadium(PS1[0], -23.8, -13.8, Y0, Y1, 4.5)]
-        parts += [MB.prism_xz([(-92.0, -29.0), (-79.0, -29.0), (-79.0, -5.0), (-92.0, -5.0)], Y0, Y1)]
+        PL = N["PL"]
+        parts += [_rrect_xz(-92.0, -79.0, -29.0, -5.0, 2.0, Y0, Y1)]                 # servo-ear plate (both servos' inner ears and the front diff case's rear ear)
         parts += [_disc(PL[0], PL[2], Y0, Y1, 16.0), _disc(PL[0], PL[2], 46.0, Y0, 16.0)]
         for (x, y, z) in _tab_pos()[3:]:                                          # only the hood tab remains: a pad with a magnet pocket (the skin is held by hinge + magnets)
-            parts.append(_vcyl(x, y, z + TAB_PAD[0], z + TAB_PAD[1], 9.0))
+            pad = _vcyl(x, y, z + TAB_PAD[0], z + TAB_PAD[1], TAB_PAD_D)
+            parts += [pad, Manifold.batch_hull([pad, Manifold.sphere(BALLS["R2"], 32).translate((x, y, z))])]      # flared from the node ball up to the pad
         for k, d in FEET.items():
             x, y, z = N[k]
             disc = _vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d)
@@ -146,8 +148,8 @@ def frame(relief=False):
         side = side + p
     if relief:
         return side + side.mirror((0.0, 1.0, 0.0))
-    cuts = [_disc(-150.0, -10.0, Y0 - 0.1, Y1 + 4.0, 2.7)]
-    for x, z in ((-135.9, -19.0), (-135.9, -9.0), (-35.5, -23.8), (-35.5, -13.8), (-86.9, -19.0), (-86.5, -9.5), (-84.5, -23.8), (-84.5, -13.8)):
+    cuts = []
+    for x, z in ((-86.9, -19.0), (-86.5, -9.5), (-84.5, -23.8), (-84.5, -13.8)):
         cuts.append(_disc(x, z, Y0 - 0.1, Y1 + 4.0, 2.4))
         cuts.append(_disc(x, z, Y1, Y1 + 4.0, 2 * HEAD))
     cuts.append(_disc(PIVOT[0], PIVOT[1], 45.0, Y1 + 0.1, 3.4))
@@ -157,11 +159,12 @@ def frame(relief=False):
         x, y, z = N[k]
         cuts.append(_vcyl(x, y, FOOT_Z - 0.1, FOOT_Z + 2.0, 2.2))                 # self-tapping pilot for the base-plate screw
     cuts.append(Manifold.cylinder(8.0, HINGE_D / 2, HINGE_D / 2, 28).rotate((-90.0, 0.0, 0.0)).translate((HINGE_PIN[0], HINGE_LUG[0] - 2.0, HINGE_PIN[1])))   # hinge pin hole through the lug
-    from body3_build import NOSE_TH
-    ax = np.array([-math.sin(NOSE_TH), 0.0, math.cos(NOSE_TH)])
     for c in cuts:
         side = side - c
-    return (side + side.mirror((0.0, 1.0, 0.0))) + shock_tab() - motor_envelope()
+    both = side + side.mirror((0.0, 1.0, 0.0))
+    PE1 = N["PE1"]          # the front diff case has its rear-ear screw on the +y side only: the pad and its pilot exist there alone (the tube end on -y is a plain ball)
+    ear = _disc(PE1[0], PE1[2], Y0, Y1, 15.0) + Manifold.batch_hull([_disc(PE1[0], PE1[2], Y0, Y1, 15.0), ball(PE1, R)])
+    return both + ear - _disc(PE1[0], PE1[2], Y0 - 0.1, Y1 + 4.0, 2.7) + shock_tab() - motor_envelope()
 
 
 def shock_tab():
