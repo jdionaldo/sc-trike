@@ -34,7 +34,12 @@ CLR = 0.15                         # prong-to-channel clearance
 PROF_TOP = [(2.0, -0.5), (-55.0, 6.5), (-72.0, 11.5)]      # straight rise (about 7 deg over the blade pitch) then an upturned flick over the last 17 mm
 FORK_Y0 = LEG_Y - 5.0              # inner face of the hanger parts (print frame)
 FOOT_X = (back(-314.0), back(-300.0))          # leg foot (assembly x): it passes through a slot in the hood and sits on the frame pad inside
-HOLE_X = back(-307.0)                    # foot screw, from below (the access hole is in the hood underside)
+HOLE_X = back(-307.0)                    # foot screws, from below (the access holes are in the hood underside)
+FOOT_Y = (LEG_Y - 5.0, LEG_Y + 8.5)      # foot span |y|: the inner face stays on the print bed (y 23), the foot grows 3.5 mm outward (was 10 wide, now 13.5; the hood crest edge is at y 38)
+FOOT_SCR = (LEG_Y - 2.0, LEG_Y + 4.5)    # two M2.5 screws per foot (was one): the 10 N tip press pivots on the outer edge, so the inner screw has a 10.5 mm lever (was 5)
+FOOT_T = 6.0                             # foot slab thickness above the hood skin (was 2): the M2.5 pilots bite 5 mm
+PILOT_L = 5.0                            # blind pilot depth in the foot slab (1 mm roof left)
+BOSS_R = 4.0
 TZ = {"center": 3.0, "left": 3.0, "right": 3.0}     # STL lift per piece (no end plates)
 
 
@@ -232,10 +237,12 @@ def _hanger_left():
     web = _chamfered([p0, p1, (rl[0], rl[2]), (cc[0], cc[2])], y0f, y1f, 1.2)
     x0, x1 = FOOT_X
     sl = lambda x: hood_top(x) + 0.05                                                       # foot sits on the hood skin (the wing flips up with the skin)
-    foot = Manifold.batch_hull([_box(x0, x0 + 0.01, y0f, y1f, sl(x0), sl(x0) + 0.5), _box(x1 - 0.01, x1, y0f, y1f, sl(x1), sl(x1) + 0.5)])
-    top = _box(x0, x1, y0f, y1f, hood_top(x1) + 0.2, hood_top(x1) + 2.0)
+    fy0, fy1 = FOOT_Y
+    foot = Manifold.batch_hull([_box(x0, x0 + 0.01, fy0, fy1, sl(x0), sl(x0) + 0.5), _box(x1 - 0.01, x1, fy0, fy1, sl(x1), sl(x1) + 0.5)])
+    top = _box(x0, x1, fy0, fy1, hood_top(x1) + 0.2, hood_top(x1) + FOOT_T)
     body = fork + web + Manifold.batch_hull([foot, top])
-    body = body - Manifold.cylinder(9.0, 1.0, 1.0, 24).translate((HOLE_X, LEG_Y, sl(HOLE_X) - 0.1))        # pilot: screw from inside the skin up through the hood
+    for yy in FOOT_SCR:
+        body = body - Manifold.cylinder(PILOT_L, 1.0, 1.0, 24).translate((HOLE_X, yy, sl(HOLE_X) - 0.1))        # pilots: screws from inside the skin up through the hood
     return body
 
 
@@ -266,8 +273,9 @@ def screw_holes():
     """Clearance holes through the hood for the foot screws (driven from inside the skin)."""
     out = None
     for sg in (1, -1):
-        c = Manifold.cylinder(12.0, 1.6, 1.6, 24).translate((HOLE_X, sg * LEG_Y, hood_top(HOLE_X) - 8.0))
-        out = c if out is None else out + c
+        for yy in FOOT_SCR:
+            c = Manifold.cylinder(12.0, 1.6, 1.6, 24).translate((HOLE_X, sg * yy, hood_top(HOLE_X) - 8.0))
+            out = c if out is None else out + c
     return out
 
 
@@ -275,8 +283,9 @@ def screw_bosses():
     """Bosses on the hood's inner face under each foot (seat for the screw head)."""
     out = None
     for sg in (1, -1):
-        c = Manifold.cylinder(4.0, 4.5, 4.5, 32).translate((HOLE_X, sg * LEG_Y, hood_top(HOLE_X) - 6.0))
-        out = c if out is None else out + c
+        for yy in FOOT_SCR:
+            c = Manifold.cylinder(4.0, BOSS_R, BOSS_R, 32).translate((HOLE_X, sg * yy, hood_top(HOLE_X) - 6.0))
+            out = c if out is None else out + c
     return out
 
 
