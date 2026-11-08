@@ -9,6 +9,7 @@ import numpy as np
 import trimesh
 
 from w3_stretch import STRETCH, WHEELBASE, back, pv
+import w3_stock as K
 
 L = dict(
     track=288.0, tire_od=112.0, tire_w=62.0, rear_od=112.0, rear_w=62.0,
@@ -41,6 +42,16 @@ def cyl(c, r, length, axis):
     return m
 
 
+def ring(c, ro, ri, length, axis):
+    m = cyl(c, ro, length, axis)
+    h = cyl(c, ri, length + 2.0, axis)
+    import manifold3d as _m
+    f = lambda t: _m.Manifold(_m.Mesh(vert_properties=np.asarray(t.vertices, np.float32), tri_verts=np.asarray(t.faces, np.uint32)))
+    r = f(m) - f(h)
+    o = r.to_mesh()
+    return trimesh.Trimesh(np.asarray(o.vert_properties)[:, :3], np.asarray(o.tri_verts), process=True)
+
+
 def blocks():
     b = {}
     xp = -L["la"]
@@ -60,21 +71,21 @@ def blocks():
         b[f"lean_horn_{tag}"] = box((-90, -66), ys(*L["horn_y"]), (-20, 8))
         b[f"steer_horn_{tag}"] = box((-128, -108), ys(*L["horn_y"]), (-16, 6))
         b[f"tub_wall_{tag}"] = box((-190, -20), ys(L["tub_in"], L["tub_in"] + L["tub_wall"]), (-44, 34))
-    # drivetrain: shafts at axle height; bevel pinion shaft level with the diff axis, engaging the ring on the diff's +y end
-    b["front_diff"] = cyl((xp, 0, 0), 17, 34, "y")
-    b["front_ring"] = cyl((xp, 21.0, 0), 16, 6, "y")
-    b["front_pinion_shaft"] = cyl((-135.0, 21.0, 0), 2.5, 40, "x")             # x -155..-115, pinion at its front end
-    b["center_diff"] = cyl((-180.0, 21.0, 0), 19, 30, "x")
-    b["rear_shaft"] = cyl((0.5 * (-205.0 + pv(-257.0)), 21.0, 0), 2.5, -205.0 - pv(-257.0), "x")      # x -205 .. pv(-257): from the centre diff to the rear bevel
+    # drivetrain (stock parts, see w3_stock.py): shafts at axle height; bevel pinion shaft level with the diff axis, engaging the ring on the diff's +y end
+    b["front_diff"] = cyl((xp, 0.5 * sum(K.FCARR_Y), 0), K.CARR_D / 2, K.FCARR_Y[1] - K.FCARR_Y[0], "y")                   # AR45 6-bolt carrier
+    b["front_ring"] = ring((xp, 0.5 * sum(K.FRING_Y), 0), K.RING_OD / 2, K.RING_BORE / 2, K.RING_TH, "y")                                    # AXI232003 ring (30T)
+    b["front_pinion_shaft"] = cyl((0.5 * (K.SHAFT_F_AFT + K.SHAFT_F_TIP), 21.0, 0), 2.5, K.SHAFT_FRONT, "x")             # 5 x 102
+    b["center_diff"] = cyl((0.5 * (K.C_FACE_A + K.C_FACE_F), 21.0, 0), K.CARR_D / 2, K.CARR_L, "x")
+    b["rear_shaft"] = cyl((0.5 * (K.SHAFT_R_AFT + K.SHAFT_R_FWD), 21.0, 0), 2.5, K.SHAFT_REAR, "x")                       # 5 x 102
     b["motor"] = cyl(MOTOR_C, 18, 58.1, "x")                                # Hobbywing Fusion SE (36 x 58.1, ESC built in) opposite the driveline
-    XO_END = -218.0                                                           # cross-over: the motor shaft runs aft above the centre-diff case to a belt pulley behind it
-    b["motor_shaft"] = cyl(((MOTOR_C[0] - 29.05 + XO_END) / 2, MOTOR_C[1], MOTOR_C[2]), 2, MOTOR_C[0] - 29.05 - XO_END, "x")
+    XO_END = K.X_BRG_A[0] - 1.5                                               # motor shaft: 3.175 stub + coupler + 5 mm rod to the aft bearing of the cross-over
+    b["motor_shaft"] = cyl(((MOTOR_C[0] - 29.05 + XO_END) / 2, MOTOR_C[1], MOTOR_C[2]), 2.5, MOTOR_C[0] - 29.05 - XO_END, "x")
     b["battery"] = box(*BATT_BOX)
     rear_x = -L["wheelbase"]
     rz = L["rear_od"] / 2 - L["tire_od"] / 2 - L["wheelbase"] * np.tan(np.radians(L["rake_deg"]))   # chassis raked nose-down: rear axle lower in the chassis frame
-    b["rear_ring"] = cyl((pv(-272.0), 21.0, 0), 15, 6, "y")
-    b["rear_bevel"] = cyl((pv(-257.0), 21.0, 0), 6, 8, "x")
-    b["rear_out"] = cyl((pv(-272.0), 48.0, 0), 2.5, 56, "y")
+    b["rear_ring"] = ring((K.XR, 0.5 * sum(K.RRING_Y), 0), K.RING_OD / 2, K.RING_BORE / 2, K.RING_TH, "y")
+    b["rear_bevel"] = cyl((0.5 * sum(K.R_PIN_X), 21.0, 0), K.PIN_HEAD_D / 2, K.PIN_LEN, "x")
+    b["rear_out"] = cyl((K.XR, 0.5 * sum(K.REAR_OUT_Y), 0), 2.5, K.REAR_OUT_Y[1] - K.REAR_OUT_Y[0], "y")
     b["rear_arm"] = box((rear_x - 8, pv(-264)), (46, 76), (min(-9, rz - 9), 9))
     b["rear_tire"] = cyl((rear_x, 0, rz), L["rear_od"] / 2, L["rear_w"], "y")
     return b

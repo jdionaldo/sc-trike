@@ -13,6 +13,7 @@ import layout3wd as LY
 from w3_stretch import back, pv
 import mono_build as MB
 import w3_scene as S
+import w3_stock as K
 from parts import w3_drive as D, w3_front as W
 
 SY = D.SY
@@ -38,33 +39,50 @@ def _cy(x, y, z, r, L):
     return LY.cyl((x, y, z), r, L, "y")
 
 
+def _ring(xc, y, z, ro, ri, L):
+    """Annulus along x centred on xc."""
+    return MB.to_trimesh(MB.man(_cx(xc, y, z, ro, L)) - MB.man(_cx(xc, y, z, ri, L + 2.0)))
+
+
+def _ringy(x, yc, z, ro, ri, L):
+    return MB.to_trimesh(MB.man(_cy(x, yc, z, ro, L)) - MB.man(_cy(x, yc, z, ri, L + 2.0)))
+
+
+def drive_mocks():
+    """Stock drivetrain parts (see WS03_DRIVETRAIN.md): carriers, rings, pinions, spur gears, locker, bearings."""
+    it = []
+    xc = 0.5 * (K.C_FACE_A + K.C_FACE_F)
+    it.append(("mock_cdiff_carrier", _cx(xc, SY, 0.0, K.CARR_D / 2, K.CARR_L), "bought"))                          # AR45 6-bolt carrier with AXI232002 locker
+    it.append(("mock_cdiff_ring", _ring(0.5 * sum(K.C_RING), SY, 0.0, K.od(K.CRING_T) / 2, K.SPUR_BORE[40] / 2, K.SPUR_W), "bought"))   # AXI232034 40T spur
+    for tag, t in (("P1", K.PINION_T), ("Pa", K.IDLER_T), ("Pb", K.IDLER_T)):
+        y, z = K.XO[tag]
+        bore = K.SPUR_BORE[t]
+        it.append((f"mock_xover_{'pinion' if tag == 'P1' else 'idler_' + tag}", _ring(0.5 * sum(K.GEAR_X), y, z, K.od(t) / 2, bore / 2, K.SPUR_W), "bought"))
+    for tag in ("Pa", "Pb"):                                                                                  # idler pins 5 x 20, bearing to bearing
+        y, z = K.XO[tag]
+        it.append((f"mock_xover_pin_{tag}", _cx(0.5 * (K.X_BRG_A[0] + K.X_BRG_F[1]), y, z, 2.5, K.X_BRG_F[1] - K.X_BRG_A[0] + 1.0), "bought"))
+    it.append(("mock_fdiff_carrier", _cy(D.XD, 0.5 * sum(K.FCARR_Y), 0.0, K.CARR_D / 2, K.FCARR_Y[1] - K.FCARR_Y[0]), "bought"))
+    it.append(("mock_bevel_pinion_f", _ring(0.5 * sum(K.F_PIN_X), SY, 0.0, K.PIN_HEAD_D / 2, 2.5, K.PIN_LEN), "bought"))
+    it.append(("mock_bevel_pinion_r", _ring(0.5 * sum(K.R_PIN_X), SY, 0.0, K.PIN_HEAD_D / 2, 2.5, K.PIN_LEN), "bought"))
+    # bearings 5 x 11 x 4
+    for b in K.F_BRG + [K.C_BRG_A, K.C_BRG_F] + K.R_BRG + [(K.PILLOW_X - 2.0, K.PILLOW_X + 2.0)]:
+        it.append(("mock_bearing_x", _ring(0.5 * sum(b), SY, 0.0, K.BRG_OD / 2, 2.5, K.BRG_W), "bought"))
+    for tag in ("P1", "Pa", "Pb"):
+        y, z = K.XO[tag]
+        for b in (K.X_BRG_A, K.X_BRG_F):
+            it.append(("mock_bearing_x", _ring(0.5 * sum(b), y, z, K.BRG_OD / 2, 2.5, K.BRG_W), "bought"))
+    for yb in (-24.05, 32.05):
+        it.append(("mock_bearing_fy", _ringy(D.XD, yb, 0.0, K.BRG_OD / 2, 2.5, K.BRG_W), "bought"))
+    for yb in (10.0, 36.1):
+        it.append(("mock_bearing_ry", _ringy(K.XR, yb, 0.0, K.BRG_OD / 2, 2.5, K.BRG_W), "bought"))
+    # bevel rings sit in the layout blocks (b_front_ring, b_rear_ring)
+    return it
+
+
 def static_drivetrain():
     """Parts that do not move with lean or steer."""
     it = []
-    # centre diff: carrier, ring gear and the motor pinion
-    it.append(("mock_cdiff_carrier", _cx(-181.0, SY, 0.0, 17.5, 36.0), "bought"))
-    it.append(("mock_cdiff_ring", _cx(-196.0, SY, 0.0, 19.0, 6.0), "bought"))
-    it.append(("mock_motor_pinion", _cx(-193.0, SY, 24.0, 6.4, 8.0), "bought"))
-    # cross-over from the motor shaft (y -21, z 41) to the pinion countershaft (y 21, z 24): 16T / 40T GT2 pulleys and a 6 mm belt behind the centre-diff case
-    from shapely.geometry import Point
-    from shapely.ops import unary_union
-    import trimesh as _tm
-    xp_, r_m, r_c, bw = -213.0, 5.1, 12.7, 6.0
-    c_m, c_c = np.array([-21.0, 41.0]), np.array([SY, 24.0])
-    hull = lambda r: unary_union([Point(*c_m).buffer(r, 48), Point(*c_c).buffer(r + (r_c - r_m), 48)]).convex_hull if False else unary_union([Point(*c_m).buffer(r_m + r, 48), Point(*c_c).buffer(r_c + r, 48)]).convex_hull
-    ring = hull(1.5).difference(hull(0.0))
-    bm = _tm.creation.extrude_polygon(ring, bw)
-    bm.apply_transform(np.array([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1.0]]))
-    bm.apply_translation((xp_ - bw / 2, 0, 0))
-    it.append(("mock_xover_belt", bm, "bought"))
-    it.append(("mock_xover_pulley_m", _cx(xp_, -21.0, 41.0, r_m + 1.2, 7.0), "bought"))
-    it.append(("mock_xover_pulley_c", _cx(xp_, SY, 24.0, r_c + 1.2, 7.0), "bought"))
-    it.append(("mock_xover_shaft", _cx(-207.5, SY, 24.0, 2.0, 21.0), "bought"))
-    it.append(("mock_front_out", _cx(-160.5, SY, 0.0, 2.5, 9.0), "bought"))
-    # front diff carrier (the ring is in the layout blocks) and the bevel pinion on the front pinion shaft
-    it.append(("mock_fdiff_carrier", _cy(D.XD, 0.0, 0.0, 16.0, 34.0), "bought"))
-    it.append(("mock_bevel_pinion_f", _cx(-119.0, SY, 0.0, 6.5, 8.0), "bought"))
-    it.append(("mock_bevel_pinion_r", _cx(pv(-257.0), SY, 0.0, 6.5, 8.0), "bought"))
+    it += drive_mocks()
     # receiver in the nose bay beside the battery
     it.append(("mock_receiver", LY.box((-56.0, -32.0), (12.0, 27.0), (-14.0, -5.0)), "bought"))
     # rear wheel: tire ring, rim barrel, outer disc, hub and 8 mm axle; one-sided arm with the belt on the left
@@ -76,9 +94,11 @@ def static_drivetrain():
     it.append(("mock_rear_rim", MB.to_trimesh(MB.man(_cy(ax, 0.0, az, 38.0, 62.0)) - MB.man(_cy(ax, 0.0, az, 35.0, 64.0))), "bought"))
     it.append(("mock_rear_rim_disc", _cy(ax, -28.5, az, 36.0, 4.0), "bought"))
     it.append(("mock_rear_hub", _cy(ax, -22.0, az, 8.0, 12.0), "bought"))
-    it.append(("mock_rear_pulley_pivot", _cy(D.XR, 55.6, 0.0, 6.1, 3.5), "bought"))
-    it.append(("mock_rear_pulley_axle", _cy(ax, 55.6, az, 6.8, 3.5), "bought"))
-    it.append(("mock_rear_belt", belt((D.XR, 0.0), 6.1, (ax, az), 6.8, 54.1, 57.1), "bought"))
+    RP = {20: 6.1, 22: 6.8}
+    r_p, r_a = RP[K.REAR_BELT[0]], RP[K.REAR_BELT[1]]
+    it.append(("mock_rear_pulley_pivot", _cy(D.XR, 55.6, 0.0, r_p, 3.5), "bought"))
+    it.append(("mock_rear_pulley_axle", _cy(ax, 55.6, az, r_a, 3.5), "bought"))
+    it.append(("mock_rear_belt", belt((D.XR, 0.0), r_p, (ax, az), r_a, 54.1, 57.1), "bought"))
     return it
 
 

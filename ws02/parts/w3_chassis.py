@@ -21,9 +21,8 @@ TAB_SCREWS = ((-8.0, 26.0), (-3.0, 12.0))  # (x, |y|) countersunk screws from be
 DECK_SPLIT = -275.0                        # the stretched rear plate exceeds the bed: second piece behind this butt joint
 REAR_X = (DECK_SPLIT, -153.0)
 TAIL_X = (back(-296.0), DECK_SPLIT)
-HOUSING_BOLTS = [(-88.0, -22.0), (-88.0, 30.0), (-155.0, -22.0), (-155.0, 31.0),
-                 (-201.5, -2.5), (-201.5, 44.5), (-161.5, -2.5), (-161.5, 44.5),
-                 (pv(-294.0), 8.5), (pv(-294.0), 33.5), (pv(-247.5), 8.5), (pv(-247.5), 33.5)]
+import w3_stock as _K
+HOUSING_BOLTS = list(_K.BOLTS)
 SLOT_W = 3.4
 
 

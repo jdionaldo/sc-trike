@@ -8,19 +8,19 @@ All sizes below are assumptions from the 1/10 and 1/18 RC parts we planned aroun
 | Servo, 12 kg short body 40 x 20 x 19.3 | 2 | steer x2 (one per side at x -100, unchanged); a single central steering servo was ruled out, see WS03_LEAN.md |
 | Servo horn 25T, aluminium, small round (lean) | 1 | the printed V rocker screws to it with 4 x M2 (the horn sits on the 4.5 mm spline stub; the rocker is 4 mm thick, so no standoff is needed) |
 | Servo horn, 12 mm (steer) | 2 | aluminium horns, M2 ball studs |
-| Motor: Hobbywing QuicRun Fusion SE 36 x 58.1 mm, 201 g, ESC built in | 1 | replaces the 2830 motor; at x -122, y -21, z 41 (see Motor placement) |
+| Motor: Hobbywing QuicRun Fusion SE **1800KV** (HW30404317) 36 x 58.1 mm, 201 g, ESC built in | 1 | replaces the 2830 motor; at x -122, y -21, z 41 (see Motor placement) |
 | ESC | 0 | none: built into the Fusion SE |
 | LiPo 3S 1300 mAh 75 x 35 x 25 | 1 | on the printed cradle beside the drive shaft (x -77.5..-2.5, y -37.5..-2.5) |
 | Receiver 6 ch with mixing | 1 | lean, steer, throttle mixes |
-| Spur gears module 0.8: 15T pinion, 45T diff ring | 1 + 1 | centre distance 24 mm |
-| Spur gear diff (45T ring) | 1 | centre diff, axis along the body |
-| Bevel sets module 1.0, 12T pinion / 30T ring | 2 | front diff and rear bevel case |
-| Bevel gear diff carrier (front), outputs 5 mm | 1 | ring on the +y end |
-| Shafts 5 mm (about 40, 55, 52 mm) and 5 mm output stubs | 5 | front pinion, rear, outputs |
-| Bearings 5 x 11 x 4 | about 14 | every shaft seat and arm pivot |
+| Spur gears 32 DP (drivetrain redraw, see WS03_DRIVETRAIN.md): 13T motor pinion (5 mm bore), 2 x 27T idlers (AXI232033), 40T ring (AXI232034) | 1 + 1 + 1 | motor to centre-diff ring, 3.077 : 1 |
+| Differential carrier, AR45 6-bolt, with AXI232002 locker on the centre one | 2 + 1 | front and centre diff |
+| AXI232003 6-bolt HD gear set (30T ring / 8T pinion) | 2 | front diff and rear bevel case |
+| Shaft coupler 3.175 to 5 mm | 1 | motor stub to the 5 mm rod |
+| Shafts 5 mm: 2 x 102 mm (front pinion shaft, rear shaft; Arrma ARA330574 class), 1 x 50 mm (motor extension), 2 x 22 mm (idler pins), 1 x 70 mm (rear output) | 6 | uncut; lengths from `w3_stock.py` |
+| Bearings 5 x 11 x 4 | about 30 | every shaft seat (28 in the new drivetrain) and arm pivot |
 | Bearings 4 x 8 x 3 | 4 | arm tip and carrier |
 | Bearing 8 x 16 x 5 | 2 | rear axle |
-| GT2 3 mm belts and pulleys | 4 belts | front 20T to 16T (x2), rear 20T to 22T (x1), spare |
+| GT2 3 mm belts and pulleys | 4 belts | front 20T to 16T (x2), rear 22T to 20T (x1, swapped for the ratio match), spare |
 | Dogbone / CVD with universal joint on the kingpin axis | 2 | about 25 mm lateral room |
 | Wheels: skinny off-road 83 x 24 (front) | 2 | 4 mm axle |
 | Wheel: thick off-road 112 x 62 (rear) | 1 | 8 mm axle, 8 mm hex |
@@ -110,3 +110,9 @@ Merged: 450 mm wheelbase and 4 deg rake with the caret swing arm and hoop-mounte
 - Rear shaft block spans about x -205 to -347: buy 5 x 150 mm stock for the centre-to-rear-bevel shaft (nothing cut).
 - Tyres: all three 112 x 62 per the latest decision; the 83 x 24 and 8 mm / 4 mm axle lines above are from the earlier layout and must be re-checked when the front wheel part is final.
 - Printed mass 671 g, bought 1184 g, total about 1965 g; front weight share 63.8 %, CG x -162.9 mm, 53.1 mm above ground (WS03_MASS_CG.md).
+
+## Drivetrain redraw around stock parts (ws03-drivetrain, 2026-11-07)
+
+Full part table, assumptions, ratio chain and shaft lengths are in `WS03_DRIVETRAIN.md`; all dimensions are in `w3_stock.py`. Stock numbers in use: AXI232003 (x2),
+AXI232002 (x1), AXI232034 (40T spur, x1), AXI232033 (two 27T), AXI232027/232028 axle shafts (diff outputs, length to be checked), 5 x 11 x 4 bearings,
+Hobbywing HW30404317 (1800KV). The earlier "Spur gears module 0.8", "Bevel sets module 1.0" and belt cross-over rows no longer apply.
