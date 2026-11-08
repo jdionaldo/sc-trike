@@ -208,6 +208,36 @@ def write_plan(rows, plates, failed, missing, orphans, rowmap):
     for r in sp:
         A(f"- {r['source']}: cut at {r['split']['axis']} = {r['split']['pos']:.1f} mm, {r['split']['pegs']} pegs d{r['split']['peg_d']} x {r['split']['peg_len']} mm, clearance {r['split']['fit']} mm; pieces printed on their own.")
     A("")
+    A("")
+    A("## Purchased parts (from WS03_BOM.md, first table; check sizes before buying)\n")
+    try:
+        bom = Path("WS03_BOM.md").read_text().splitlines()
+        tab = []
+        started = False
+        for ln in bom:
+            if ln.startswith("|"):
+                started = True
+                tab.append(ln)
+            elif started:
+                break
+        L.extend(tab)
+    except Exception as e:
+        A(f"(WS03_BOM.md not readable: {e})")
+    A("")
+    A("Extra for printing: heat-set inserts M2 and M3 (assorted), M2/M2.5/M3 screws, 3 mm and 4 mm steel pins, thin CA glue for the frame joints, 2 hook-and-loop straps (battery), 42 g tungsten (or lead) plate for the nose ballast carrier, optional 95A TPU for a bumper pad (0.2 mm layers, 20 % gyroid, 3 walls, direct drive speed 30 mm/s, no supports).\n")
+    A("## Assembly order\n")
+    for k, t in enumerate([
+            "Print everything; deburr, ream bearing seats and pin holes to size, test-fit a 5x11x4 bearing in each housing seat.",
+            "Heat-set M2/M3 inserts (230 C iron) in the hubs, trays, ears and tower feet; M2.5 screws self-tap the 2.0-2.2 mm pilots.",
+            "Gear housings: press bearings, fit gears/diff carriers and shafts, close the halves on the shaft plane, screw.",
+            "Frame front and rear: join with the pegs/screws, glue; fit the decks, battery tray, ESC/receiver tray, ballast carrier.",
+            "Rear: swing arm, pillow blocks / ring hubs, belt, rear bevel case, wheel, coilover shock.",
+            "Front: lean arms, uplinks, carriers, knuckles, kingpins, steering servos and tie rods, wheels, dogbones.",
+            "Lean servo on its tower with rocker and the two turnbuckle lean rods; centre all servos before tightening linkages.",
+            "Motor, pinion and coupler; battery; receiver; ballast plate in its carrier with the lid.",
+            "Skin front/mid/rear and wing blade pieces on the hangers; last, check swing and steering through the full range by hand."], 1):
+        A(f"{k}. {t}")
+    A("")
     A("## Missing, failed, orphaned\n")
     A(f"- Missing STL: {', '.join(n for n, _ in missing) or 'none'}")
     A(f"- Failed in the pipeline: {', '.join(f'{n} ({e})' for n, e in failed) or 'none'}")

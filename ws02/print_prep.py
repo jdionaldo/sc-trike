@@ -70,6 +70,9 @@ def recipe_for(name):
         (r"^tail_hanger", R("PETG-CF", 0.2, 4, 50, 5, 5, "black", "wing hanger: prongs print flat so layers run along the prong; mostly solid")),
         (r"^(tail_main|tail_right)", R("PETG", 0.2, 3, 20, 5, 5, "body", "wing blade: thin aerofoil, flat on the bed")),
         (r"^deck_", R("PETG", 0.2, 3, 25, 5, 5, "black", "deck plates: flat, layers in the plane of the load")),
+        (r"^(pillow_|cring_hub|rring_hub)", R("PETG-CF", 0.16, 4, 50, 6, 6, "black", "bearing blocks / ring hubs: 0.16 mm for the 5x11x4 seats; solid-ish where the screws clamp")),
+        (r"^ballast_carrier", R("PETG", 0.2, 4, 40, 5, 5, "black", "holds a 42 g tungsten plate: keep walls thick")),
+        (r"^ballast_lid", R("PETG", 0.2, 3, 25, 4, 4, "black", "snap-in lid: print flat, thin latch tabs along the layers")),
         (r"^(carrier|knuckle)_", R("PETG-CF", 0.2, 4, 45, 5, 5, "black", "steering carrier/knuckle: stub axle + bearing loads")),
         (r"^(lean_tower|lean_rocker|uplink_(left|right))", R("PETG", 0.2, 4, 45, 5, 5, "black", "lean linkage part: small, dense")),
         (r"^(tie_rod)", R("PETG", 0.2, 4, 100, 5, 5, "black", "round tube link: print along its axis, solid; qty 2", qty=2)),
@@ -90,6 +93,12 @@ def catalogue():
     try:
         import w3_parts
         names = [p.name for p in w3_parts.all_parts()]
+        try:                                                    # nose ballast carrier + lid are not in all_parts yet
+            from parts import w3_balance
+            from params import P
+            names += [p.name for p in w3_balance.build(P) if p.name not in names]
+        except Exception:
+            pass
     except Exception as e:                                       # fall back to the files themselves
         print("w3_parts.all_parts() failed:", repr(e)[:120], "- using out/stl/w3_*.stl")
         names = sorted(p.stem for p in STL.glob("w3_*.stl"))
