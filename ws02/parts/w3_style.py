@@ -96,7 +96,9 @@ def _join(ms):
     return out
 
 
-REAR_LAT = 4.3                # rear arm lateral X lattices in the top and bottom faces (belt hull r 8 at the axle, lattice offset 12.5)
+REAR_PL = ((3.0, 3.0), (6.0, 4.5))   # (rail, zigzag) radii of the inner / outer rear plane
+REAR_TIE = 5.5                # rear end ties across the belt gap (belt hull r 8 at the axle, tie offset VL 14)
+REAR_LAT = 5.0                # rear arm lateral X lattices in the top and bottom faces (belt hull r 8 at the axle, lattice offset 12.5)
 REAR_W = (2.4, 24.0)          # rear arm plane centres (w)
 RT, RO, RW = 2.4, 5.0, 4.0    # inner lower rails / outer rails (overbuilt, outside the belt in y) / outer web
 RTU, RTW = 3.2, 2.8          # inner upper rails (free above the belt) / inner zigzag
@@ -238,14 +240,14 @@ def rear_arm(p):
     bottom faces, hubs on both planes.  Print frame: u along the arm (pivot 0, axle L), v across it, w = y - 46 (inner face on the bed)."""
     L = math.hypot(D.XR - D.RAXLE[0], D.RAXLE[1])
     wi, wo = REAR_W                                            # inner / outer plane centres (belt at w 8.1..11.1)
-    V, VL = 9.5, 12.5                                          # rail offset; lattice offset (clear of the belt hull, r 8 at the axle)
+    V, VL = 9.5, 14.0                                          # rail offset; lattice offset (clear of the belt hull, r 8 at the axle)
     from parts import w3_shock as SK
     us = SK.caret_stations(L)                                  # stations: pivot, half way to the apex, apex (30 %), 65 %, axle
     rv = lambda sgn, u: sgn * V + (SK.caret_rise(u, L) if sgn > 0 else 0.0)        # rail height: the top rail follows the caret, the bottom rail stays straight (the belt runs between)
     lv = lambda sgn, u: sgn * VL + (SK.caret_rise(u, L) if sgn > 0 else 0.0)
     def fn():
         parts = []
-        for w, r, rw in ((wi, 2.4, 2.4), (wo, 4.5, 3.5)):
+        for w, (r, rw) in zip((wi, wo), REAR_PL):
             for sgn in (1, -1):
                 for a, b in zip(us, us[1:]):
                     parts.append(_tb((a, rv(sgn, a), w), (b, rv(sgn, b), w), r))
@@ -259,7 +261,7 @@ def rear_arm(p):
                 parts += [_tb((a, lv(sgn, a), wi), (b, lv(sgn, b), wo), r), _tb((b, lv(sgn, b), wi), (a, lv(sgn, a), wo), r)]
         for u in (0.0, L):
             for sgn in (1, -1):
-                parts.append(_tb((u, sgn * VL, wi), (u, sgn * VL, wo), REAR_LAT))
+                parts.append(_tb((u, sgn * VL, wi), (u, sgn * VL, wo), REAR_TIE))
         for u in (0.0, L):                                                      # second, wider tie pair at each end (carries the wheel's twist)
             for sgn in (1, -1):
                 for w in (wi, wo):

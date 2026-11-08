@@ -72,3 +72,6 @@ Findings that differ from the list above: the proposed diagonal brace from the l
 Print orientation (per part): arm outer face up as before (lattice and ties across the planes are the weak direction, all >= r 3.2 now); carrier on its side (kingpin tube axis horizontal) if possible, otherwise as before with FS 3.36 already computed across the layers; knuckle with the hub axis horizontal; rocker and uplink flat; tower on its back (x axis up) with supports under the feet; rear arm plane normal up as before.
 
 Not done here (other builders' files): cage frame rows (`w3_frame.py`), wing foot screw (`w3_tail.py`). `w3_frame.py` reads `SK.HOOP_R` for the rear upper shock lug disc (2 x HOOP_R), so that disc grows from 13 to 20 mm diameter with the new cross tube.
+
+### Rear arm follow-up (3 g bump 2.48 -> 3.06, + lateral 2.27 -> 3.09)
+`REAR_PL` rails 3.0 inner / 6.0 outer (zigzag 3.0 / 4.5), end ties 5.5 at offset VL 14 (`REAR_TIE`), lattices 5.0, `HOOP_R` 10, `LEG_R` 7. The FE now uses the same constants (the rail A2-axle stub and end ties were hard-coded before). Cornering 7.2, braking 9.1, drive 6.9, sustained 2.26. Added mass +9 g (2261 g total), front share 62.7 %. 1 m drop stays below 1.0 (abuse; use bump stops).
