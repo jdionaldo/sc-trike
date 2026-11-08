@@ -43,4 +43,4 @@ Combined 1.5 g lateral + 2 g braking at 68 mm. Fix: Ø5 mm steel (`KP_D` 4 -> 5,
 Rear arm cornering 2.12 / braking 2.76 / drive 2.27 (all limited by the B-C hoop cross tube; fix 3 should clear them), front arm kerb strike 2.19 (fix 1).
 
 ## Not low (for the record)
-Hinge lugs, pin and magnet pad (FS 7 to 138), frame foot screws 4.9, tower feet 3.9 (re-check after the merge), deck 25 (inertia) and about 1.8 under the tower/diff couple (just below 2.0, thicken the deck to 8 mm locally if the tower and housing stay 15 mm apart), wing hangers 48 (aero), blade 2.8 and prong screws 5.6 (10 N press).
+Hinge lugs, pin and magnet pad (FS 7 to 138), frame foot screws 4.9, tower feet 7.9, base plate deck 3.7 under the tower/diff couple and 25 (inertia), front hub bearing seat 4.8, knuckle V 2.07 (just above its minimum), wing hangers 48 (aero), blade 2.8 and prong screws 5.6 (10 N press).
