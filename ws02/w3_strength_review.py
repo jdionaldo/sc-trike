@@ -396,13 +396,16 @@ def wing_hanger():
             if fs < worst[0]:
                 worst = (fs, z, sig, A)
         res[name] = worst
-    # foot screw: overturning about the foot's edges (foot 14 x 10 mm, one screw in the middle)
+    # foot screws: overturning about the foot's outer / front edges; N screws share the pull (the inner screw carries the y couple, all share the x couple)
     foot = {}
+    ns = len(TL.FOOT_SCR)
+    arm_y = TL.FOOT_Y[1] - min(TL.FOOT_SCR)                        # outer foot edge to the inner screw
+    arm_x = 0.5 * (TL.FOOT_X[1] - TL.FOOT_X[0])
     for name, c in cases.items():
         z0 = zlo
         Mx = c["Fy"] * (z_cp - z0) + c["tip"] * (TL.SPAN - TL.LEG_Y)
         My = c["Fx"] * (z_cp - z0) + c["Fz"] * (x_cp - 0.5 * sum(TL.FOOT_X))
-        T = max(0.0, abs(Mx) / 5.0 + abs(My) / 7.0 + c["Fz"])        # tension in the single screw; downforce (Fz < 0) relieves it
+        T = max(0.0, abs(Mx) / arm_y + abs(My) / arm_x / ns + c["Fz"] / ns)        # tension in the worst screw; downforce (Fz < 0) relieves it
         foot[name] = T
     INFO["wing"] = {"lift_N": Lift, "drag_N": Drag, "q_Pa": q, "area_m2": S, "z_cp": z_cp, "zlo": zlo, "mass_kg": mw}
     return res, foot, secs
@@ -524,10 +527,10 @@ def checks():
         abuse = name.startswith("abuse")
         add_fs("abuse" if abuse else "wing", "Wing hanger (one piece, 10 mm wide web)", name, fs, sig, SIP, 1.0 if abuse else MIN["wing"], "printed on its side (current): web plane = layer plane, best direction",
                f"worst section at z {z:.0f}, area {A:.0f} mm2 (stress incl. x2 fillet factor)")
-    Tcap = min(TAUT * math.pi * 2.5 * 7.0, SZ * math.pi / 4 * (5.0 ** 2 - 3.2 ** 2))
+    Tcap = min(TAUT * math.pi * 2.5 * TL.PILOT_L, SZ * math.pi / 4 * (6.0 ** 2 - 3.2 ** 2))
     for name, T in foot_t.items():
         abuse = name.startswith("abuse")
-        add_fs("abuse" if abuse else "wing", "Wing foot screw + hood boss (M2.5, one per hanger)", name, Tcap / max(T, 1e-6), T, Tcap, 1.0 if abuse else MIN["wing"], "boss is across layers: head bearing 15 MPa x 11.6 mm2", f"screw tension {T:.0f} N vs {Tcap:.0f} N")
+        add_fs("abuse" if abuse else "wing", "Wing foot screw + hood boss (M2.5, one per hanger)", name, Tcap / max(T, 1e-6), T, Tcap, 1.0 if abuse else MIN["wing"], "boss is across layers: head + M2.5 flat washer (OD 6) bearing 15 MPa x 20 mm2", f"worst of 2 screws per hanger (was 1), tension {T:.0f} N vs {Tcap:.0f} N")
     # blade at the groove edge and prong screws, 10 N tip press
     Mtip = 10.0 * (TL.SPAN - TL.LEG_Y - 5.0)
     add("abuse", "Wing blade (6 mm sheet) at the hanger groove edge", "10 N press on the blade tip (core 2 mm inside the groove: 72 x 2 mm)", KT * Mtip / (TL.CHORD * 2.0 ** 2 / 6) / 3.0, SIP, 1.0, "blade printed flat: layers carry the bending", "/3: prongs fill the groove and share the section")

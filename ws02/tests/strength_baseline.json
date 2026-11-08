@@ -11,6 +11,7 @@
  "Cage frame (beam FE, motor opening cut) | sustained: 1 g + spring preload (shock tab) (creep x0.4)": 1.175,
  "Cage frame (beam FE, motor opening cut) | wing pull-off 20 N on the hood tab": 3.205,
  "Carrier kingpin cantilever tube (R 4.5, 17 mm) | 3 g bump (bending) + 2 g braking torque": 0.726,
+ "Frame foot screws (M2.5 self-tapping, 3 mm of foot disc) | worst foot reaction 29 N (resultant)": 4.87,
  "Front arm (beam FE, 4 tubes/plane, X lattice) | 1.5 g cornering (outer wheel)": 2.025,
  "Front arm (beam FE, 4 tubes/plane, X lattice) | 2 g braking": 0.99,
  "Front arm (beam FE, 4 tubes/plane, X lattice) | 3 g bump + 1.5 g lateral (kerb strike)": 2.19,
@@ -46,6 +47,5 @@
  "Wing hanger (one piece, 10 mm wide web) | 1.5 g aero + handling at 40 km/h (downforce, drag, 3 g vertical, 1.5 g lateral)": 47.763,
  "Wing hanger (one piece, 10 mm wide web) | abuse: 10 N press on the blade tip": 2.622,
  "Wing hanger (one piece, 10 mm wide web) | abuse: 10 N side knock on the blade tip": 10.888,
- "Wing prong screws (3 x M2.5 through the lower prong) | 10 N press on the blade tip, overturning about the groove edge (10 mm arm)": 5.571,
- "Frame foot screws (M2.5 self-tapping, 3 mm of foot disc) | worst foot reaction 28 N (resultant)": 4.999
+ "Wing prong screws (3 x M2.5 through the lower prong) | 10 N press on the blade tip, overturning about the groove edge (10 mm arm)": 5.571
 }
