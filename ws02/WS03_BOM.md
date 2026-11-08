@@ -116,3 +116,15 @@ Merged: 450 mm wheelbase and 4 deg rake with the caret swing arm and hoop-mounte
 Full part table, assumptions, ratio chain and shaft lengths are in `WS03_DRIVETRAIN.md`; all dimensions are in `w3_stock.py`. Stock numbers in use: AXI232003 (x2),
 AXI232002 (x1), AXI232034 (40T spur, x1), AXI232033 (two 27T), AXI232027/232028 axle shafts (diff outputs, length to be checked), 5 x 11 x 4 bearings,
 Hobbywing HW30404317 (1800KV). The earlier "Spur gears module 0.8", "Bevel sets module 1.0" and belt cross-over rows no longer apply.
+
+## Weight balance (ws03-balance)
+
+Front share 63.0 % to 64.4 % (target 64 to 65 %; equal load on all three tyres would be 66.7 %), total 2262 g to 2294 g, CG x -166.7 to -160.4, y 1.1, z 12.7 to 10.8 (CG height above ground 54.2 to 52.3 mm). Ladder in `WS03_MASS_CG.md`, `python w3_mass.py`.
+
+| Item | Qty | Notes |
+|---|---|---|
+| Tungsten alloy plate 40 x 20 x 3 mm (about 17.5 g/cc, 42 g) | 1 | nose ballast, fills the carrier cavity (40.6 x 20.6 x 3.6). Lead instead: 40 x 20 x 4.6 mm for 41 g, needs the cavity and carrier 1.2 mm deeper (`PLATE` in `parts/w3_balance.py`) |
+| Ballast carrier + lid (`w3_ballast_carrier`, `w3_ballast_lid`, PETG, 8 g) | 1 + 1 | hangs under the front deck (x -50..-5, y -12.6..12.6, z -35.7..-29, about 25 mm above the ground), floor against the deck underside, lid faces down; 3M VHB tape on the floor plus 2 zip ties through the floor slots round the deck. Not in `w3_parts.all_parts` yet: the integrator adds `w3_balance.build(P)` |
+| 3S pack 125 g (75 x 35 x 25) | 1 | was 120 g; no room to move it forward (fit scan: 1.5 mm) |
+
+Assumptions to weigh: small masses (85 g) now placed from an inventory (`MISC_ITEMS` in `w3_mass.py`); wing and tail print at 8 % infill (slicer setting). Optional: a rear tyre insert 15 g lighter would add +0.4 points.
