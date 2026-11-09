@@ -296,3 +296,40 @@ The sheet's views are not at one scale (tyre diameter 176 px side, 160 px front,
 **Facet metrics.** 1061 panels, flat coverage 97.8 %, median edge change 72 deg, p95 109 deg, max 172 deg. 64 of 780 long panel edges (8.2 %) are under 15 deg, all on the skin itself (bezel and scoop creases, grille and bull-bar cells, louvres), so the 15 deg rule is still not met everywhere. Not run, per the brief: cage, hardware, swing, headroom and tests.
 
 Sheets: `WS03_rev10_overlay_{side,top,front,rear}.png` (silhouette over the sheet; front and rear are scaled to the sheet body), `WS03_rev10_{iso,side,top,front,rear}.png` (rev 9 / new / reference). GLB: `WS03_standalone_skin_v10.glb`.
+
+## Rev 11 - standalone skin, facet clean-up (skin7.py ALONE mode)
+
+Same uniform scale and silhouette as rev 10; body 391 x 191 x 217 mm. Changes, all gated on `WS03_ALONE=1` so the chassis build (rev 9) is untouched:
+- **Planar flank families.** The bevel and cabin-flank planes are built from offset polylines (`GB = ysh + S1 zsh`, `GC = yr + SC zr`, simplified at 17 deg) instead of from `ysh` and `yr`, so a break in the belt line, roofline or roof width cannot bend a panel a few degrees. Breakpoints within 3.5 mm are snapped onto one station, so every lateral quad is exactly planar.
+- **No clamped bevel.** The bevel is 3.5 mm on the thin hood slab, 14 mm on the cabin, 0 on the tail rail, so the vertical flank never vanishes (a clamp there was the source of 10-14 deg creases). A stable sort in `_pl` keeps vertical steps (two vertices at one x) in order.
+- **Cowl and belt.** Hood to windscreen 17 deg, hood to belt 17 deg (the belt dips 6 mm behind the cowl, as the sheet's window sill sits below the hood line); this also removed an accidental ridge down the hood.
+- **Scoops** are now one inclined top plane (16.7 deg to the hood) with a vertical front face; bull-bar legs run at 54 deg. The rear step wall was eased from 80 deg to 52 deg (belt point moved 10 px, internal only).
+
+**Facet metrics (outer surface; cavity ceilings are now excluded when WS03_ALONE=1, because the open belly lets them pass the outward-ray test).** 833 panels, flat-panel coverage 97.6 %, median edge change 78 deg, p95 93 deg, max 148 deg. Long panel edges under 15 deg: 2 of 512 (0.4 %), down from 64 of 780 (8.2 %) at rev 10 (59 of the 64 were skin edges on the old metric; the new metric also drops the cavity-ceiling faces). **Exception, listed:** the pair at x -255, y +-46, z 200: 3.0 mm long, 6.9 deg, next to a 9 mm2 sliver of the roof-ridge step, a numerical leftover of two coincident breakpoints; it is 3 mm, at the filter's threshold, and not a design crease.
+
+Checks: body and both pieces watertight, cut at x -165 with four dowel holes, front 213 x 191 x 154, rear 194 x 184 x 165; wing separate (`wing.stl`); proportions as below (roof height within 0.027 L, half width within 0.011 L).
+
+L (sketch side) 615 px = 391 mm; L built 391 mm; uniform scale 0.636 mm/px (112 mm tyre = 176 px)
+| station | x/L from nose | roof h/L sketch | roof h/L built | half width/L sketch | half width/L built |
+|---|---:|---:|---:|---:|---:|
+| px 130 | 0.01 | 0.346 | 0.336 | 0.055 | 0.063 |
+| px 150 | 0.05 | 0.362 | 0.345 | 0.077 | 0.076 |
+| px 180 | 0.09 | 0.385 | 0.358 | 0.109 | 0.109 |
+| px 225 | 0.17 | 0.407 | 0.383 | 0.158 | 0.158 |
+| px 267 | 0.24 | 0.416 | 0.402 | 0.204 | 0.204 |
+| px 320 | 0.32 | 0.462 | 0.458 | 0.232 | 0.243 |
+| px 380 | 0.42 | 0.514 | 0.520 | 0.229 | 0.235 |
+| px 450 | 0.53 | 0.526 | 0.516 | 0.222 | 0.227 |
+| px 520 | 0.65 | 0.531 | 0.519 | 0.214 | 0.225 |
+| px 560 | 0.71 | 0.527 | 0.520 | 0.229 | 0.229 |
+| px 610 | 0.79 | 0.522 | 0.522 | 0.235 | 0.235 |
+| px 660 | 0.87 | 0.491 | 0.497 | 0.203 | 0.203 |
+| px 700 | 0.94 | 0.466 | 0.477 | 0.168 | 0.168 |
+| px 730 | 0.99 | 0.459 | 0.462 | 0.085 | 0.085 |
+
+ratio error built - sketch (x L): roof mean -0.007, max 0.027; half width mean +0.003, max 0.011
+overall L:W:H built = 1 : 0.488 : 0.555   (sketch top view W/L = 0.471, side view H/L = 0.533, front view W/H = 0.935 -> W/L via H = 0.499)
+
+**Rev 9 unchanged.** After the skin7 edit the chassis build (`WS03_SKIN=facet`) was rebuilt: body 8462 faces, volume 393198 mm3, bounds [-446.5, -91.4, -24.3] to [48.8, 91.4, 139.9], pieces 202.1 x 176.7 x 152.5, 146.6 x 182.3 x 159.6, 146.5 x 182.9 x 162.1, facet metrics 4720 triangles / 1144 panels / 121 smooth edges (16.0 %): identical to f99cf87. (The scoop and bull-bar edits had briefly changed it, volume 390568 and nose x 34.3; both are now gated.) Note that rev 9 is f99cf87; 740cb79 is rev 8.
+
+Tools: `tools_skin/preview4.py OUT.png` (flat-shaded iso/side/top/front with visible crease lines), `tools_skin/facet_metrics.py`, `tools_skin/proportions.py`. GLB: `WS03_standalone_skin_v11.glb`. Sheets: `WS03_rev11_preview.png`, `WS03_rev11_overlay_{side,top,front,rear}.png`.

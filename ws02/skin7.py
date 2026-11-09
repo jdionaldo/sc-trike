@@ -15,7 +15,7 @@ S1, SC = 0.6, 0.12
 
 
 def _pl(pts, x):
-    q = sorted(pts)
+    q = sorted(reversed(list(pts)), key=lambda p: p[0])                  # stable: keeps the order of coincident-x vertices (a vertical step)
     return float(np.interp(x, [a for a, _ in q], [b for _, b in q]))
 
 
@@ -35,7 +35,8 @@ _xc = _Xp(267.0)                                                         # cowl 
 _cz = _pl(T.mm_polyline(T.TOP), _xc) - (8.0 if T.ALONE else 2.0)                                               # cowl break forced to >= 15 deg (the sheet has 10 deg)
 if T.ALONE:
     ZR = T.simplify([_ZR0[0], (_xc, _cz)] + [p for p in _ZR0 if p[0] <= _xh])
-    ZSH = T.simplify([_ZSH0[0], (_xc, _cz + 0.7)] + [p for p in _ZSH0 if p[0] <= _xb])
+    _rest = [p for p in _ZSH0 if p[0] <= _xb]
+    ZSH = T.simplify([_ZSH0[0], (_xc, _cz), (_rest[0][0], _cz - 6.0)] + _rest[1:])       # belt dips 6 mm behind the cowl (the sheet's window sill sits below the hood), so hood and belt break >= 15 deg
 else:                                                                    # rev 9 (stretched, raked) numbers
     ZR = T.simplify([(28.0, 78.0), (-65.0, 97.0)] + [p for p in _ZR0 if p[0] <= -140.0])
     ZSH = T.simplify([(28.0, 78.0), (-81.0, 100.0)] + [p for p in _ZSH0 if p[0] <= -320.0])
@@ -53,12 +54,54 @@ def _station(x):
     return (x, zb, yf, zw, ysh, zsh, yc, yr, zr)
 
 
-_xs = sorted({a for pts in (YF, ZR, ZB, ZSH, YR) for a, _ in pts}, reverse=True)
+def _station_alone(x):
+    zb, yf, zr, zsh = _pl(ZB, x), _pl(YF, x), _pl(ZR, x), _pl(ZSH, x)
+    zsh = min(zsh, zr)
+    zb = min(zb, zsh - 6.0)
+    gb, gc = _pl(GB, x), _pl(GC, x)
+    zw = (gb - yf) / S1
+    ysh = gb - S1 * zsh
+    if zw < zb + 2.0:                                                # no vertical flank left: clamp (not planar, listed if it happens)
+        zw = zb + 2.0
+        ysh = yf - (zsh - zw) * S1
+    yr = gc - SC * zr
+    yr = min(max(yr, 0.0), ysh - 3.0)
+    yc = yr + SC * (zr - zsh)
+    return (x, zb, yf, zw, ysh, zsh, yc, yr, zr)
+
+
+if T.ALONE:                                                              # rev 11: oblique flank planes as offset polylines, so a break in zsh / zr / yr cannot bend a panel by a few degrees
+    _kb, _kc = (1.0 + S1 * S1) ** 0.5, (1.0 + SC * SC) ** 0.5
+    _xc1, _xc2, _xt1, _xt2 = _Xp(267.0), _Xp(267.0) - 22.0, _Xp(548.0) - 5.0, _Xp(548.0) - 45.0
+    def _bev(x):                                                      # narrow bevel on the thin hood slab and on the tail rail, full width on the cabin
+        w = 3.5 if x >= _xc1 else 0.0 if x <= _xt2 else (BEV if (_xc2 >= x >= _xt1) else None)
+        if w is None:
+            w = 3.5 + (BEV - 3.5) * (_xc1 - x) / (_xc1 - _xc2) if x > _xc2 else BEV * (x - _xt2) / (_xt1 - _xt2)
+        return max(min(w, S1 * (min(_pl(ZSH, x), _pl(ZR, x)) - _pl(ZB, x) - 4.0)), 0.0 if x <= _xt2 else 3.0)
+    GB = [(x, (_pl(YF, x) - _bev(x) + S1 * _pl(ZSH, x)) / _kb) for x in sorted({a for pts in (YF, ZSH, ZB) for a, _ in pts}, reverse=True)]   # bevel plane offset: ysh + S1 zsh = yf + S1 zw
+    GC = [(x, (_pl(YR, x) + SC * _pl(ZR, x)) / _kc) for x in sorted({a for pts in (YR, ZR) for a, _ in pts}, reverse=True)]           # cabin flank offset: yr + SC zr = yc + SC zsh
+    GB = [(a, b * _kb) for a, b in T.simplify(GB, 17.0)]
+    GC = [(a, b * _kc) for a, b in T.simplify(GC, 17.0)]
+else:
+    GB = GC = None
+if T.ALONE:                                                              # rev 11: snap breakpoints that lie within SNAP mm of each other onto one station so every lateral quad is exactly planar
+    SNAP = 3.5
+    _all = sorted({a for pts in (YF, ZR, ZB, ZSH, YR, GB, GC) for a, _ in pts}, reverse=True)
+    _cl, _cur = [], [_all[0]]
+    for _x in _all[1:]:
+        if _cur[-1] - _x < SNAP:
+            _cur.append(_x)
+        else:
+            _cl.append(_cur); _cur = [_x]
+    _cl.append(_cur)
+    _map = {x: float(np.mean(c)) for c in _cl for x in c}
+    YF, ZR, ZB, ZSH, YR, GB, GC = ([(_map[a], b) for a, b in pts] for pts in (YF, ZR, ZB, ZSH, YR, GB, GC))
+_xs = sorted({a for pts in (YF, ZR, ZB, ZSH, YR) + ((GB, GC) if T.ALONE else ()) for a, _ in pts}, reverse=True)
 XSTA = [_xs[0]]
 for _x in _xs[1:]:
-    if XSTA[-1] - _x >= 2.5:
+    if XSTA[-1] - _x >= (0.01 if T.ALONE else 2.5):
         XSTA.append(_x)
-ST = [_station(float(x)) for x in XSTA]
+ST = [(_station_alone if T.ALONE else _station)(float(x)) for x in XSTA]
 X0, X1 = ST[0][0], ST[-1][0]
 XS = np.array([s[0] for s in ST])[::-1]
 
@@ -183,17 +226,30 @@ def features(body, S0, solid_fn, pink):
     swp = lambda poly: MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], 12.2, 90.0) + MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], -90.0, -12.2)
     body = body + (out15 ^ (swp(grow(SW, 4.5)) - swp(SW)))
     body = body - (inl ^ swp(grow(SW, -0.4)))
-    # 3. twin angular hood scoops (sheet: red-striped panels either side of the hood centre)
-    for s_ in (1, -1):
-        foot = [(-6.0, 6.0), (-50.0, 8.0), (-58.0, 28.0), (-34.0, 24.0), (-8.0, 15.0)]
-        pts = [(x, s_ * y, surf(x, y) - 2.0) for x, y in foot] + [(x, s_ * y, surf(x, y) + (6.0 if x > -30.0 else 0.8)) for x, y in foot]
-        wedge = Manifold.hull_points(np.array(pts, float))
-        ci = [(-9.0, 9.0), (-46.0, 10.5), (-54.0, 25.0), (-34.0, 21.0), (-10.0, 14.0)]
-        cp = [(x, s_ * y, surf(x, y) - 3.0) for x, y in ci] + [(x, s_ * y, surf(x, y) + (3.5 if x > -30.0 else -0.2)) for x, y in ci]
-        cav = Manifold.hull_points(np.array(cp, float))
-        mouth = Manifold.cube((10.0, 8.0, 5.0), center=False).translate((-20.0, 9.0 if s_ > 0 else -17.0, surf(-12.0, 12.0) + 0.2))
-        hole = MB.prism_xy([(-12.0, s_ * 11.0), (-38.0, s_ * 12.0), (-38.0, s_ * 20.0), (-12.0, s_ * 16.0)], 40.0, 220.0) ^ (solid_fn(-1.0) - solid_fn(5.0))
-        body = body + wedge - cav - mouth - hole
+    if T.ALONE:
+        # 3. twin angular hood scoops: one inclined top plane (16.7 deg to the hood), vertical front face with an open mouth
+        for s_ in (1, -1):
+            foot = [(-8.0, 7.0), (-8.0, 25.0), (-38.0, 30.0), (-38.0, 10.0)]
+            pts = [(x, s_ * y, surf(x, y) - 2.0) for x, y in foot] + [(x, s_ * y, surf(x, y) + (9.0 if x > -20.0 else 0.0)) for x, y in foot]
+            wedge = Manifold.hull_points(np.array(pts, float))
+            ci = [(-10.0, 9.0), (-10.0, 23.0), (-34.0, 27.0), (-34.0, 12.0)]
+            cp = [(x, s_ * y, surf(x, y) - 3.0) for x, y in ci] + [(x, s_ * y, surf(x, y) + (6.0 if x > -20.0 else -0.6)) for x, y in ci]
+            cav = Manifold.hull_points(np.array(cp, float))
+            mouth = Manifold.cube((8.0, 10.0, 6.0), center=False).translate((-14.0, 10.0 if s_ > 0 else -20.0, surf(-10.0, 15.0) + 0.2))
+            hole = MB.prism_xy([(-12.0, s_ * 11.0), (-30.0, s_ * 13.0), (-30.0, s_ * 23.0), (-12.0, s_ * 21.0)], 40.0, 400.0) ^ (solid_fn(-1.0) - solid_fn(5.0))
+            body = body + wedge - cav - mouth - hole
+    else:
+        # 3. twin angular hood scoops (sheet: red-striped panels either side of the hood centre)
+        for s_ in (1, -1):
+            foot = [(-6.0, 6.0), (-50.0, 8.0), (-58.0, 28.0), (-34.0, 24.0), (-8.0, 15.0)]
+            pts = [(x, s_ * y, surf(x, y) - 2.0) for x, y in foot] + [(x, s_ * y, surf(x, y) + (6.0 if x > -30.0 else 0.8)) for x, y in foot]
+            wedge = Manifold.hull_points(np.array(pts, float))
+            ci = [(-9.0, 9.0), (-46.0, 10.5), (-54.0, 25.0), (-34.0, 21.0), (-10.0, 14.0)]
+            cp = [(x, s_ * y, surf(x, y) - 3.0) for x, y in ci] + [(x, s_ * y, surf(x, y) + (3.5 if x > -30.0 else -0.2)) for x, y in ci]
+            cav = Manifold.hull_points(np.array(cp, float))
+            mouth = Manifold.cube((10.0, 8.0, 5.0), center=False).translate((-20.0, 9.0 if s_ > 0 else -17.0, surf(-12.0, 12.0) + 0.2))
+            hole = MB.prism_xy([(-12.0, s_ * 11.0), (-38.0, s_ * 12.0), (-38.0, s_ * 20.0), (-12.0, s_ * 16.0)], 40.0, 220.0) ^ (solid_fn(-1.0) - solid_fn(5.0))
+            body = body + wedge - cav - mouth - hole
     # 4. door louvre slots and rear-fender vents
     for s_ in (1, -1):
         xl = Xp(318.0)
@@ -245,7 +301,8 @@ def features(body, S0, solid_fn, pink):
     bar = [(xn + 4.0, -22.0, zb_bar), (xn + 12.0, -14.0, zb_bar), (xn + 12.0, 14.0, zb_bar), (xn + 4.0, 22.0, zb_bar)]
     for a, b in zip(bar, bar[1:]):
         body = body + strut(a, b, 5.0)
-    body = body + strut(bar[0], (xn - 8.0, -22.0, zlo + 6.0), 5.0) + strut(bar[-1], (xn - 8.0, 22.0, zlo + 6.0), 5.0)
+    lx, lz = (xn - 4.0, zlo + 14.0) if T.ALONE else (xn - 8.0, zlo + 6.0)                  # leg ends inside the nose slab
+    body = body + strut(bar[0], (lx, -22.0, lz), 5.0) + strut(bar[-1], (lx, 22.0, lz), 5.0)
     return body
 
 

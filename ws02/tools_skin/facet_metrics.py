@@ -8,6 +8,12 @@ m = trimesh.load(sys.argv[1]); m.merge_vertices()
 # outer surface only: faces whose outward ray leaves the body (the cavity walls are excluded)
 hit = m.ray.intersects_any(m.triangles_center + m.face_normals * 0.05, m.face_normals)
 m = trimesh.Trimesh(m.vertices, m.faces[~hit], process=False)
+import os
+if os.environ.get("WS03_ALONE") == "1":                                  # open belly: cavity ceilings also pass the ray test, so drop faces more than 1 mm inside the outer envelope
+    import skin7 as _K, mono_build as _MB
+    _env = _MB.to_trimesh(_K.solid(0.0))
+    _d = trimesh.proximity.signed_distance(_env, m.triangles_center)         # positive inside
+    m = trimesh.Trimesh(m.vertices, m.faces[_d < 1.0], process=False)
 F = len(m.faces); N = m.face_normals; A = m.area_faces; C = m.triangles_center
 adj = defaultdict(list)
 for a, b in m.face_adjacency: adj[a].append(b); adj[b].append(a)
