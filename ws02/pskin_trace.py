@@ -43,15 +43,20 @@ def zol(x):         # outline crease: between shoulder and floor (never within 8
     return max(0.5 * (zs + zf) if x < -90 else 0.5 * (zs + max(zf, zs - 24.0)), zf + 8.0)
 
 
+RATIO = lambda x: 1.0                              # lateral scale applied to drawing-traced plan points (scan profile / mask profile), see pskin_scanprof.py
+
+
 def layer_a(m: C.Model):
     """Top layer: polygons in plan, upper half. Returns the model with vertices/panels (heights from side rules; solved later)."""
     def vr(name, px, py, d=0.0, s=0.0, w=0.7):          # ridge-based height: zr(x) - d - s*|y|
         x, y = C.plan_xy(px, py)
+        y = y * RATIO(x)
         m.v(name, x, y, zr(x) - d - s * abs(y), w=(3.0, 3.0, 0.5))
         return name
 
     def vs(name, px, py, w=0.7):                         # on the shoulder (belt) line
         x, y = C.plan_xy(px, py)
+        y = y * RATIO(x)
         m.v(name, x, y, zsh(x), w=(3.0, 3.0, 3.0))
         return name
 
@@ -183,3 +188,9 @@ def layer_b(m: C.Model):
     m.v("bc", 28.9, 0.0, ZB_ST[28.9], w=(1.0, 100.0, 1.0))
     m.panel("FF", ["c0", Sn[33.9], Bn[28.9], "bc"], (1, 0, 0), layer="side")
     return m
+
+
+import os as _os
+if _os.environ.get("WS03_SCANPROF") == "1":
+    import pskin_scanprof as _SP
+    _SP.install(__import__("sys").modules[__name__])
