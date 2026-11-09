@@ -11,18 +11,24 @@ def make():
     sx, tx = nodes[::-1, 0], nodes[::-1, 1]                        # ascending skin x
     xm = lambda x: float(np.interp(x, sx, tx)); xi = lambda X: float(np.interp(X, tx, sx))
     blend = w.get("blend", True)
+    RAD = w.get("radial")                                           # {"F": {"c": [y,z], "ratio": [..NB..]}, "R": {...}}: shell/skin outer-radius ratio per angle bin at each cut
+    def rad(key, y, z):
+        c = RAD[key]["c"]; rt = RAD[key]["ratio"]; n = len(rt); th = np.arctan2(z - c[1], y - c[0]); i = (th + np.pi) / (2 * np.pi) * n - 0.5
+        i0 = int(np.floor(i)) % n; i1 = (i0 + 1) % n; f = i - np.floor(i); return rt[i0] * (1 - f) + rt[i1] * f, c
     if blend:
         fyR = w["shellR"][0] / w["skinR"][0]; ztsR, zbsR = w["shellR"][1], w["shellR"][2]; ztkR, zbkR = w["skinR"][1], w["skinR"][2]
         fyF = w["shellF"][0] / w["skinF"][0]; ztsF, zbsF = w["shellF"][1], w["shellF"][2]; ztkF, zbkF = w["skinF"][1], w["skinF"][2]
     def fn(p):
         x = xm(p[0]); y = KY * p[1]; z = -48.0 + (p[2] - 52.2) * KZ
         if blend:
-            if x < XR:
-                t = np.clip((x - (XR - BL)) / BL, 0.0, 1.0); s = t * t * (3 - 2 * t); k = (ztsR - zbsR) / (ztkR - zbkR)
-                y = y * (1 + s * (fyR - 1)); z = z + s * ((zbsR + (z - zbkR) * k) - z)
-            if x > XF:
-                t = np.clip(((XF + BF) - x) / BF, 0.0, 1.0); s = t * t * (3 - 2 * t); k = (ztsF - zbsF) / (ztkF - zbkF)
-                y = y * (1 + s * (fyF - 1)); z = z + s * ((zbsF + (z - zbkF) * k) - z)
+            for key, near, t in (("R", x < XR, (x - (XR - BL)) / BL), ("F", x > XF, ((XF + BF) - x) / BF)):
+                if near:
+                    t = float(np.clip(t, 0.0, 1.0)); s = t * t * (3 - 2 * t)
+                    if RAD and key in RAD:
+                        r, c = rad(key, y, z); f = 1 + s * (r - 1); y = c[0] + (y - c[0]) * f; z = c[1] + (z - c[1]) * f
+                    else:
+                        fy, zts, zbs, ztk, zbk = (fyR, ztsR, zbsR, ztkR, zbkR) if key == "R" else (fyF, ztsF, zbsF, ztkF, zbkF)
+                        k = (zts - zbs) / (ztk - zbk); y = y * (1 + s * (fy - 1)); z = z + s * ((zbs + (z - zbk) * k) - z)
         return np.array([x, y, z])                                  # SHELL frame
     KX0 = w["KX"]
     back = lambda q: np.array([(q[0] - 0.5) / KX0 - 161.2, q[1] / KY, (q[2] + 48.0) / KZ + 52.2])        # shell frame -> skin frame (inverse of the graft's linear map)

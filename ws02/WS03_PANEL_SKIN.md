@@ -51,3 +51,9 @@ Scan: read-only copies of rev_trike_shell_v3 (body 351 x 198 x 134 mm, 0.5 mm vo
 - Mid shapes moved: only the shell's sill-plate tongue is trimmed (x 58..72, z < -38). Everything else of the mid is unchanged.
 - All four pieces watertight (the mid-front clip at x 72 no longer cuts through the pins/bosses).
 - Not solved: the shell's tall flat door-front panel still stands proud of the new fender at the cut; the new fender skirt ends ~30 mm above the shell's sill (z -18 vs -48); the rear quarter / C-pillar still meets the tail with a visible step and a thin skirt leg at the arch. No transition panels were lofted between the edge loops (needs a hand-built loop-to-loop panel set).
+
+### Graft v5 (seam work, `WS03_graft_v5.glb`, `sc-trike/WS03_graft_v5.sc`)
+- Front: the skin's cross-section at the cut is morphed onto the shell's section outline per angle bin (`seam_radial.py`, ratio 0.99-1.2, smoothed) over 120 mm, panels re-flattened; a planar sill-skirt wedge per side carries the fender skirt down to z -48; the door-front panel's top/front corner is chamfered (hull cutter x 38..73, z > 46, |y| 58..100 - the only mid edge moved besides the sill tongue trim x 58..72, z < -38).
+- Rear: radial morph was too wide (half width 115) and broke watertightness, so the rear keeps the 3-parameter section blend; the thin skirt leg below the arch edge (x -147..-87, z < -5) is cut off.
+- All four pieces watertight. Before/after: `WS03_v3_zone_*`, `WS03_v4_zone_*`, `WS03_v5_zone_*`.
+- Still not done: no loft of panels between the edge loops (morph + wedge only); roof band shows a small step into the tail deck; the rear quarter/C-pillar to tail join is closer but not flush.
