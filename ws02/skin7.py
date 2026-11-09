@@ -8,13 +8,10 @@ from shapely.geometry import Polygon
 
 import mono_build as MB
 
-# Rev 8: every section is built from FIXED edge directions (vertical flank, shoulder bevel dy/dz -0.6, cabin flank dy/dz -0.12, horizontal floor/shelf/roof), only the
-# offsets vary per station, so the lateral quads between stations are exactly planar trapezoids. Each parameter is a polyline whose breaks are >= 15 deg.
+# Rev 9: strict trace of sheet 61 (trace61.py): side silhouette, plan and shoulder line come straight from the sheet; only the middle (roof/doors) is stretched to our wheelbase.
+# Every section still has FIXED edge directions (vertical flank, bevel dy/dz -0.6, cabin flank dy/dz -0.12, horizontal floor/shelf/roof), so lateral quads stay planar.
+import trace61 as T
 S1, SC = 0.6, 0.12
-YF = [(49, 12), (6, 46), (-124, 83), (-300, 83), (-330, 92), (-384, 92), (-441, 64)]          # plan half width (tapered hexagon: chisel nose, flat cabin, flared rear fender, tail taper)
-ZR = [(49, 52), (-100, 88), (-166, 133), (-300, 133), (-312, 116), (-441, 104)]                # roof: hood, raked windscreen, flat roof, step down to the deck
-ZB = [(49, 38), (34, 27), (-3, -26), (-441, -26)]                                              # floor / nose underside
-ZSH = [(49, 46), (-300, 62), (-312, 88), (-441, 90)]                                           # shoulder shelf
 
 
 def _pl(pts, x):
@@ -22,18 +19,33 @@ def _pl(pts, x):
     return float(np.interp(x, [a for a, _ in q], [b for _, b in q]))
 
 
-YSH = [(49, 9), (-60, 62), (-300, 66), (-312, 40), (-384, 40), (-441, 13)]                    # shoulder edge (top of the bevel), independent of the plan so the bevel stays one plane
-YR = [(49, 2), (-60, 41), (-300, 41), (-312, 27), (-384, 27), (-441, 5)]                        # roof half width
+_P = lambda pts, k="side": T.simplify(T.mm_polyline(pts, k))
+YF = _P(T.PLAN, "plan")                                                      # plan half width (chisel nose, tapered hexagon, rear fender, tail)
+ZR = _P(T.TOP)                                                               # roofline: hood, raked windscreen, roof, deck and tail
+ZB = _P([(a, min(b, 10000)) for a, b in T.FLOOR])                            # floor: arch top, sill, rising rear fender rail
+ZSH = _P(T.BELT)                                                             # shoulder shelf (belt line); hood top where there is no cabin
+YR = _P(T.ROOFW, "plan")                                                     # roof / ridge half width
+ZR = T.simplify([(28.0, 78.0), (-65.0, 97.0)] + [p for p in ZR if p[0] <= -140.0])             # cowl break forced to >= 15 deg (sheet has 10 deg)
+ZSH = T.simplify([(28.0, 78.0), (-81.0, 100.0)] + [p for p in ZSH if p[0] <= -320.0])
+BEV = 14.0                                                                   # shoulder bevel plan width
 
 
 def _station(x):
-    zb, yf, zr, zsh, ysh, yr = _pl(ZB, x), _pl(YF, x), _pl(ZR, x), _pl(ZSH, x), _pl(YSH, x), _pl(YR, x)
-    zw = zsh - (yf - ysh) / S1                                       # bevel runs at the fixed slope from (yf, zw) to (ysh, zsh)
+    zb, yf, zr, zsh, yr = _pl(ZB, x), _pl(YF, x), _pl(ZR, x), _pl(ZSH, x), _pl(YR, x)
+    zsh = min(zsh, zr)
+    zb = min(zb, zsh - 6.0)
+    zw = max(zsh - BEV / S1, zb + 2.0)
+    ysh = max(yf - (zsh - zw) * S1, 1.0)
+    yr = min(yr, ysh - 3.0)
     yc = yr + SC * (zr - zsh)
     return (x, zb, yf, zw, ysh, zsh, yc, yr, zr)
 
 
-XSTA = sorted({a for pts in (YF, ZR, ZB, ZSH, YSH, YR) for a, _ in pts}, reverse=True)
+_xs = sorted({a for pts in (YF, ZR, ZB, ZSH, YR) for a, _ in pts}, reverse=True)
+XSTA = [_xs[0]]
+for _x in _xs[1:]:
+    if XSTA[-1] - _x >= 2.5:
+        XSTA.append(_x)
 ST = [_station(float(x)) for x in XSTA]
 X0, X1 = ST[0][0], ST[-1][0]
 XS = np.array([s[0] for s in ST])[::-1]
@@ -53,7 +65,7 @@ def _polys(s, inset, belly=False, k=1.0):
     x, zb, yf, zw, ysh, zsh, yc, yr, zr = s
     if inset > 0 and k > 1.0:
         zr = zr - inset * (k - 1.0)                                  # roof drop so the wall stays `inset` thick normal to a raked facet
-    zbb = zb - 30.0 if (belly and zb <= -26.0) else zb              # open belly for the cavity
+    zbb = zb - 30.0 if belly else zb              # open belly for the cavity
     lo = Polygon([(0, zbb), (yf, zbb), (yf, zw), (ysh, zsh), (0, zsh)])
     out = [lo]
     if zr > zsh + 1.0:
@@ -123,77 +135,108 @@ def octagon(cx, cz, r):
     return [(cx + r * np.cos(np.radians(22.5 + 45 * k)), cz + r * np.sin(np.radians(22.5 + 45 * k))) for k in range(8)]
 
 
+def Xp(px):
+    """Sheet side-view px -> chassis x (mm)."""
+    return T.to_xz(px, 706.0)[0]
+
+
+def Xt(px):
+    """Sheet top-view px -> chassis x (mm)."""
+    return Xp(T.top_to_side_px(px))
+
+
+def Zp(px, py):
+    return T.to_xz(px, py)[1]
+
+
 def features(body, S0, solid_fn, pink):
     out15 = solid_fn(-2.5) - S0
-    out30 = solid_fn(-3.0) - S0
+    out30 = solid_fn(-2.2) - S0
     inl = S0 - solid_fn(1.0)
     pr = lambda poly: MB.prism_xy([(x + 0.213, y + 0.177) for x, y in poly], -60.0, 220.0)
     grow = lambda poly, d: list(Polygon(poly).buffer(d, join_style=2).exterior.coords)[:-1]
     body = body - pink()
-    # 1. raked windscreen: trapezoid on the roof/hood facets, glazing 1.0 mm down, raised bezel
-    W = [(-104.0, 38.0), (-163.0, 36.0), (-163.0, -36.0), (-104.0, -38.0)]
+    # 1. raked windscreen: hexagonal glass on the windscreen facets (sheet: front edge at the cowl, widest at the A-pillar feet, narrowing to the header)
+    xc, xw, xh = Xt(262.0), Xt(297.0), Xt(380.0)
+    W = [(xc - 2.0, 24.0), (xw, 50.0), (xh + 2.0, 27.0), (xh + 2.0, -27.0), (xw, -50.0), (xc - 2.0, -24.0)]
     body = body + (out15 ^ (pr(grow(W, 5.0)) - pr(W)))
     body = body - (inl ^ pr(grow(W, -0.4)))
-    # 2. large angular side windows on the cabin flank
-    SW = [(-186.0, 98.0), (-204.0, 124.0), (-292.0, 124.0), (-292.0, 104.0), (-262.0, 92.0), (-210.0, 90.0)]
+    # 2. large angular side windows on the cabin flank (sheet side view: bottom on the belt, raked A-pillar edge, flat top, raked rear edge)
+    sw = [(367, 547), (364, 520), (412, 486), (514, 484), (484, 534)]
+    SW = []
+    for k, (px, py) in enumerate(sw):
+        x = Xp(px)
+        z = Zp(px, py)
+        SW.append((x, min(max(z, _pl(ZSH, x) + 5.0), _pl(ZR, x) - 9.0)))
     swp = lambda poly: MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], 12.2, 90.0) + MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], -90.0, -12.2)
     body = body + (out15 ^ (swp(grow(SW, 4.5)) - swp(SW)))
     body = body - (inl ^ swp(grow(SW, -0.4)))
-    # 3. twin angular hood scoops: raised wedges, open mouths forward, mirrored
+    # 3. twin angular hood scoops (sheet: red-striped panels either side of the hood centre)
     for s_ in (1, -1):
-        foot = [(-30.0, 7.0), (-84.0, 9.0), (-90.0, 28.0), (-62.0, 24.0), (-30.0, 17.0)]
-        pts = [(x, s_ * y, surf(x, y) - 2.0) for x, y in foot] + [(x, s_ * y, surf(x, y) + (7.0 if x > -50.0 else 0.8)) for x, y in foot]
+        foot = [(-6.0, 6.0), (-50.0, 8.0), (-58.0, 28.0), (-34.0, 24.0), (-8.0, 15.0)]
+        pts = [(x, s_ * y, surf(x, y) - 2.0) for x, y in foot] + [(x, s_ * y, surf(x, y) + (6.0 if x > -30.0 else 0.8)) for x, y in foot]
         wedge = Manifold.hull_points(np.array(pts, float))
-        ci = [(-33.0, 10.0), (-80.0, 11.0), (-85.0, 25.0), (-62.0, 21.0), (-33.0, 15.0)]
-        cp = [(x, s_ * y, surf(x, y) - 3.0) for x, y in ci] + [(x, s_ * y, surf(x, y) + (4.0 if x > -50.0 else -0.2)) for x, y in ci]
+        ci = [(-9.0, 9.0), (-46.0, 10.5), (-54.0, 25.0), (-34.0, 21.0), (-10.0, 14.0)]
+        cp = [(x, s_ * y, surf(x, y) - 3.0) for x, y in ci] + [(x, s_ * y, surf(x, y) + (3.5 if x > -30.0 else -0.2)) for x, y in ci]
         cav = Manifold.hull_points(np.array(cp, float))
-        mouth = Manifold.cube((12.0, 8.0, 5.5), center=False).translate((-42.0, 9.0 if s_ > 0 else -17.0, surf(-34.0, 12.0) + 0.2))
-        hole = MB.prism_xy([(-36.0, s_ * 11.0), (-70.0, s_ * 12.0), (-70.0, s_ * 20.0), (-36.0, s_ * 16.0)], 40.0, 220.0) ^ (solid_fn(-1.0) - solid_fn(5.0))
+        mouth = Manifold.cube((10.0, 8.0, 5.0), center=False).translate((-20.0, 9.0 if s_ > 0 else -17.0, surf(-12.0, 12.0) + 0.2))
+        hole = MB.prism_xy([(-12.0, s_ * 11.0), (-38.0, s_ * 12.0), (-38.0, s_ * 20.0), (-12.0, s_ * 16.0)], 40.0, 220.0) ^ (solid_fn(-1.0) - solid_fn(5.0))
         body = body + wedge - cav - mouth - hole
-    # 4. slim vents behind the windows, shoulder louvres
+    # 4. door louvre slots and rear-fender vents
     for s_ in (1, -1):
-        for k in range(3):
-            xv = -300.0 - 6.0 * k
-            body = body - MB.prism_xy([(xv, s_ * 20.0), (xv - 2.4, s_ * 20.0), (xv - 2.4, s_ * 40.0), (xv, s_ * 40.0)], 60.0, 220.0)
+        xl = Xp(318.0)
         for k in range(4):
-            body = body - Manifold.cube((30.0, 40.0, 2.4), center=False).translate((-200.0, 40.0 if s_ > 0 else -80.0, 40.0 + 6.0 * k))
-    # 5. stepped sill panel with rivets, door ridge
-    body = body + (MB.prism_xz([(-128.0, -21.0), (-300.0, -21.0), (-300.0, -6.0), (-128.0, -6.0)], 30.0, 130.0) ^ out30) + (MB.prism_xz([(-128.0, -21.0), (-300.0, -21.0), (-300.0, -6.0), (-128.0, -6.0)], -130.0, -30.0) ^ out30)
+            zl = Zp(318.0, 590.0) + 6.0 * k
+            body = body - Manifold.cube((Xp(390.0) - Xp(318.0) if False else abs(Xp(390.0) - xl), 40.0, 2.4), center=False).translate((Xp(390.0), 40.0 if s_ > 0 else -80.0, zl))
+        for k in range(3):
+            xv = Xp(575.0) - 8.0 * k
+            body = body - MB.prism_xy([(xv, s_ * 46.0), (xv - 3.0, s_ * 46.0), (xv - 3.0, s_ * 66.0), (xv, s_ * 66.0)], 60.0, 220.0)
+    # 5. stepped sill panel with rivets
+    xa, xb = Xp(305.0), Xp(553.0)
+    za, zb_ = _pl(ZB, xa), _pl(ZB, xb)
+    sill = [(xa, za), (xb, zb_), (xb, zb_ + 11.0), (xa, za + 11.0)]
+    body = body + (MB.prism_xz(sill, 30.0, 130.0) ^ out30) + (MB.prism_xz(sill, -130.0, -30.0) ^ out30)
     for s_ in (1, -1):
-        for x in range(-160, -290, -14):
-            body = body + Manifold.sphere(1.6, 8).translate((float(x), s_ * (hw(float(x)) + 2.8), -13.5))
-    # 6. roll bar and roof ridge
+        for x in np.arange(xa - 10.0, xb + 10.0, -14.0):
+            body = body + Manifold.sphere(1.6, 8).translate((float(x), s_ * (hw(float(x)) + 2.8), _pl(ZB, float(x)) + 7.0))
+    # 6. roll bar behind the roof
+    xr = Xp(552.0)
+    zt = tz(xr) + 14.0
     for s_ in (1, -1):
-        top = (-240.0, s_ * 22.0, 133.0 + 15.0)
-        body = body + strut((top[0], top[1], 132.0), top, 4.0) + strut(top, (-296.0, s_ * 22.0, 132.0), 4.0)
-    body = body + strut((-240.0, -22.0, 148.0), (-240.0, 22.0, 148.0), 4.0)
-    # 7. roof lamp pods (windscreen corners)
+        top = (xr, s_ * 22.0, zt)
+        body = body + strut((xr + 10.0, top[1], tz(xr + 10.0) - 2.0), top, 4.0) + strut(top, (xr - 12.0, s_ * 22.0, tz(xr - 12.0) - 2.0), 4.0)
+    body = body + strut((xr, -22.0, zt), (xr, 22.0, zt), 4.0)
+    # 7. roof lamp pods (windscreen header corners)
+    xl0 = Xp(385.0)
     for s_ in (1, -1):
-        pts = [(x, y, 133.0 + dz) for x in (-182.0, -172.0) for y in ((24.0, 34.0) if s_ > 0 else (-34.0, -24.0)) for dz in (-2.0, 6.0)]
+        pts = [(x, y, tz(x) + dz) for x in (xl0 + 4.0, xl0 + 14.0) for y in ((28.0, 37.0) if s_ > 0 else (-37.0, -28.0)) for dz in (-2.0, 6.0)]
         body = body + Manifold.hull_points(np.array(pts, float))
-    # 8. open engine bay with mesh grille
-    body = body - MB.prism_xy([(-308.0, -26.0), (-356.0, -26.0), (-356.0, 26.0), (-308.0, 26.0)], 60.0, 220.0)
+    # 8. open engine bay with mesh grille (sheet top view: rim behind the cabin, hole across the hump)
+    e0, e1 = Xt(535.0), Xt(676.0)
+    body = body - MB.prism_xy([(e0, -26.0), (e1, -26.0), (e1, 26.0), (e0, 26.0)], 60.0, 220.0)
     for i in range(3):
         for j in range(9):
-            body = body - MB.prism_xy([(-356.0 - 5.0 * i, -22.0 + 5.0 * j), (-359.4 - 5.0 * i, -22.0 + 5.0 * j), (-359.4 - 5.0 * i, -18.6 + 5.0 * j), (-356.0 - 5.0 * i, -18.6 + 5.0 * j)], 60.0, 220.0)
-    # 9. tail lamp bar
-    body = body + (MB.prism_xz([(-452.0, 88.0), (-420.0, 88.0), (-420.0, 95.0), (-452.0, 95.0)], -36.0, 36.0) ^ out30)
-    # 10. mesh grille nose: a grid of square holes through the nose facets, and a hexagonal bull bar in front
-    for j in range(-3, 4):
-        for k in range(3):
-            body = body - Manifold.cube((14.0, 3.4, 3.4), center=False).translate((36.0, 6.0 * j - 1.7, 33.0 + 6.0 * k))
-    bar = [(47.0, -24.0, 24.0), (60.0, -16.0, 24.0), (60.0, 16.0, 24.0), (47.0, 24.0, 24.0)]
+            body = body - MB.prism_xy([(e1 - 5.0 * i, -22.0 + 5.0 * j), (e1 - 3.4 - 5.0 * i, -22.0 + 5.0 * j), (e1 - 3.4 - 5.0 * i, -18.6 + 5.0 * j), (e1 - 5.0 * i, -18.6 + 5.0 * j)], 60.0, 220.0)
+    # 9. tail lamp bar on the tail face
+    xt = ST[-1][0]
+    zt0 = ST[-1][8]
+    body = body + (MB.prism_xz([(xt - 6.0, zt0 - 24.0), (xt + 22.0, zt0 - 24.0), (xt + 22.0, zt0 - 17.0), (xt - 6.0, zt0 - 17.0)], -18.0, 18.0) ^ out30)
+    # 10. diamond mesh grille through the nose face, and a hexagonal bull bar in front
+    xn = ST[0][0]
+    zlo, zhi = ST[0][1], ST[0][8]
+    for row, zc in enumerate((zlo + 7.0, zlo + 14.5)):
+        ys = (-9.0, -3.0, 3.0, 9.0) if row == 0 else (-12.0, -6.0, 0.0, 6.0, 12.0)
+        for yc_ in ys:
+            pts = [(x, yc_ + dy, zc + dz) for x in (xn - 28.0, xn + 6.0) for dy, dz in ((3.0, 0.0), (-3.0, 0.0), (0.0, 3.0), (0.0, -3.0))]
+            body = body - Manifold.hull_points(np.array(pts, float))
+    zb_bar = zlo + 3.0
+    bar = [(xn + 4.0, -22.0, zb_bar), (xn + 12.0, -14.0, zb_bar), (xn + 12.0, 14.0, zb_bar), (xn + 4.0, 22.0, zb_bar)]
     for a, b in zip(bar, bar[1:]):
-        body = body + strut(a, b, 4.0)
-    body = body + strut((47.0, -24.0, 24.0), (36.0, -24.0, 30.0), 4.0) + strut((47.0, 24.0, 24.0), (36.0, 24.0, 30.0), 4.0)
-    body = body + strut((60.3, -16.2, 24.0), (60.3, -16.2, 36.0), 3.6) + strut((60.3, 16.2, 24.0), (60.3, 16.2, 36.0), 3.6) + strut((60.1, -17.0, 36.3), (60.1, 17.0, 36.3), 4.4)
+        body = body + strut(a, b, 5.0)
+    body = body + strut(bar[0], (xn - 8.0, -22.0, zlo + 6.0), 5.0) + strut(bar[-1], (xn - 8.0, 22.0, zlo + 6.0), 5.0)
     return body
 
 
 def rear_arch(body):
-    """Polygonal rear arch: an octagon round the rear wheel and a straight underside wedge under the tail, cut through the full width."""
-    from w3_stretch import back, RAXLE_Z
-    oct_ = octagon(back(-360.0), RAXLE_Z, 66.0)
-    body = body - MB.prism_xz(oct_, -120.0, 120.0)
-    wedge = [(-296.0, -60.0), (-299.0, 50.0), (-341.5, 66.4), (-440.0, 88.0), (-460.0, 88.0), (-460.0, -60.0)]
-    return body - MB.prism_xz(wedge, -120.0, 120.0)
+    """Rev 9: the rear arch is the traced rising rail underside itself (the loft floor), nothing more to cut."""
+    return body

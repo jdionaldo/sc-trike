@@ -213,3 +213,47 @@ The swept channel cuts for the frame tubes are curved by nature (interface: the 
 Checks: body and three pieces watertight, swing 0 hits at 0-35 deg, no clashes in the assembly, headroom 19 mm (nose) to 75 mm, 192 tests pass (1 xfail, legacy tests excluded), wall samples under 1.2 mm 4.2 % (rev 7 2.75 %: the narrow hood roof and ramps; not yet reduced), printed 921 g, total 2373 g, front weight share 64.3 %, pieces 214 x 172 x 152 / 148 x 175 x 176 / 144 x 146 x 83 on a 220 x 220 bed, dowel holes on both cuts.
 
 Not matched: the hood is narrow at the nose (roof half width 17 mm at x 0 against the sketch's wider hood), tail ends x -444 (sketch -468), deck hump is low (hangers), nose grille holes are square.
+
+## Rev 9 - strict trace of sheet 61 (skin7.py + trace61.py)
+
+Build unchanged: `WS03_SKIN=facet python body3_build.py && WS03_SKIN=facet python split_shell3.py`. Tools: `trace61.py` (pixel tables of the sheet's side silhouette, floor, belt line, plan and roof width; maps them to the chassis frame), `tools_skin/overlay61.py SHEET PREFIX` (silhouette over the sheet, 4 views), `tools_skin/trace_table.py` (table below), `tools_skin/facet_metrics.py`.
+
+**Mapping.** Side view tyre radius 88 px = 56 mm (112 mm tyres), 0.636 mm/px; the sheet is rotated by the 4 deg ground rake into the chassis frame, front axle at (0, 0). The sheet's wheelbase is 368 mm, ours 450, so only the middle (roof and doors, sheet px 375-560) is stretched, uniformly x1.695 (+82 mm). Nose, hood, cowl, front arch and the rear fender/tail keep their traced shape; the top view is mapped onto the side view's nose/tail px. The sheet's views are not at one scale (tyres in the top view are 25 % smaller than in the side view), so each view was normalised to the side view.
+
+**Skin.** Roofline, floor (arch top, sill, rising rear fender rail), belt line, plan and roof width are polylines from the trace, simplified to >= 15 deg breaks (one forced: the cowl, 10 deg on the sheet -> 16 deg). Sections keep fixed edge directions so the quads between stations are planar. Open belly under the whole skin. Features re-placed from the sheet: hexagonal windscreen glass, side windows with raked A-pillar edge, hood scoops, door louvres, sill panel, roll bar, header lamp pods, engine-bay opening with mesh, tail lamp bar, diamond mesh nose grille, bull bar.
+
+**Traced against built (mm, chassis frame)**
+
+| x (mm) | roof z traced | roof z built | half width traced | half width built | floor z traced | floor z built |
+|---:|---:|---:|---:|---:|---:|---:|
+| 30 | 78 | 78 | 20 | 24 | 56 | 56 |
+| 10 | 89 | 79 | 33 | 33 | 67 | 67 |
+| -20 | 99 | 92 | 52 | 52 | 67 | 67 |
+| -50 | 103 | 96 | 71 | 62 | 65 | 76 |
+| -80 | 111 | 107 | 85 | 83 | -8 | 57 |
+| -110 | 124 | 123 | 87 | 85 | -10 | -10 |
+| -140 | 137 | 139 | 86 | 86 | -12 | -12 |
+| -170 | 138 | 136 | 85 | 87 | -14 | -14 |
+| -200 | 137 | 134 | 84 | 87 | -16 | -16 |
+| -250 | 136 | 131 | 82 | 88 | -19 | -19 |
+| -300 | 133 | 129 | 81 | 89 | -23 | -23 |
+| -330 | 130 | 127 | 88 | 88 | 9 | 19 |
+| -360 | 126 | 125 | 88 | 88 | 47 | 43 |
+| -390 | 114 | 113 | 75 | 75 | 72 | 72 |
+| -420 | 100 | 104 | 60 | 60 | 76 | 76 |
+| -440 | 95 | 97 | 19 | 19 | 69 | 69 |
+
+roof z built - traced: mean -2.5 mm, max |10.2| mm; half width built - traced: mean +0.7 mm, max |9.0| mm
+
+**Facet metrics (outer surface).** panels 1144, flat-panel coverage 98.0 %, mean 4.1 triangles per panel, normal change at panel edges median 70 deg / p95 100 deg / max 168 deg. 121 of 755 long panel edges (16.0 %) are under 15 deg - all on the skin itself (small bezel and scoop creases, grille and bull-bar cells, louvres); 0 on cuts. The >= 15 deg rule is therefore NOT fully met.
+
+**Checks.** Body and the three pieces watertight; pieces 202x177x153, 147x182x160, 147x183x162 (bed 220); cuts at x -153.4 and -300 with dowel holes (the first cut moved 1.4 mm: at -152 the cut plane grazed a 0.07 mm cavity sliver). Swing 0 hits at 0-35 deg in 1 deg steps; assembly clash-free; 192 tests pass (1 xfail, 5 skipped; legacy test_body/test_assembly and test_strength_factors excluded as before). Thin-wall samples under 1.2 mm: 4.2 %. Headroom over internal parts 43-80 mm. Printed skin mass 294 g, total 2409 g, so the plausibility bound in tests/test_w3.py was raised 2400 -> 2500 g (the traced body is taller than the old one).
+
+**Conflicts with hardware / cage (cage suspended, no frame files edited).**
+- Front mechanism: the old window cut was replaced by the swept volume of the arms, pods, uplinks, carriers, knuckles and rods over the lean range (+2 mm). The front fenders therefore stay as traced except where those parts pass; the cut-outs are visible near the front arch.
+- Pockets in the skin for fixed parts that touch the traced shape: front arms arm_1/arm_-1 827 mm3 each at lean 0 (397 at 10 deg, swept over 0-35), lean ears 291, lean servo 234, diff_out 58 each, lean mount 16; wing hangers 378 mm3 each (the traced deck is 2-13 mm below the hanger foot at x -374..-404, hangers left where they are).
+- Underside: the skin is open below the sill (sill z -7 at x -80 to -24 at x -320), the sheet's body floor is about axle height, so frame/deck plates at z -29..-23 and the battery, tray and skid sit up to 5-22 mm below the skin edge, uncovered.
+- Hood: the traced hood is 22-35 mm thick above an open front bay; the front floor slab no longer exists. The cage must stay under the hood line (z 78 at the nose to 97 at the cowl); roof z 137 against the old 133 (+4 mm at the roof tabs, roof tab nodes still read the old top_z).
+- Rear: the traced rail underside rises from z 9 (x -330) to 76 (x -420), well above the tyre and swing arm; no clash, but nothing shields the shock above z 28.
+
+Sheets: `WS03_rev9_overlay_{side,top,front,rear}.png` (silhouette over sheet 61; front/rear are scaled to the sheet body since its views differ in scale), `WS03_rev9_{iso,side,top,front,rear}.png` (previous / new / reference).

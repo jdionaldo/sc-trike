@@ -7,7 +7,7 @@ from skin_cfg import MONO, CONCEPT
 LAP = 6.0
 LAP_JOINT = False                                                         # rev 6 registers with dowel pins instead (body3_build.details)
 PIECES = ("front", "mid", "rear")
-CUTS = (-152.0, -300.0) if CONCEPT else (-165.0, -300.0)               # x of the two cut planes (front|mid, mid|rear)
+CUTS = (-153.4, -300.0) if CONCEPT else (-165.0, -300.0)               # x of the two cut planes (front|mid, mid|rear)
 
 
 def main():

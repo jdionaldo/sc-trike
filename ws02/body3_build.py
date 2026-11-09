@@ -18,7 +18,7 @@ from skin_cfg import CONCEPT, MONO, FACET
 OUT = Path(MONO)
 KX, KY, DZ, XOFF = 1.0, 1.0, 0.0, 0.0           # the profile below is already in the assembly frame
 WALL = 2.4
-SPLIT_X = (-152.0, -300.0)                            # split cuts of the concept skin (split_shell3.CUTS)
+SPLIT_X = (-153.4, -300.0)                            # split cuts of the concept skin (split_shell3.CUTS)
 
 # profile from the owner's sketch over the RT-1 sheet (assembly frame, mm): truncated nose, roof rising toward the rear, high rear hood
 # with a scoop, open tail underside above the gearbox; wide mid body, narrow tail
@@ -270,7 +270,7 @@ def details(body):
         for cx in SPLIT_X:
             for yy, zl in ((-24.0, None), (24.0, None), (-1.0, -20.0), (1.0, -20.0)):
                 if zl is None:
-                    zin = min(HF.zat(cx - 9.0, yy), HF.zat(cx + 9.0, yy), HF.zat(cx, yy)) - WALL * 1.15
+                    zin = min(HF.zat(cx - 9.0, yy), HF.zat(cx + 9.0, yy), HF.zat(cx, yy)) - WALL * 1.4
                     pad = Manifold.cube((18.0, 10.0, 12.0), center=False).translate((cx - 9.0, yy - 5.0, zin - 9.0))
                     hz, hy = zin - 4.0, yy
                 else:
@@ -545,18 +545,38 @@ def main():
     outer = solid(0.0)
     inner = solid(WALL, belly=True)
     body = outer - inner
-    win = front_window()
-    wpts = list(win.exterior.coords)[:-1]
-    from shapely.geometry import box as sbox
-    low = win.intersection(sbox(-500.0, -500.0, 500.0, 25.0))                 # inboard of the arms only the servo level needs clearing
-    lpts = list(low.exterior.coords)[:-1]
-    for s in (1, -1):
-        y0, y1 = (52.0, 100.0) if s > 0 else (-100.0, -52.0)                  # arm level: everything out
-        body = body - MB.prism_xz(wpts, y0, y1)
-        y0, y1 = (30.0, 52.0) if s > 0 else (-52.0, -30.0)                    # servo level: leave the upper shoulder as the frame's top beam
-        body = body - MB.prism_xz(lpts, y0, y1)
+    if FACET:                                                                   # rev 9: carve only what the front mechanism actually sweeps (per-part hulls over the lean range, grown 2 mm), the fenders stay as traced
+        import w3_scene as S
+        hs = []
+        for ph in range(-25, 26, 5):
+            for n, m, k in S.scene(float(ph)):
+                if n.startswith(("arm_", "pod_", "uplink_", "carrier_", "knuckle_", "tie_rod", "lean_rod")):
+                    hs.append(Manifold.hull_points(np.asarray(m.vertices, float)))
+        u = Manifold.batch_boolean(hs, 0)
+        g = 2.0
+        u = Manifold.batch_boolean([u.translate(d) for d in ((0, 0, 0), (g, 0, 0), (-g, 0, 0), (0, g, 0), (0, -g, 0), (0, 0, g), (0, 0, -g))], 0)
+        body = body - u
+    else:
+        win = front_window()
+        wpts = list(win.exterior.coords)[:-1]
+        from shapely.geometry import box as sbox
+        low = win.intersection(sbox(-500.0, -500.0, 500.0, 25.0))             # inboard of the arms only the servo level needs clearing
+        lpts = list(low.exterior.coords)[:-1]
+        for s in (1, -1):
+            y0, y1 = (52.0, 100.0) if s > 0 else (-100.0, -52.0)              # arm level: everything out
+            body = body - MB.prism_xz(wpts, y0, y1)
+            y0, y1 = (30.0, 52.0) if s > 0 else (-52.0, -30.0)                # servo level: leave the upper shoulder as the frame's top beam
+            body = body - MB.prism_xz(lpts, y0, y1)
     # (the old rear-arm exit windows are gone: the wall is solid and only the arm's own swept volume is carved, in swing_channels)
     body = details(body)
+    if FACET:
+        import w3_swing as _sw9                                                 # pockets for the few fixed parts that touch the traced skin at the neutral lean (the skin wins, the part sits in a 1 mm pocket)
+        ps = [pp for nn, pp in _sw9.fixed_parts() if nn in ("arm_1", "arm_-1", "lean_ears_c", "lean_servo_c", "lean_mount_c", "diff_out_1", "diff_out_-1", "steer_servo_1", "steer_servo_-1")]
+        pu = Manifold.batch_boolean([_sw9.rot(pp, -float(kk)) for pp in ps for kk in range(0, 36)], 0)   # swept over the whole lean range (the skin leans, the parts stay)
+        body = body - Manifold.batch_boolean([pu.translate(d) for d in ((0, 0, 0), (1.0, 0, 0), (-1.0, 0, 0), (0, 1.0, 0), (0, -1.0, 0), (0, 0, 1.0), (0, 0, -1.0))], 0)
+        import w3_assembly as _A9                                               # the wing hangers sit in a recess where the traced deck is lower than their foot
+        hh = Manifold.batch_boolean([MB.man(mm) for nn, mm, kk in _A9.assembly(0.0, 0.0) if nn.startswith("w3_tail_hanger")], 0)
+        body = body - Manifold.batch_boolean([hh.translate(d) for d in ((0, 0, 0), (0.6, 0, 0), (-0.6, 0, 0), (0, 0.6, 0), (0, -0.6, 0), (0, 0, 0.6), (0, 0, -0.6))], 0)
     if CONCEPT:                                                                # coincident tangent sheets would fuse into 4-valent edges when the STL welds vertices: push the second vertex of each such pair 30 um apart
         from scipy.spatial import cKDTree
         mm = body.to_mesh()
