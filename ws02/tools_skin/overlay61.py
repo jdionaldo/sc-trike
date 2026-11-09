@@ -24,7 +24,7 @@ def side_px(x, z):
 def top_px(x, y):
     sp, _ = side_px(x, 0.0)
     tx = T.TNOSE + (sp - T.NOSE_PX) * (T.TTAIL - T.TNOSE) / (T.TAIL_PX - T.NOSE_PX)
-    return tx, 211.0 - y / 0.624
+    return tx, 211.0 - y / T.HW
 
 
 def polys(normal):

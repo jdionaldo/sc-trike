@@ -6,17 +6,19 @@ Stretch   : the sheet's wheelbase is 579 px = 368 mm, ours is 450 mm. Only the M
             tail/rear fender keep the traced shape.  Chassis frame is the sheet rotated by the 4 deg ground rake (rear axle 31.5 mm lower), front axle at (0, 0).
 """
 import math
+import os
 
 import numpy as np
 
 S = 0.636
-FAX_PX, FAX_PY = 176.0, 706.0
+ALONE = os.environ.get("WS03_ALONE") == "1"                 # standalone skin: no stretch, no rake, ground at z 0, plan scaled by the top view's own L:W ratio
+FAX_PX, FAX_PY = 176.0, (791.0 if ALONE else 706.0)
 WB = 450.0
 XA, XB = 375.0, 560.0                                  # stretch region (side-view px)
 WB_SHEET = (755.0 - FAX_PX) * S
-EXTRA = WB - WB_SHEET                                  # how much the middle must grow
+EXTRA = 0.0 if ALONE else WB - WB_SHEET                                  # how much the middle must grow
 K = 1.0 + EXTRA / ((XB - XA) * S)                      # uniform x stretch of the middle
-RAKE = math.radians(4.0)
+RAKE = math.radians(0.0 if ALONE else 4.0)
 
 NOSE_PX, TAIL_PX = 122.0, 737.0                        # side view nose/tail
 TNOSE, TTAIL = 120.0, 721.0                            # top view nose/tail
@@ -41,8 +43,11 @@ def top_to_side_px(tx):
     return NOSE_PX + (tx - TNOSE) * (TAIL_PX - NOSE_PX) / (TTAIL - TNOSE)
 
 
+HW = (NOSE_PX - TAIL_PX) / (TNOSE - TTAIL) * S if ALONE else 0.624        # mm per top-view px
+
+
 def hw_mm(hw_px):
-    return hw_px * 0.624
+    return hw_px * HW
 
 
 # ---- side view silhouette (px) ------------------------------------------------------------------------------------------------------------------

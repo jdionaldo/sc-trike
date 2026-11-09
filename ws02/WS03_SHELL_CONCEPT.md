@@ -257,3 +257,42 @@ roof z built - traced: mean -2.5 mm, max |10.2| mm; half width built - traced: m
 - Rear: the traced rail underside rises from z 9 (x -330) to 76 (x -420), well above the tyre and swing arm; no clash, but nothing shields the shock above z 28.
 
 Sheets: `WS03_rev9_overlay_{side,top,front,rear}.png` (silhouette over sheet 61; front/rear are scaled to the sheet body since its views differ in scale), `WS03_rev9_{iso,side,top,front,rear}.png` (previous / new / reference).
+
+## Rev 10 - standalone skin (skin_alone.py)
+
+Designed by itself, to be merged with the frame later: no wheelbase stretch, rake, frame relief, swing channels, hardware pockets, hinge or bed fitting. Build: `python skin_alone.py` (sets WS03_ALONE=1, reuses the skin7 loft and features) -> `out/skin_alone/{skin,skin_front,skin_rear,wing}.stl`. Frame: x forward (front axle x 0), y left, z up from the ground. Reference: the 6336x2688 copy of sheet 61, resized to the 2000x848 px tables.
+
+**Scale.** One uniform scale from the tyre: sketch front tyre diameter 176 px = 112 mm -> 0.636 mm/px for x and z. The top view is mapped onto the side view's nose and tail px, so its own L:W ratio is kept (0.651 mm/px across). Nothing is stretched or distorted. Built body 391 mm long (+15 mm bull bar), 191 mm wide, 217 mm high.
+
+**Proportions (ratios to body length L; sketch against built)**
+
+L (sketch side) 615 px = 391 mm; L built 391 mm; uniform scale 0.636 mm/px (112 mm tyre = 176 px)
+| station | x/L from nose | roof h/L sketch | roof h/L built | half width/L sketch | half width/L built |
+|---|---:|---:|---:|---:|---:|
+| px 130 | 0.01 | 0.346 | 0.335 | 0.055 | 0.063 |
+| px 150 | 0.05 | 0.362 | 0.339 | 0.077 | 0.077 |
+| px 180 | 0.09 | 0.385 | 0.358 | 0.109 | 0.109 |
+| px 225 | 0.17 | 0.407 | 0.387 | 0.158 | 0.158 |
+| px 267 | 0.24 | 0.416 | 0.403 | 0.204 | 0.204 |
+| px 320 | 0.32 | 0.462 | 0.458 | 0.232 | 0.243 |
+| px 380 | 0.42 | 0.514 | 0.520 | 0.229 | 0.235 |
+| px 450 | 0.53 | 0.526 | 0.516 | 0.222 | 0.227 |
+| px 520 | 0.65 | 0.531 | 0.519 | 0.214 | 0.225 |
+| px 560 | 0.71 | 0.527 | 0.520 | 0.229 | 0.229 |
+| px 610 | 0.79 | 0.522 | 0.522 | 0.235 | 0.235 |
+| px 660 | 0.87 | 0.491 | 0.497 | 0.203 | 0.203 |
+| px 700 | 0.94 | 0.466 | 0.477 | 0.168 | 0.168 |
+| px 730 | 0.99 | 0.459 | 0.462 | 0.085 | 0.085 |
+
+ratio error built - sketch (x L): roof mean -0.007, max 0.028; half width mean +0.003, max 0.011
+overall L:W:H built = 1 : 0.488 : 0.555   (sketch top view W/L = 0.471, side view H/L = 0.533, front view W/H = 0.935 -> W/L via H = 0.499)
+
+The sheet's views are not at one scale (tyre diameter 176 px side, 160 px front, 135 px top), so the top-view W/L (0.471) and the side-view H/L (0.533) were taken as is; the front view's W/H (0.935) would give a W/L of 0.50, 6 % wider than the top view says. The built W/L is 0.488 including the raised sill panel and rivets.
+
+**Build.** Closed 2.4 mm shell with an open belly (the sketch shows the body open under the sill and the arches). Cowl break forced from 8 deg to 17 deg (hood 5-8 mm lower than traced at the cowl) to keep every polyline break >= 15 deg. Features as rev 9, re-placed on the unstretched trace, plus pink grooves from the red accent lines (door-sill diagonals, rear fender rail, roof stripes). Wing: our stepped wing and hangers moved onto the rear deck (leading edge at sheet px 572, hanger feet 8 mm into the deck, skin recessed 0.6 mm around them), saved as `wing.stl`.
+
+**Pieces.** One cut at x -165 (the only cut that keeps both halves inside 220 x 220): front 214 x 191 x 154, rear 194 x 184 x 165; four 3.2 mm dowel holes (two under the roof, two low on the flanks) in pads fused to the inside wall. Body and both pieces watertight.
+
+**Facet metrics.** 1061 panels, flat coverage 97.8 %, median edge change 72 deg, p95 109 deg, max 172 deg. 64 of 780 long panel edges (8.2 %) are under 15 deg, all on the skin itself (bezel and scoop creases, grille and bull-bar cells, louvres), so the 15 deg rule is still not met everywhere. Not run, per the brief: cage, hardware, swing, headroom and tests.
+
+Sheets: `WS03_rev10_overlay_{side,top,front,rear}.png` (silhouette over the sheet; front and rear are scaled to the sheet body), `WS03_rev10_{iso,side,top,front,rear}.png` (rev 9 / new / reference). GLB: `WS03_standalone_skin_v10.glb`.

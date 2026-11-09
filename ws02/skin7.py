@@ -25,8 +25,20 @@ ZR = _P(T.TOP)                                                               # r
 ZB = _P([(a, min(b, 10000)) for a, b in T.FLOOR])                            # floor: arch top, sill, rising rear fender rail
 ZSH = _P(T.BELT)                                                             # shoulder shelf (belt line); hood top where there is no cabin
 YR = _P(T.ROOFW, "plan")                                                     # roof / ridge half width
-ZR = T.simplify([(28.0, 78.0), (-65.0, 97.0)] + [p for p in ZR if p[0] <= -140.0])             # cowl break forced to >= 15 deg (sheet has 10 deg)
-ZSH = T.simplify([(28.0, 78.0), (-81.0, 100.0)] + [p for p in ZSH if p[0] <= -320.0])
+def _Xp(px):
+    return T.to_xz(px, 706.0)[0]
+
+
+_ZR0, _ZSH0 = ZR, ZSH
+_xh, _xb = _Xp(380.0) + 1.0, _Xp(548.0) + 0.5
+_xc = _Xp(267.0)                                                         # cowl base
+_cz = _pl(T.mm_polyline(T.TOP), _xc) - (8.0 if T.ALONE else 2.0)                                               # cowl break forced to >= 15 deg (the sheet has 10 deg)
+if T.ALONE:
+    ZR = T.simplify([_ZR0[0], (_xc, _cz)] + [p for p in _ZR0 if p[0] <= _xh])
+    ZSH = T.simplify([_ZSH0[0], (_xc, _cz + 0.7)] + [p for p in _ZSH0 if p[0] <= _xb])
+else:                                                                    # rev 9 (stretched, raked) numbers
+    ZR = T.simplify([(28.0, 78.0), (-65.0, 97.0)] + [p for p in _ZR0 if p[0] <= -140.0])
+    ZSH = T.simplify([(28.0, 78.0), (-81.0, 100.0)] + [p for p in _ZSH0 if p[0] <= -320.0])
 BEV = 14.0                                                                   # shoulder bevel plan width
 
 

@@ -1,4 +1,4 @@
-"""Rev 6 comparison sheets: previous skin (rev 8), new skin and the reference (image 60 crop) per view, with the traced reference outline in red.
+"""Rev 6 comparison sheets: previous skin (rev 9, on the chassis), new skin and the reference (image 60 crop) per view, with the traced reference outline in red.
 usage: python tools_skin/render_rev6.py REF_IMAGE OUT_DIR PREV_GLB"""
 import sys
 from pathlib import Path
@@ -36,6 +36,9 @@ def project(v, kind):
 
 
 CEN = {"iso": (float(np.array([-195.0, 0, 50.0]) @ IR), float(np.array([-195.0, 0, 50.0]) @ IU)), "side": (200.0, 50.0), "top": (210.0, 0.0), "front": (0.0, 50.0), "rear": (0.0, 50.0)}
+import os
+if os.environ.get("WS03_ALONE") == "1":                               # standalone skin: ground at z 0, body spans x +33..-357
+    CEN = {"iso": (float(np.array([-160.0, 0, 130.0]) @ IR), float(np.array([-160.0, 0, 130.0]) @ IU)), "side": (160.0, 130.0), "top": (160.0, 0.0), "front": (0.0, 130.0), "rear": (0.0, 130.0)}
 
 
 def render(m, kind, size, sc, col):
@@ -87,7 +90,7 @@ SC = {"iso": 1.45, "side": 1.5, "top": 1.5, "front": 2.0, "rear": 2.0}
 for kind in ("iso", "side", "top", "front", "rear"):
     size, sc = sizes[kind], SC[kind]
     ims = []
-    for name, m, col in (("previous skin (rev 8)", old, (130, 150, 175)), ("NEW traced skin (rev 9)", new, (190, 100, 150))):
+    for name, m, col in (("previous skin (rev 9, on the chassis)", old, (130, 150, 175)), ("NEW standalone skin (rev 10)", new, (190, 100, 150))):
         im, cen = render(m, kind, size, sc, col)
         if kind != "iso" and not SHEET61: outline(im, kind, size, sc, cen)
         ImageDraw.Draw(im).text((8, 6), f"{name} - {kind}  (red = traced reference outline)", fill=(0, 0, 0), font=font); ims.append(im)
