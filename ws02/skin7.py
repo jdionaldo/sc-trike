@@ -38,7 +38,8 @@ _MASK = T.ALONE and os.environ.get("WS03_MASK", "1") == "1"
 if _MASK:                                                                # rev 12: plan, roofline and floor straight from the user's silhouette masks (mask61.py)
     import mask61
     _mt = mask61.tables()
-    YF = mask61.merge(_mt["plan"], 15.0, 3.0); ZR = mask61.merge(_mt["top"], 15.0, 3.0); ZB = mask61.merge(_mt["bot"], 15.0, 2.0)
+    YF = mask61.merge(_mt["plan"], 15.0, 99.0); ZR = mask61.merge(_mt["top"], 15.0, 3.0); ZB = mask61.merge(_mt["bot"], 15.0, 2.0)
+    ZB = [p for i, p in enumerate(ZB) if not (i > 0 and abs(p[0] - ZB[i - 1][0]) < 2.0 and abs(p[1] - ZB[i - 1][1]) < 2.0)]          # drop sub-2 mm steps (a 0.8 mm wall at the tail made a sliver)
     if not any(abs(p[0] - _xc) < 6.0 for p in ZR):                                                   # keep a cowl vertex on the roofline
         ZR = sorted(ZR + [(_xc, _pl(ZR, _xc))], reverse=True)
     _xcw = min((p for p in ZR if abs(p[0] - _xc) < 6.0), key=lambda p: abs(p[0] - _xc))[0]          # cowl vertex of the mask roofline
@@ -129,11 +130,11 @@ def _pitch(i):
     return k
 
 
-def _polys(s, inset, belly=False, k=1.0):
+def _polys(s, inset, belly=False, k=1.0, deep=False):
     x, zb, yf, zw, ysh, zsh, yc, yr, zr = s
     if inset > 0 and k > 1.0:
         zr = zr - inset * (k - 1.0)                                  # roof drop so the wall stays `inset` thick normal to a raked facet
-    zbb = zb - 30.0 if belly else zb              # open belly for the cavity
+    zbb = -200.0 if deep else (zb - 30.0 if belly else zb)              # open belly for the cavity; deep: no floor at all (detail layers must not form on the underside)
     lo = Polygon([(0, zbb), (yf, zbb), (yf, zw), (ysh, zsh), (0, zsh)])
     out = [lo]
     if zr > zsh + 1.0:
@@ -154,13 +155,13 @@ def _mirror(poly, x):
     return pts
 
 
-def solid(inset=0.0, belly=False):
+def solid(inset=0.0, belly=False, deep=False):
     """Outer solid (inset 0), cavity (inset 2.4, belly=True) or a grown/shrunk layer: union of convex hulls between consecutive stations."""
     out = None
     pol = []
     for i, s in enumerate(ST):
         x = s[0] - inset if i == 0 else (s[0] + inset if i == len(ST) - 1 else s[0])
-        pol.append((x, _polys(s, inset, belly, _pitch(i))))
+        pol.append((x, _polys(s, inset, belly, _pitch(i), deep)))
     for (xa, pa), (xb, pb) in zip(pol, pol[1:]):
         for k in range(2):
             if k >= len(pa) or k >= len(pb):
@@ -218,6 +219,9 @@ def Zp(px, py):
 
 
 def features(body, S0, solid_fn, pink):
+    if _MASK:                                                              # detail layers come from a skin without a floor, so nothing is added or cut on the open underside
+        solid_fn = lambda i, belly=False: solid(i, belly, True)
+        S0 = solid_fn(0.0)
     out15 = solid_fn(-2.5) - S0
     out30 = solid_fn(-2.2) - S0
     inl = S0 - solid_fn(1.0)
@@ -229,6 +233,8 @@ def features(body, S0, solid_fn, pink):
     W = [(xc - 2.0, 24.0), (xw, 50.0), (xh + 2.0, 27.0), (xh + 2.0, -27.0), (xw, -50.0), (xc - 2.0, -24.0)]
     body = body + (out15 ^ (pr(grow(W, 5.0)) - pr(W)))
     body = body - (inl ^ pr(grow(W, -0.4)))
+    if _MASK:
+        body = body + ((S0 - solid_fn(3.0)) ^ pr(grow(W, -3.0))) - ((S0 - solid_fn(1.8)) ^ pr(grow(W, -3.0)))      # inner glass pocket (wall thickened under it)
     # 2. large angular side windows on the cabin flank (sheet side view: bottom on the belt, raked A-pillar edge, flat top, raked rear edge)
     sw = [(367, 547), (364, 520), (412, 486), (514, 484), (484, 534)]
     SW = []
@@ -239,6 +245,8 @@ def features(body, S0, solid_fn, pink):
     swp = lambda poly: MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], 12.2, 90.0) + MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], -90.0, -12.2)
     body = body + (out15 ^ (swp(grow(SW, 4.5)) - swp(SW)))
     body = body - (inl ^ swp(grow(SW, -0.4)))
+    if _MASK:
+        body = body + ((S0 - solid_fn(3.0)) ^ swp(grow(SW, -3.0))) - ((S0 - solid_fn(1.8)) ^ swp(grow(SW, -3.0)))
     if _MASK:                                                              # 3. twin hood scoops beside the hood ridge, under the traced roofline: one inclined top plane (15.5 deg), vertical front face, open mouth
         Y = lambda x, d: _pl(YR, x) + d
         for s_ in (1, -1):
@@ -286,7 +294,7 @@ def features(body, S0, solid_fn, pink):
             xv = Xp(575.0) - 8.0 * k
             body = body - MB.prism_xy([(xv, s_ * 46.0), (xv - 3.0, s_ * 46.0), (xv - 3.0, s_ * 66.0), (xv, s_ * 66.0)], 60.0, 220.0)
     # 5. stepped sill panel with rivets
-    xa, xb = Xp(305.0), Xp(553.0)
+    xa, xb = Xp(305.0) - 0.43, Xp(553.0)
     za, zb_ = _pl(ZB, xa), _pl(ZB, xb)
     sill = [(xa, za), (xb, zb_), (xb, zb_ + 11.0), (xa, za + 11.0)]
     if _MASK:                                                              # recessed sill band (the plan mask is the outline: nothing may stand proud of it) with low rivet heads
@@ -334,7 +342,7 @@ def features(body, S0, solid_fn, pink):
         for a, b in zip(bar, bar[1:]):
             body = body + strut(a, b, 5.0)
         body = body + strut(bar[0], (xn - 17.0, -22.0, 118.0), 5.0) + strut(bar[-1], (xn - 17.0, 22.0, 118.0), 5.0)
-        return body
+        return details13(body, S0, solid_fn)
     zlo, zhi = ST[0][1], ST[0][8]
     for row, zc in enumerate((zlo + 7.0, zlo + 14.5)):
         ys = (-9.0, -3.0, 3.0, 9.0) if row == 0 else (-12.0, -6.0, 0.0, 6.0, 12.0)
@@ -352,4 +360,92 @@ def features(body, S0, solid_fn, pink):
 
 def rear_arch(body):
     """Rev 9: the rear arch is the traced rising rail underside itself (the loft floor), nothing more to cut."""
+    return body
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------
+# Rev 13: detail layers read from sheet 61 (px of the 2000 x 848 sheet). Each detail is an outline polygon in the view where it is most visible, projected along that
+# view direction onto the skin, with a raised bezel layer, one or two stepped recess layers and (where there is a lamp or glass) an inner pocket. Faceted: all steps are flat.
+DETAILS = []                                                                # (name, view, vertices, layers) for the report
+
+
+def prism_yz(pts, x0, x1):
+    m = trimesh.creation.extrude_polygon(Polygon([(y + 0.173, z + 0.131) for y, z in pts]), x1 - x0)
+    V = m.vertices
+    return MB.man(trimesh.Trimesh(np.column_stack([V[:, 2] + x0 + 0.29, V[:, 0], V[:, 1]]), m.faces))
+
+
+def _grow(poly, d):
+    g = Polygon(poly).buffer(d, join_style=2)
+    return list(g.exterior.coords)[:-1]
+
+
+def details13(body, S0, solid_fn):
+    if os.environ.get("NODET") == "1":
+        return body
+    cache = {}
+    def lay_out(h):
+        if ("o", h) not in cache:
+            cache[("o", h)] = solid_fn(-h) - S0
+        return cache[("o", h)]
+    def lay_in(d):
+        if ("i", d) not in cache:
+            cache[("i", d)] = S0 - solid_fn(d)
+        return cache[("i", d)]
+    P_top = lambda p: MB.prism_xy([(x + 0.213, y + 0.177) for x, y in p], -60.0, 400.0)
+    P_side = lambda p: MB.prism_xz([(x + 0.19, z + 0.23) for x, z in p], 12.2, 120.0) + MB.prism_xz([(x + 0.19, z + 0.23) for x, z in p], -120.0, -12.2)
+    P_front = lambda p: prism_yz(p, -6.0, 42.0)
+    P_rear = lambda p: prism_yz(p, -380.0, -342.3)
+
+    def apply(name, view, prism, poly, bezel=None, cuts=()):
+        nonlocal body
+        if name in os.environ.get("SKIPDET", "").split(","):
+            return
+        if bezel:
+            g, h = bezel
+            body = body + (lay_out(h) ^ (prism(_grow(poly, g)) - prism(poly)))
+        for shrink, d in cuts:
+            pg = _grow(poly, -shrink) if shrink else poly
+            if d > 1.0:                                                      # thicken the wall under a pocket so 1.2 mm of floor is left (walls are 2.4 mm)
+                body = body + (lay_in(d + 1.2) ^ prism(_grow(pg, 0.6)))             # slightly wider than the pocket: no coincident side faces
+            body = body - (lay_in(d) ^ prism(pg))
+        DETAILS.append((name, view, len(poly), (f"bezel {bezel[1]} mm" if bezel else "no bezel") + "".join(f", recess {d} mm" + (f" (inner, -{s} mm)" if s else "") for s, d in cuts)))
+
+    mir = lambda poly, c: [(2 * c - x, z) for x, z in poly]
+    fyz = lambda px, py, dz=0.0: ((px - 1215.5) * 0.595, (383.0 - py) * 0.595 + dz)
+    ryz = lambda px, py: ((px - 1720.0) * 0.595, (383.0 - py) * 0.595 + 12.0)
+    ST0z = ST[0][1]
+    # front view: headlight pockets (bezel, pocket, inner lamp), main and lower grille hexagons, side mesh pockets
+    HL = [(1123, 168), (1163, 175), (1181, 184), (1174, 197), (1129, 188), (1123, 178)]
+    for k_, pts in enumerate((HL, mir(HL, 1215.5))):
+        apply("headlight pocket", "front", P_front, [fyz(px, py, 2.0) for px, py in pts], bezel=(2.0, 1.5), cuts=((0, 3.0), (3.0, 5.0)))
+    GR = [(1170, 205), (1183, 191), (1245, 191), (1259, 204), (1247, 235), (1182, 235)]
+    apply("main grille", "front", P_front, [(y, max(z, 106.0)) for y, z in [fyz(px, py, 2.0) for px, py in GR]], bezel=(2.0, 1.5), cuts=((0, 2.0),))
+    SG = [(1133, 202), (1167, 207), (1172, 230), (1150, 240), (1135, 225)]
+    for pts in (SG, mir(SG, 1215.5)):
+        apply("side mesh pocket", "front", P_front, [(y, max(z, 106.0)) for y, z in [fyz(px, py, 2.0) for px, py in pts]], bezel=(1.5, 1.0), cuts=((0, 2.0),))
+    # rear view: tail-light pockets
+    TL = [(1621, 121), (1673, 119), (1684, 127), (1677, 142), (1623, 128)]
+    for pts in (TL, mir(TL, 1720.0)):
+        apply("tail-light pocket", "rear", P_rear, [ryz(px, py) for px, py in pts], bezel=(2.0, 1.5), cuts=((0, 1.6), (3.0, 2.8)))
+    HP = [(178, 45), (208, 86), (263, 102), (242, 63)]
+    for s_ in (1, -1):
+        apply("hood panel", "top", P_top, [(Xt(tx), s_ * hw * T.HW) for tx, hw in HP], bezel=(2.0, 1.2), cuts=((0, 0.8),))
+    apply("hood vent slot", "top", P_top, [(-12.0, -9.0), (-12.0, 9.0), (-38.0, 9.0), (-38.0, -9.0)], bezel=(1.5, 1.0), cuts=((0, 1.5), (2.5, 3.5)))
+    # side view: door vent pocket, rear-fender vent pocket, door crease (two stepped groove layers)
+    DV = [(310, 592), (325, 585), (392, 587), (375, 601)]
+    apply("door vent pocket", "side", P_side, [(Xp(a), Zp(a, b)) for a, b in DV], bezel=(2.0, 1.2), cuts=((0, 2.0), (2.5, 3.5)))
+    FV = [(566, 588), (576, 580), (598, 632), (584, 640)]
+    apply("fender vent pocket", "side", P_side, [(Xp(a), Zp(a, b)) for a, b in FV], bezel=(2.0, 1.2), cuts=((0, 2.0), (2.0, 3.5)))
+    for w_, d_ in ((4.0, 0.8), (1.6, 1.6)):
+        a, b = (Xp(390.0), Zp(390.0, 655.0)), (Xp(545.0), Zp(545.0, 572.0))
+        dd = np.array(b) - np.array(a); dd /= np.linalg.norm(dd); n_ = np.array([-dd[1], dd[0]]) * w_ / 2.0
+        quad = [tuple(np.array(a) + n_), tuple(np.array(b) + n_), tuple(np.array(b) - n_), tuple(np.array(a) - n_)]
+        body = body - (lay_in(d_) ^ P_side(quad))
+    DETAILS.append(("door panel crease", "side", 4, "stepped V groove 4.0 x 0.8 mm + 1.6 x 1.6 mm"))
+    # engine-bay opening rim
+    e0, e1 = Xt(535.0), Xt(676.0)
+    rim = [(e0, -26.0), (e1, -26.0), (e1, 26.0), (e0, 26.0)]
+    body = body + (lay_out(2.0) ^ (P_top(_grow(rim, 5.0)) - P_top(_grow(rim, 0.5))))
+    DETAILS.append(("engine-bay opening", "top", 4, "rim bezel 2.0 mm, through opening with 3 x 9 mesh"))
     return body

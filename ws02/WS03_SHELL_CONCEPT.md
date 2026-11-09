@@ -364,3 +364,41 @@ Plan is within 1 %. Side is 3.3 % off with the wing and 4.6 % without it; most o
 Watertight body and both pieces (cut x -165, front 199 x 184 x 153, rear 194 x 189 x 172, four 3.2 mm dowel holes), 2.4 mm walls, wing separate (`wing.stl`). Rev 9 (chassis build) rebuilt after the edits: 8462 faces, volume 393198, bounds [-446.5, -91.4, -24.3] to [48.8, 91.4, 139.9], pieces 202.1 / 146.6 / 146.5 long: unchanged.
 
 Tools: `mask61.py`, `tools_skin/mask_iou.py PREFIX [0]` (IoU and overlay images), `tools_skin/preview4.py`. Sheets: `WS03_rev12_preview.png`, `WS03_rev12_mask_overlay_{plan,side}.png` (with wing), `..._noWing_...`. GLB: `WS03_standalone_skin_v12.glb`.
+
+## Rev 13 - faceted plan outline, layered details, wing removed
+
+**Outline.** Side silhouette: rev 12's faceted one (from the side mask, corners merged within 2 mm). Plan: the plan-mask polyline with every vertex turn forced to >= 15 deg (`mask61.merge(plan, 15, 99)`, 11 -> 7 vertices; the tail rounding becomes three straight segments). IoU against the masks (skin only, no wing): plan 0.983 (rev 12: 0.996 skin only), side 0.952 against the raw mask / 0.956 against the mask with the wing tab removed (rev 12 side 0.967 included the wing). Side loss is the sketch's spoiler tab, the sill tab under the tyre notch, the nose chin tip, and the roll bar (above the tab-free roofline).
+
+**Wing removed.** No wing, hangers, mounts or recess; the deck is clean (the roll bar hoop stays).
+
+**Detail layers** (outline read from the sheet view where each is clearest, projected along that view onto the skin; every layer is a flat step; where a pocket is deeper than the 2.4 mm wall the wall is thickened under it so 1.2 mm of floor remains). Layer depths are my reading of the 3/4 view.
+
+| detail | view | outline vertices | layers |
+|---|---|---:|---|
+| windscreen glass | top | 6 | bezel 2.5 mm proud (5 mm wide), recess 1.0, inner glass pocket 1.8 (inset 3 mm) |
+| side windows (x2) | side | 5 | bezel 2.5 proud (4.5 wide), recess 1.0, inner pocket 1.8 (inset 3 mm) |
+| hood panels (x2, red-striped quads) | top | 4 | bezel 1.2 proud (2 wide), recess 0.8 |
+| twin hood scoops | top | 4 | wedge 7.5 mm at the front, top plane 15.5 deg to the hood, vertical front face, open mouth, cavity, hole through the hood |
+| hood vent slot | top | 4 | bezel 1.0, recess 1.5, inner pocket 3.5 (inset 2.5) |
+| headlight pockets (x2) | front | 6 | bezel 1.5 proud, pocket 3.0, inner lamp 5.0 (inset 3 mm) |
+| main grille (hexagon) + diamond mesh | front | 6 | bezel 1.5, recess 2.0, 13 diamond holes |
+| side mesh pockets (x2) | front | 5 | bezel 1.0, recess 2.0 |
+| tail-light pockets (x2) | rear | 5 | bezel 1.5, pocket 1.6, inner lamp 2.8 (inset 3 mm); cut only on the tail panels (x < -342) |
+| door vent pocket + louvres | side | 4 | bezel 1.2, recess 2.0, inner 3.5 (inset 2.5), 4 louvre slots |
+| rear-fender vent pocket | side | 4 | bezel 1.2, recess 2.0, inner 3.5 (inset 2.0) |
+| door panel crease | side | 4 (line) | stepped V groove 4.0 x 0.8 mm + 1.6 x 1.6 mm |
+| roof lamp pods (x2) | - | hull of 8 | 3 mm proud |
+| engine-bay opening | top | 4 | rim bezel 2.0, through opening, 3 x 9 mesh |
+| arches | side/mask | polygon from the mask floor | front arch wall and rear rail are the outline itself |
+
+Detail layers are built from a floor-less copy of the loft (`solid(..., deep=True)`), so no layer can form on the open underside.
+
+**Facets.** 777 panels, flat coverage 94.2 % (the pockets add small panels), median edge change 80 deg, p95 95 deg. 65 long edges (6.7 %) are under 15 deg: the mask's own corners on the side outline, the small steps of the recess layers, and bezel corners. **15 deg is not met everywhere.**
+
+Watertight body and both pieces (cut x -165: 201 x 180 x 153 and 194 x 190 x 172, four dowel holes). Rev 9 chassis build rebuilt after the edits: unchanged (see the line below the table in the commit message). Proportions (roof within 0.027 L, half width within ~0.02 L):
+
+
+ratio error built - sketch (x L): roof mean +0.004, max 0.023; half width mean +0.012, max 0.047
+overall L:W:H built = 1 : 0.485 : 0.572   (sketch top view W/L = 0.471, side view H/L = 0.533, front view W/H = 0.935 -> W/L via H = 0.499)
+
+GLB: `WS03_standalone_skin_v13.glb`; sheets `WS03_rev13_preview.png`, `WS03_rev13_34_compare.png`, `WS03_rev13_mask_overlay_*`.

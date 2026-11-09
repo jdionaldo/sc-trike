@@ -114,10 +114,7 @@ def main():
     S0 = K.solid(0.0)
     body = S0 - K.solid(WALL, belly=True)
     body = K.features(body, S0, K.solid, pink)
-    w, (dx, dz) = wing()
-    wm = MB.man(w)
-    hang = Manifold.batch_boolean([MB.man(w)], 0)
-    body = body - Manifold.batch_boolean([wm.translate(d) for d in ((0, 0, 0), (0.6, 0, 0), (-0.6, 0, 0), (0, 0.6, 0), (0, -0.6, 0), (0, 0, 0.6), (0, 0, -0.6))], 0)
+    w = None                                                              # rev 13: no wing, hangers or recess for now
     body = dowels(body)
     whole = clean(body)
     whole.export(OUT / "skin.stl")
@@ -129,8 +126,8 @@ def main():
         t = clean(p)
         t.export(OUT / f"skin_{n}.stl")
         print(n, len(t.faces), t.is_watertight, np.round(t.extents, 1).tolist())
-    w.export(OUT / "wing.stl")
-    print("wing offset", round(dx, 1), round(dz, 1), np.round(w.bounds, 0).tolist())
+    (OUT / "wing.stl").unlink(missing_ok=True)
+    print("details:"); [print("  ", d) for d in K.DETAILS]
 
 
 if __name__ == "__main__":

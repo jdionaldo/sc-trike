@@ -21,7 +21,12 @@ def raster(g, shape, fn):
     for gg in (g.geoms if hasattr(g, "geoms") else [g]):
         cv2.fillPoly(img, [np.array([fn(a, b) for a, b in gg.exterior.coords], np.int32)], 1)           # holes filled: the mask is a solid silhouette
     return img
+import os
 pm, sm = M.load("plan"), M.load("side")
+if os.environ.get("TABFREE") == "1":                                   # mask without the wing / roll-bar tab (the wing is left out)
+    _t = M.tab_free_top(M.edges(sm)[0])
+    for _x in range(int(M.WING_X[0]), int(M.WING_X[1]) + 1):
+        sm[:int(_t[_x]), _x] = 0
 Hp, Wp = pm.shape; Hs, Ws = sm.shape
 sp, ss = M.L_MM / (Wp - 1), M.L_MM / (Ws - 1)
 pm = cv2.morphologyEx(pm, cv2.MORPH_CLOSE, np.ones((1, 7), np.uint8)); pm = cv2.morphologyEx(pm, cv2.MORPH_CLOSE, np.ones((5, 1), np.uint8))      # hairline gap at the centre line

@@ -6,7 +6,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.collections import PolyCollection, LineCollection
 D = "out/skin_alone/"
-skin = trimesh.load(D + "skin.stl"); wing = trimesh.load(D + "wing.stl")
+import os
+skin = trimesh.load(D + "skin.stl"); wing = trimesh.load(D + "wing.stl") if os.path.exists(D + "wing.stl") else trimesh.Trimesh()
 def basis(view):
     if view == "side": d, r, u = np.array([0, 1, 0.]), np.array([-1, 0, 0.]), np.array([0, 0, 1.])        # from the left, nose to the left
     elif view == "top": d, r, u = np.array([0, 0, 1.]), np.array([0, -1, 0.]), np.array([1, 0, 0.])      # nose up
@@ -21,9 +22,9 @@ def basis(view):
 def render(ax, view):
     r, u, d = basis(view)
     light = d + 0.6 * u - 0.4 * r; light /= np.linalg.norm(light)
-    both = trimesh.util.concatenate([skin, wing])
+    both = trimesh.util.concatenate([skin, wing]) if len(wing.faces) else skin
     P, C, L = [], [], []
-    for m, base in ((skin, np.array([0.80, 0.30, 0.55])), (wing, np.array([0.92, 0.78, 0.18]))):
+    for m, base in [(mm, bb) for mm, bb in ((skin, np.array([0.80, 0.30, 0.55])), (wing, np.array([0.92, 0.78, 0.18]))) if len(mm.faces)]:
         V = m.vertices; N = m.face_normals; F = m.faces
         vis = N @ d > 0.02
         uv = np.stack([V @ r, V @ u], 1)
@@ -39,7 +40,7 @@ def render(ax, view):
     if L:
         mids = np.array([[*(seg.mean(0))] for _, seg in L])                                              # 2D mids; rebuild 3D from edges below
     E3 = []
-    for m in (skin, wing):
+    for m in ([skin, wing] if len(wing.faces) else [skin]):
         ang = np.degrees(m.face_adjacency_angles); fa = m.face_adjacency; ed = m.face_adjacency_edges
         N = m.face_normals; vis = N @ d > 0.02
         for e in ed[(ang > 12.0) & (vis[fa[:, 0]] | vis[fa[:, 1]])]: E3.append(m.vertices[e])
@@ -55,5 +56,5 @@ def render(ax, view):
 
 fig, axs = plt.subplots(2, 2, figsize=(16, 10), dpi=110)
 for ax, v in zip(axs.ravel(), ("iso", "side", "top", "front")): render(ax, v)
-fig.suptitle("WS03 standalone skin (rev 12) - flat shaded, creases drawn where panels meet at more than 12 deg", fontsize=12)
+fig.suptitle("WS03 standalone skin (rev 13) - flat shaded, creases drawn where panels meet at more than 12 deg", fontsize=12)
 fig.tight_layout(); fig.savefig(sys.argv[1]); print("ok")
