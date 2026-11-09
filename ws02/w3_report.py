@@ -12,7 +12,7 @@ for n in names:
     if os.path.exists(f):
         t = trimesh.load(f)
         rows.append((n, np.round(t.extents, 1).tolist(), abs(t.volume) / 1000.0))
-for n in [f"body3_{p}" for p in ("front", "mid", "rear")]:
+for n in [f"body3_{p}" for p in ("front", "mid", "rear", "tail")]:
     f = f"out/mono3/{n}.stl"
     if os.path.exists(f):
         t = trimesh.load(f)

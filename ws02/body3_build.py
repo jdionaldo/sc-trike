@@ -377,5 +377,23 @@ def main():
     print("body3", len(m.faces), m.is_watertight, round(m.volume), np.round(m.bounds, 1).tolist())
 
 
+
+
+# ---- WS03_SKIN=user (default): the skin is the user's hand-edited SolidCraft body, hollowed and fitted in skin_user.py; the cage asks it for roof height,
+# inner width and builds it through main().  WS03_SKIN=old keeps the faceted wedge above.
+if os.environ.get("WS03_SKIN", "user") == "user":
+    import skin_user as _SU
+    _old_top_z, _old_hw_in = top_z, hw_in
+
+    def top_z(x, inset=0.0):
+        return _SU.top_z(x, inset, _old_top_z)
+
+    def hw_in(x, inset=WALL):
+        return _SU.hw_in(x, inset, _old_hw_in)
+
+    def main():
+        _SU.main()
+
+
 if __name__ == "__main__":
     main()

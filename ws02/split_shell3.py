@@ -3,8 +3,9 @@ import numpy as np, trimesh
 from manifold3d import Manifold
 import mono_build as MB, validate
 
-PIECES = ("front", "mid", "rear")
-CUTS = (-165.0, -300.0)               # x of the two cut planes (front|mid, mid|rear)
+PIECES = ("front", "mid", "rear", "tail")
+import skin_user as _SU
+CUTS = (_SU.XOFF, _SU.XOFF - 57.5, _SU.XOFF - 181.0)    # x of the two cut planes (front|mid, mid|rear): the joints of the user's skin pieces
 
 
 def main():
@@ -13,9 +14,11 @@ def main():
     his = (1000.0,) + CUTS
     los = CUTS + (-1000.0,)
     for part, hi, lo in zip(PIECES, his, los):
-        x0, x1 = lo + (0.0125 if lo > -1000.0 else 0.0), hi - (0.0125 if hi < 1000.0 else 0.0)
+        x0, x1 = lo + (0.0137 if lo > -1000.0 else 0.0), hi - (0.0137 if hi < 1000.0 else 0.0)
         box = Manifold.cube((x1 - x0, 400.0, 400.0), center=False).translate((x0, -200.0, -200.0))
-        m = MB.to_trimesh(body ^ box); m.merge_vertices()
+        m = _SU.unpinch(MB.to_trimesh(body ^ box)); m.vertices = np.asarray(m.vertices, np.float32).astype(np.float64); m.merge_vertices()
+        if not m.is_watertight:
+            m = _SU.heal_pinches(m); m.merge_vertices()
         m = max(m.split(only_watertight=False), key=lambda c: abs(c.volume))
         m.export(f"out/mono3/body3_{part}.stl")
         pm = m.copy(); pm.apply_translation((0, 0, -pm.bounds[0][2]))

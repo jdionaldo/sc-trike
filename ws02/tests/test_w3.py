@@ -53,7 +53,7 @@ def test_assembly_clash_free(body_built, lean, steer):
 
 
 def test_body_pieces(body_built):
-    for part in ("front", "mid", "rear"):
+    for part in ("front", "mid", "rear", "tail"):
         t = trimesh.load(f"out/mono3/body3_{part}.stl")
         assert t.is_watertight
         pm = t.copy()

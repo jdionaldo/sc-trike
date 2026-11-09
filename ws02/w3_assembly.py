@@ -12,6 +12,7 @@ import w3_drive_scene as DS
 import layout3wd as LY
 from parts import w3_chassis as C, w3_drive as D, w3_front as W
 
+WING = os.environ.get("WS03_WING", "0") == "1"
 STL = "out/stl"
 MONO = "out/mono3"
 
@@ -58,9 +59,10 @@ def assembly(phi_deg=0.0, steer=None):
     import parts.w3_frame as FR
     for n, mesh in FR.placed():
         items.append((n, mesh, "printed"))
-    import parts.w3_tail as TL
-    for n, mesh in TL.placed():
-        items.append((n, mesh, "printed"))
+    if WING:                                                                  # the old rear wing screwed onto the old tail hood (x -374..-483, behind the new skin's tail); off with the user's skin
+        import parts.w3_tail as TL
+        for n, mesh in TL.placed():
+            items.append((n, mesh, "printed"))
     for s_ in (1, -1):                                                       # upper-link standoff on the pivot pin, between the wall and the link
         rows = [[1, 0, 0], [0, 0, 1], [0, -1, 0]] if s_ > 0 else [[1, 0, 0], [0, 0, -1], [0, 1, 0]]
         items.append((f"w3_uplink_standoff_{s_}", _t(f"{STL}/w3_uplink_standoff.stl", M(rows, (-100.0, s_ * 57.6, 40.0))), "printed"))
@@ -75,7 +77,7 @@ def assembly(phi_deg=0.0, steer=None):
     items.append(("w3_skid", sm, "printed"))
     rows, t0, L = rear_arm_mats()
     items.append(("w3_rear_arm", _t(f"{STL}/w3_rear_arm.stl", M(rows, t0)), "printed"))
-    for part in ("front", "mid", "rear"):
+    for part in ("front", "mid", "rear", "tail"):
         if os.path.exists(f"{MONO}/body3_{part}.stl"):                          # absent while the body is being rebuilt (the body build itself calls the assembly)
             items.append((f"body3_{part}", _t(f"{MONO}/body3_{part}.stl"), "printed"))
     b = LY.blocks()

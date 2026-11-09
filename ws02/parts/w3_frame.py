@@ -75,9 +75,22 @@ def _rrect_xz(x0, x1, z0, z1, r, y0, y1):
     return Manifold.batch_hull([_disc(x, z, y0, y1, 2 * r) for x in (x0 + r, x1 - r) for z in (z0 + r, z1 - r)])
 
 
+RAIL_Z = 40.5               # roof rails behind the cab run under the user's rear hatch pocket (floor underside z 47.6): 11 mm tubes, 1.6 mm clear
+REAR_TAB_Y = 34.0
+REAR_TAB_X = -318.0          # rear skin tab: under the user's tail deck (the old hood tab at x -352 lies behind the new tail, which ends at x -339)
+
+
 def _tab_pos():
     """Skin tab stations (x, y, node z): front roof, hoop top, mid rail, hood.  Node z = skin underside - 13.5 (roof), 39.4 (hood)."""
-    return [(-29.0, 28.0, _zt(-29.0) - 13.5), (-100.0, 30.0, _zt(-100.0) - 13.5), (-180.0, 36.0, _zt(-180.0) - 13.5), (back(-262.0), 38.0, 39.4)]
+    return [(-29.0, 28.0, _zt(-29.0) - 13.5), (-100.0, 30.0, _zt(-100.0) - 13.5), (-180.0, 36.0, _zt(-180.0) - 13.5), (REAR_TAB_X, REAR_TAB_Y, min(_zt(REAR_TAB_X) - 13.5, RAIL_Z))]
+
+
+def tab_stations():
+    """Magnet tabs that hold the skin shut: (x, y, z, node ball radius), one pair per skin piece area: nose roof (FT), hoop roof (N1), cab roof (MU), rear deck (R2).
+    The old hoop tab node HT is not on any tube since the motor bypass, so the hoop station sits on the bypass corner N1."""
+    t = _tab_pos()
+    return [(t[0][0], t[0][1], t[0][2], BALLS["FT"]), (BYPASS_NODES["N1"][0], BYPASS_NODES["N1"][1], BYPASS_NODES["N1"][2], BALLS["N1"]),
+            (t[2][0], t[2][1], t[2][2], BALLS["MU"]), (t[3][0], t[3][1], t[3][2], BALLS["R2"])]
 
 
 def nodes():
@@ -97,10 +110,10 @@ def _nodes():
         return (px, 22.0, pz)
     return {"BT": (24.0, 28.0, 22.0), "CBT": (24.0, 0.0, 22.0), "NA": nose(10.0), "NB": nose(28.0), "FS": (-8.0, 22.0, -19.5), "PE1": (-150.0, Y, -10.0), "PS2": (-135.9, Y, -14.0), "PM": (-86.0, Y, -16.5), "PS1": (-35.5, Y, -18.8), "PL": (PIVOT[0], Y, PIVOT[1]), "FN": (-25.0, Y, 28.0),
             "B1": (-200.0, 59.0, -10.0), "R1": (pv(-246.0), 52.0, -10.0), "HT": (hx, hy, hz), "PH": (hx, 53.0, PIVOT[1]), "MU": (mx, my, mz), "R2": (rx, ry, rz),
-            "C100": (hx, 0.0, hz), "C262": (rx, 0.0, rz), "FT": (fx, fy, fz), "C29": (fx, 0.0, fz), "XN": (0.5 * (mx + rx), 0.0, 0.5 * (mz + rz) + 0.5 * 0.0 + 0.0),
+            "C100": (hx, 0.0, hz), "C262": (rx, 0.0, rz), "FT": (fx, fy, fz), "C29": (fx, 0.0, fz), "XN": (0.5 * (mx + rx), 0.0, RAIL_Z),
             "RW": (pv(-262.0), 40.5, 30.0), "R2m": (rx, -ry, rz), "PHm": (hx, -53.0, PIVOT[1]), "C40": (hx, 0.0, PIVOT[1]), "XH": (hx, 0.0, hz - (30.0 / 83.0) * (hz - PIVOT[1])),
             "HT2": (-135.9, hy + (my - hy) * 0.449, hz + (mz - hz) * 0.449), "K1": (-135.9, 38.5, 25.0),
-            "R3": (-200.0, my + (ry - my) * 0.244, mz + (rz - mz) * 0.244), "K2": (-200.0, 52.0, 28.0),
+            "R3": (-200.0, 54.0, RAIL_Z), "K2": (-200.0, 52.0, 28.0),
             "FP1": (-135.9, 44.0, -20.0), "FPB": (-200.0, 52.5, -19.0), "FPR": (pv(-250.0), 41.5, -19.0), "FPF": (-35.5, 28.0, -19.5)}
 
 
@@ -164,9 +177,9 @@ def frame(relief=False):
         PL = N["PL"]
         parts += [_rrect_xz(-92.0, -79.0, -29.0, -5.0, 2.0, Y0, Y1)]                 # servo-ear plate (both servos' inner ears and the front diff case's rear ear)
         parts += [_disc(PL[0], PL[2], Y0, Y1, 16.0), _disc(PL[0], PL[2], 46.0, Y0, 16.0)]
-        for (x, y, z) in _tab_pos()[3:]:                                          # only the hood tab remains: a pad with a magnet pocket (the skin is held by hinge + magnets)
+        for (x, y, z, br) in tab_stations():                                      # magnet pads (the skin is held by the nose hinge + magnets): a pad with a magnet pocket on each station
             pad = _vcyl(x, y, z + TAB_PAD[0], z + TAB_PAD[1], TAB_PAD_D)
-            parts += [pad, Manifold.batch_hull([pad, Manifold.sphere(BALLS["R2"], 32).translate((x, y, z))])]      # flared from the node ball up to the pad
+            parts += [pad, Manifold.batch_hull([pad, Manifold.sphere(br, 32).translate((x, y, z))])]      # flared from the node ball up to the pad
         for k, d in FEET.items():
             x, y, z = N[k]
             disc = _vcyl(x, y, FOOT_Z, FOOT_Z + 3.0, d)
@@ -194,7 +207,7 @@ def frame(relief=False):
         cuts.append(_disc(x, z, Y0 - 0.1, Y1 + 4.0, 2.4))
         cuts.append(_disc(x, z, Y1, Y1 + 4.0, 2 * HEAD))
     cuts.append(_disc(PIVOT[0], PIVOT[1], 45.0, Y1 + 0.1, 3.4))
-    for (x, y, z) in _tab_pos()[3:]:
+    for (x, y, z, br) in tab_stations():
         cuts.append(_vcyl(x, y, z + TAB_PAD[1] - 2.1, z + TAB_PAD[1] + 0.1, MAG_D))                  # pocket for a 6 x 2 mm neodymium disc
     for k in FEET:
         x, y, z = N[k]

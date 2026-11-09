@@ -23,15 +23,15 @@ The review FE solver was re-run on the OLD `w3_strength.py` models (old loads, o
 
 | part | load case | stress MPa | allowable MPa | FS | min | verdict | print orientation |
 |---|---|---|---|---|---|---|---|
-| Cage frame (beam FE, motor opening cut) | 3 g bump, one front wheel (arm pivot reaction via ear plate) - worst member PS2+-FP1+; deflection 0.62 mm | 3.9 | 24.6 | 6.34 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
-| Cage frame (beam FE, motor opening cut) | 3 g bump + 1.5 g lateral (kerb strike) (arm pivot reaction via ear plate) - worst member PS2+-FP1+; deflection 0.58 mm | 5.1 | 24.6 | 4.86 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
-| Cage frame (beam FE, motor opening cut) | 1.5 g cornering (outer wheel) (arm pivot reaction via ear plate) - worst member PS2+-FP1+; deflection 0.54 mm | 4.8 | 24.6 | 5.09 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
-| Cage frame (beam FE, motor opening cut) | 2 g braking (arm pivot reaction via ear plate) - worst member PS1+-FN+; deflection 0.86 mm | 3.8 | 15.3 | 4.01 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
-| Cage frame (beam FE, motor opening cut) | 3 g bump, rear wheel (shock tab on R2 cross tube) - worst member R1--RW-; deflection 1.33 mm | 6.3 | 16.2 | 2.56 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
-| Cage frame (beam FE, motor opening cut) | wing pull-off 20 N on the hood tab - worst member R1+-RW+; deflection 0.51 mm | 5.0 | 16.2 | 3.25 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
-| Frame foot screws (M2.5 self-tapping, 3 mm of foot disc) | worst foot reaction 30 N (resultant) - thread shear 6 MPa x d x 3 mm engagement | 29.7 | 141.4 | 4.77 | 2.0 | ok | screw axis vertical |
+| Cage frame (beam FE, motor opening cut) | 3 g bump, one front wheel (arm pivot reaction via ear plate) - worst member PS1+-FN+; deflection 0.78 mm | 2.1 | 15.3 | 7.40 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
+| Cage frame (beam FE, motor opening cut) | 3 g bump + 1.5 g lateral (kerb strike) (arm pivot reaction via ear plate) - worst member PM+-PS1+; deflection 0.74 mm | 5.5 | 29.9 | 5.46 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
+| Cage frame (beam FE, motor opening cut) | 1.5 g cornering (outer wheel) (arm pivot reaction via ear plate) - worst member PM+-PS1+; deflection 0.69 mm | 5.4 | 29.9 | 5.57 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
+| Cage frame (beam FE, motor opening cut) | 2 g braking (arm pivot reaction via ear plate) - worst member PS1+-FN+; deflection 0.92 mm | 3.9 | 15.3 | 3.95 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
+| Cage frame (beam FE, motor opening cut) | 3 g bump, rear wheel (shock tab on R2 cross tube) - worst member R3+-K2+; deflection 0.78 mm | 5.7 | 15.1 | 2.68 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
+| Cage frame (beam FE, motor opening cut) | wing pull-off 20 N on the hood tab - worst member R1+-RW+; deflection 0.15 mm | 4.2 | 16.2 | 3.85 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
+| Frame foot screws (M2.5 self-tapping, 3 mm of foot disc) | worst foot reaction 25 N (resultant) - thread shear 6 MPa x d x 3 mm engagement | 25.0 | 141.4 | 5.65 | 2.0 | ok | screw axis vertical |
 | Rear shock upper lug plate (4.5 x 13 mm) | 3 g bump, shock force 49 N | 9.8 | 30.0 | 3.06 | 2.0 | ok | plate flat on the bed: in-plane bending, good |
-| Cage frame (beam FE, motor opening cut) | skin flipped / nose impact 10 g (hinge lugs on the bumper bar) - worst member NA--NB-; deflection 0.63 mm | 6.0 | 17.1 | 2.87 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
+| Cage frame (beam FE, motor opening cut) | skin flipped / nose impact 10 g (hinge lugs on the bumper bar) - worst member NA+-NB+; deflection 0.54 mm | 5.3 | 17.1 | 3.24 | 2.0 | ok | pieces print z up: vertical and steep tubes load across layers |
 | Hinge lug plate (4.5 mm, 3.2 hole) - shear-out above the pin | skin weight/nose impact 10 g, 12 N per lug | 1.1 | 17.3 | 16.09 | 2.0 | ok | lug stands up from the cross bar: shear is in the layer plane if the frame is printed z up |
 | Hinge lug plate (4.5 x 10.8 mm) - root bending | 12 N at 9 mm | 1.6 | 15.0 | 9.51 | 2.0 | ok | lug stands vertical: bending stress along z = across layers (use 15 MPa) |
 | Hinge pin (3 mm steel) in double shear | 25 N | 1.7 | 240.0 | >100 | 2.0 | ok | steel |
@@ -61,7 +61,7 @@ The review FE solver was re-run on the OLD `w3_strength.py` models (old loads, o
 | Wing foot screw + hood boss (M2.5, one per hanger) | 1.5 g aero + handling at 40 km/h (downforce, drag, 3 g vertical, 1.5 g lateral) - screw tension 6 N vs 236 N | 5.9 | 235.6 | 39.84 | 2.5 | ok | boss is across layers: head + M2.5 flat washer (OD 6) bearing 15 MPa x 20 mm2 |
 | Front arm (beam FE, 4 tubes/plane, X lattice) | landing on one wheel, whole front axle 3 g (abuse) - worst member L0i-L1o; tip deflection 2.3 mm; lean-rod force 173 N | 14.8 | 22.9 | 1.54 | 1.0 | ok | plates up = outer face on the bed (as now); lattice tubes across the planes are the weak direction |
 | Rear swing arm + shock hoop (beam FE, caret top rail) | 1 m drop onto the rear wheel (rear share 0.79 kg, 243 N peak, vs ultimate) - survives a flat drop from about 0.39 m before the worst member passes ultimate | 102.2 | 42.0 | 0.41 | 1.0 | **BELOW** | plane normal (y) up |
-| Cage frame (beam FE, motor opening cut) | landing on one wheel, whole front axle 3 g (abuse) (arm pivot reaction via ear plate) - worst member PS2+-FP1+; deflection 1.24 mm | 7.8 | 24.6 | 3.17 | 1.0 | ok | pieces print z up: vertical and steep tubes load across layers |
+| Cage frame (beam FE, motor opening cut) | landing on one wheel, whole front axle 3 g (abuse) (arm pivot reaction via ear plate) - worst member PS1+-FN+; deflection 1.56 mm | 4.1 | 15.3 | 3.70 | 1.0 | ok | pieces print z up: vertical and steep tubes load across layers |
 | Lean rocker V arm (6 mm plate, root of the arm) | 3 g bump drives the rod (rod force): 86 N at the tip | 5.5 | 30.0 | 5.50 | 1.0 | ok | plate flat on the bed (as now): loads in the layer plane, best direction |
 | Wing hanger (one piece, 10 mm wide web) | abuse: 10 N press on the blade tip - worst section at z 120, area 150 mm2 (stress incl. x2 fillet factor) | 9.5 | 30.0 | 3.15 | 1.0 | ok | printed on its side (current): web plane = layer plane, best direction |
 | Wing hanger (one piece, 10 mm wide web) | abuse: 10 N side knock on the blade tip - worst section at z 91, area 180 mm2 (stress incl. x2 fillet factor) | 1.7 | 30.0 | 18.03 | 1.0 | ok | printed on its side (current): web plane = layer plane, best direction |
@@ -71,7 +71,7 @@ The review FE solver was re-run on the OLD `w3_strength.py` models (old loads, o
 | Wing prong screws (3 x M2.5 through the lower prong) | 10 N press on the blade tip, overturning about the groove edge (10 mm arm) - 4 mm engagement into the blade core | 33.8 | 188.5 | 5.57 | 1.0 | ok | screw axis across the blade layers |
 | Rear swing arm + shock hoop (beam FE, caret top rail) | sustained: 1 g + spring preload 10 N (creep x0.4) - worst member 2po-B; shock force 26 N | 5.3 | 12.0 | 2.26 | 1.5 | ok | plane normal (y) up, as now |
 | Rear shock upper lug plate (4.5 x 13 mm) | sustained spring preload + 1 g, 26 N (creep x0.4) | 5.3 | 12.0 | 2.27 | 1.5 | ok | as above |
-| Cage frame (beam FE, motor opening cut) | sustained: 1 g + spring preload (shock tab) (creep x0.4) - worst member R1--RW- | 3.4 | 6.5 | 1.90 | 1.5 | ok | pieces print z up: vertical tubes load across layers |
+| Cage frame (beam FE, motor opening cut) | sustained: 1 g + spring preload (shock tab) (creep x0.4) - worst member R3+-K2+ | 3.0 | 6.1 | 1.99 | 1.5 | ok | pieces print z up: vertical tubes load across layers |
 
 ## Below their minimum (1 of 49 rows)
 
@@ -79,7 +79,7 @@ See `WS03_STRENGTH_FIXES.md` for the geometry fixes in priority order.
 
 - Rear swing arm + shock hoop (beam FE, caret top rail): 1 m drop onto the rear wheel (rear share 0.79 kg, 243 N peak, vs ultimate) - FS 0.41 (min 1.0)
 
-Frame members removed from the FE because the motor can opens the hoop: HT-PH-, HT-C100-, HT-HT2-, PH-C40-, HT-XH-, XH-PHm+, K1-HT2-.
+Frame members removed from the FE because the motor can opens the hoop: .
 Assumed (not in the CAD): 25% of the front arm's pivot reaction enters the cage through the servo-ear plate, the rest goes into the base plate through the housing bolts; pivot pin size 3 mm steel inferred from the 3.4 mm pad hole; skin + wing 0.25 kg. Frame feet are modelled as pinned (translations fixed).
 
 ## Decisions
