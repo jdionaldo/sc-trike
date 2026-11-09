@@ -13,6 +13,8 @@ import mono_build as MB
 # Every section still has FIXED edge directions (vertical flank, bevel dy/dz -0.6, cabin flank dy/dz -0.12, horizontal floor/shelf/roof), so lateral quads stay planar.
 import trace61 as T
 S1, SC = 0.6, 0.12
+if T.ALONE and os.environ.get("WS03_MASK", "1") == "1":                           # rev 16: tumblehome - the greenhouse base meets the door's outer edge (sheet plan: ~17 mm gap), roof stays as traced
+    SC = float(os.environ.get("WS03_TUMBLE", "0.5"))
 
 
 def _pl(pts, x):
