@@ -438,3 +438,7 @@ Rear-quarter intakes (sheet 62 markup, int_side / int_top): light areas are shal
 ## Rev 16 - greenhouse tumblehome (user markup: the pink strip is the gap between the window base and the door's furthest edge)
 
 The shelf between the cabin base and the outer body edge was 23-50 mm wide (the flat strips marked "Window" on the v15 top view); the reference gap is about 17 mm. The cabin flank now leans outward (dy/dz -0.5 instead of -0.12, standalone build only, `WS03_TUMBLE` overrides): the gap is 12 mm at x -90, 16 mm at -130, 21 mm at -170, 25 mm at -210 (reference about 17), and the side windows read from above as sloped strips as in the reference plan. Roof, outline and details are unchanged: plan IoU 0.984, side 0.952; skin and pieces watertight. The rev 9 chassis build is not affected (the change is gated to the standalone build).
+
+## Rev 17 - facet clean-up: smooth surfaces with slight grooves (standalone build)
+
+All drawn detail (windscreen and side glass, headlight / grille / side-mesh / tail-light / hood-panel / vent pockets, sill, engine-bay rim) is now a groove 1.2 mm wide and 0.7 mm deep along the outline (plus one inner line where a detail had an inner step), instead of raised bezels, stepped recesses and thickened pockets. The wall stays 2.4 mm everywhere except under the groove lines. Removed as separate blocks: bezels, rivet heads, tail lamp bar, roof lamp pods. Kept as real objects: hood scoops, grille holes and the 5 mm bull bar, engine-bay opening, spoiler, rails, vent tents, through slots. Watertight; face count 9.8k (was 11.5k).

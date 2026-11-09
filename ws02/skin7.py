@@ -227,6 +227,17 @@ def features(body, S0, solid_fn, pink):
     out15 = solid_fn(-2.5) - S0
     out30 = solid_fn(-2.2) - S0
     inl = S0 - solid_fn(1.0)
+    def gring(prism, poly, shrinks=(0.0,), w=1.2, d=0.7):                  # rev 17: drawn detail = slight groove (outline w wide, d deep), the skin keeps its 2.4 mm wall
+        lay = S0 - solid_fn(d)
+        out = None
+        for sh in shrinks:
+            try:
+                p0 = grow(poly, -sh) if sh else poly
+                ring = prism(grow(p0, w / 2.0)) - prism(grow(p0, -w / 2.0))
+            except Exception:
+                continue
+            out = ring if out is None else out + ring
+        return lay ^ out
     pr = lambda poly: MB.prism_xy([(x + 0.213, y + 0.177) for x, y in poly], -60.0, 220.0)
     grow = lambda poly, d: list(Polygon(poly).buffer(d, join_style=2).exterior.coords)[:-1]
     body = body - pink()
@@ -235,10 +246,11 @@ def features(body, S0, solid_fn, pink):
     W = [(xc - 2.0, 24.0), (xw, 50.0), (xh + 2.0, 27.0), (xh + 2.0, -27.0), (xw, -50.0), (xc - 2.0, -24.0)]
     if _MASK:                                                              # rev 15: glass base reaches the hood panels' outer rear corners (ref: base 66 mm, front 37 mm, header 35 mm half width)
         W = [(xc - 2.0, 33.0), (xw, 60.0), (xh + 2.0, 29.0), (xh + 2.0, -29.0), (xw, -60.0), (xc - 2.0, -33.0)]
-    body = body + (out15 ^ (pr(grow(W, 5.0)) - pr(W)))
-    body = body - (inl ^ pr(grow(W, -0.4)))
     if _MASK:
-        body = body + ((S0 - solid_fn(3.0)) ^ pr(grow(W, -3.0))) - ((S0 - solid_fn(1.8)) ^ pr(grow(W, -3.0)))      # inner glass pocket (wall thickened under it)
+        body = body - gring(pr, W, (0.0, 3.5))
+    else:
+        body = body + (out15 ^ (pr(grow(W, 5.0)) - pr(W)))
+        body = body - (inl ^ pr(grow(W, -0.4)))
     # 2. large angular side windows on the cabin flank (sheet side view: bottom on the belt, raked A-pillar edge, flat top, raked rear edge)
     sw = [(367, 547), (364, 520), (412, 486), (514, 484), (484, 534)]
     SW = []
@@ -247,10 +259,11 @@ def features(body, S0, solid_fn, pink):
         z = Zp(px, py)
         SW.append((x, min(max(z, _pl(ZSH, x) + 5.0), _pl(ZR, x) - 9.0)))
     swp = lambda poly: MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], 12.2, 90.0) + MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], -90.0, -12.2)
-    body = body + (out15 ^ (swp(grow(SW, 4.5)) - swp(SW)))
-    body = body - (inl ^ swp(grow(SW, -0.4)))
     if _MASK:
-        body = body + ((S0 - solid_fn(3.0)) ^ swp(grow(SW, -3.0))) - ((S0 - solid_fn(1.8)) ^ swp(grow(SW, -3.0)))
+        body = body - gring(swp, SW, (0.0, 3.5))
+    else:
+        body = body + (out15 ^ (swp(grow(SW, 4.5)) - swp(SW)))
+        body = body - (inl ^ swp(grow(SW, -0.4)))
     if _MASK:                                                              # 3. twin hood scoops beside the hood ridge, under the traced roofline: one inclined top plane (15.5 deg), vertical front face, open mouth
         _hin = sorted([(Xt(178.0), 45.0 * T.HW), (Xt(242.0), 63.0 * T.HW)])                      # rev 15: the scoops sit on the traced hood panels (inner edge of the panel + offset)
         Y = lambda x, d: float(np.interp(x, [p[0] for p in _hin], [p[1] for p in _hin])) - 1.0 + 0.85 * d
@@ -303,11 +316,8 @@ def features(body, S0, solid_fn, pink):
     za, zb_ = _pl(ZB, xa), _pl(ZB, xb)
     sill = [(xa, za), (xb, zb_), (xb, zb_ + 11.0), (xa, za + 11.0)]
     if _MASK:                                                              # recessed sill band (the plan mask is the outline: nothing may stand proud of it) with low rivet heads
-        lay = S0 - solid_fn(1.4)
-        body = body - (MB.prism_xz(sill, 30.0, 130.0) ^ lay) - (MB.prism_xz(sill, -130.0, -30.0) ^ lay)
-        for s_ in (1, -1):
-            for x in np.arange(xa - 10.0, xb + 10.0, -14.0):
-                body = body + Manifold.sphere(1.6, 8).translate((float(x), s_ * (hw(float(x)) - 1.2), _pl(ZB, float(x)) + 5.5))
+        for y0, y1 in ((30.0, 130.0), (-130.0, -30.0)):                  # rev 17: the sill is a drawn line (groove) now, no recessed band, no rivet heads
+            body = body - ((S0 - solid_fn(0.7)) ^ (MB.prism_xz(grow(sill, 0.6), y0, y1) - MB.prism_xz(grow(sill, -0.6), y0, y1)))
     else:
         body = body + (MB.prism_xz(sill, 30.0, 130.0) ^ out30) + (MB.prism_xz(sill, -130.0, -30.0) ^ out30)
         for s_ in (1, -1):
@@ -323,7 +333,7 @@ def features(body, S0, solid_fn, pink):
         body = body + strut((xr, -22.0, zt), (xr, 22.0, zt), 4.0)
     # 7. roof lamp pods (windscreen header corners)
     xl0 = Xp(385.0)
-    for s_ in (1, -1):
+    for s_ in ((1, -1) if not _MASK else ()):                                  # rev 17: the roof lamp pods are merged into the roof (no separate blocks)
         pts = [(x, y, tz(x) + dz) for x in (xl0 + 4.0, xl0 + 14.0) for y in ((28.0, 37.0) if s_ > 0 else (-37.0, -28.0)) for dz in (-2.0, 3.0 if _MASK else 6.0)]
         body = body + Manifold.hull_points(np.array(pts, float))
     # 8. open engine bay with mesh grille (sheet top view: rim behind the cabin, hole across the hump)
@@ -335,7 +345,8 @@ def features(body, S0, solid_fn, pink):
     # 9. tail lamp bar on the tail face
     xt = ST[-1][0]
     zt0 = ST[-1][8]
-    body = body + (MB.prism_xz([(xt - 6.0, zt0 - 24.0), (xt + 22.0, zt0 - 24.0), (xt + 22.0, zt0 - 17.0), (xt - 6.0, zt0 - 17.0)], -18.0, 18.0) ^ out30)
+    if not _MASK:
+      body = body + (MB.prism_xz([(xt - 6.0, zt0 - 24.0), (xt + 22.0, zt0 - 24.0), (xt + 22.0, zt0 - 17.0), (xt - 6.0, zt0 - 17.0)], -18.0, 18.0) ^ out30)
     # 10. diamond mesh grille through the nose face, and a hexagonal bull bar in front
     xn = ST[0][0]
     if _MASK:                                                              # the chin of the traced nose carries the grille and the bull bar, all inside the mask outline
@@ -404,18 +415,19 @@ def details13(body, S0, solid_fn):
     P_rear = lambda p: prism_yz(p, -380.0, -342.3)
 
     def apply(name, view, prism, poly, bezel=None, cuts=()):
+        """Rev 17: every drawn detail is a slight groove (1.2 mm wide, 0.7 mm deep) along its outline, plus one inner line where there was an inner step; no raised bezels, no thickened pockets."""
         nonlocal body
         if name in os.environ.get("SKIPDET", "").split(","):
             return
-        if bezel:
-            g, h = bezel
-            body = body + (lay_out(h) ^ (prism(_grow(poly, g)) - prism(poly)))
-        for shrink, d in cuts:
-            pg = _grow(poly, -shrink) if shrink else poly
-            if d > 1.0:                                                      # thicken the wall under a pocket so 1.2 mm of floor is left (walls are 2.4 mm)
-                body = body + (lay_in(d + 1.2) ^ prism(_grow(pg, 0.6)))             # slightly wider than the pocket: no coincident side faces
-            body = body - (lay_in(d) ^ prism(pg))
-        DETAILS.append((name, view, len(poly), (f"bezel {bezel[1]} mm" if bezel else "no bezel") + "".join(f", recess {d} mm" + (f" (inner, -{s} mm)" if s else "") for s, d in cuts)))
+        lay = lay_in(0.7)
+        for sh in [0.0] + sorted({sh for sh, d in cuts if sh}):
+            try:
+                p0 = _grow(poly, -sh) if sh else poly
+                ring = prism(_grow(p0, 0.6)) - prism(_grow(p0, -0.6))
+            except Exception:
+                continue
+            body = body - (lay ^ ring)
+        DETAILS.append((name, view, len(poly), "groove 1.2 x 0.7 mm" + (" + inner groove" if any(sh for sh, d in cuts) else "")))
 
     mir = lambda poly, c: [(2 * c - x, z) for x, z in poly]
     fyz = lambda px, py, dz=0.0: ((px - 1215.5) * 0.595, (383.0 - py) * 0.595 + dz)
@@ -489,7 +501,7 @@ def details13(body, S0, solid_fn):
     # engine-bay opening rim
     e0, e1 = Xt(535.0), Xt(676.0)
     rim = [(e0, -26.0), (e1, -26.0), (e1, 26.0), (e0, 26.0)]
-    body = body + (lay_out(2.0) ^ (P_top(_grow(rim, 5.0)) - P_top(_grow(rim, 0.5))))
+    body = body - (lay_in(0.7) ^ (P_top(_grow(rim, 4.0)) - P_top(_grow(rim, 2.8))))                    # rev 17: the rim is a groove line
     DETAILS.append(("engine-bay opening", "top", 4, "rim bezel 2.0 mm, through opening with 3 x 9 mesh"))
     return spoiler14(body, solid_fn, e0, e1)
 
