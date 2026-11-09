@@ -20,3 +20,9 @@ Facet rule: NOT met. 101 of 231 panel edges longer than 3 mm are under 15 deg; m
 - Heights were solved to planarity and moved several mm (up to ~12 mm at shoulder vertices S3/S5, tail ridge) from the side-view reading; front/rear views were only used for detail placement, not as a height constraint.
 - Wing/roll hoop off; spoiler and rails are rev 14 numbers placed by hand; no roof lamps, no bull bar, no side mirrors.
 - The tool-chain was not run on the rev 9 chassis; it is independent.
+
+## Orthographic and 3/4 overlays (tools_skin/pskin_ortho.py, pskin_cam34_pinned.py)
+- Front view (isotropic 0.60 mm/px, ground py 382, centre px 1212): panel edges vs the drawing, chamfer mean 4.6 px, p95 23.8 px (sheet px) - the roof/windscreen corners and fender width line up; the nose/grille sits ~25 mm too high (mask chin z 100.7 vs the drawing's lower bumper) and the hood-panel positions are off by several mm. `WS03_panel_ortho_front.png`.
+- Rear view (0.66 mm/px, centre 1721): chamfer mean 3.1 px, p95 10.5 px; tail lights, shoulder and flank widths line up well. `WS03_panel_ortho_rear.png`.
+- 3/4 view, camera pinned (az 35 deg, el 15 deg, 60 mm-equivalent, only distance and shift fitted): chamfer mean 5.9 px, p95 25 px, silhouette IoU 0.62 against a hand-painted body mask. NOT a 1:1 match: the skin is too short/narrow in this view (nose ends ~200 px behind the drawing's nose, cabin and fenders too small). `WS03_panel_q34_overlay_pinned.png`.
+- Not done: the corner table with y,z read from the front/rear views and the rebuild from it; the model is unchanged since the first commit (GLB hash a72187e6, 2 nodes).
