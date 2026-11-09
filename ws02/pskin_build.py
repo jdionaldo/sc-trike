@@ -10,6 +10,10 @@ def model(layers="AB"):
     T.layer_a(m)
     if 'B' in layers:
         T.layer_b(m)
+    import os
+    if os.environ.get('WS03_SCAN') == '1':
+        import pskin_scanfit as SF
+        print('scan tie-break:', SF.apply_scan(m, float(os.environ.get('WS03_SCANW', '1.5')), float(os.environ.get('WS03_SCANB', '1.0'))))
     m.tjunctions()
     m.solve(verbose=True)
     return m
