@@ -402,3 +402,15 @@ ratio error built - sketch (x L): roof mean +0.004, max 0.023; half width mean +
 overall L:W:H built = 1 : 0.485 : 0.572   (sketch top view W/L = 0.471, side view H/L = 0.533, front view W/H = 0.935 -> W/L via H = 0.499)
 
 GLB: `WS03_standalone_skin_v13.glb`; sheets `WS03_rev13_preview.png`, `WS03_rev13_34_compare.png`, `WS03_rev13_mask_overlay_*`.
+
+## Rev 14 - roll bar removed, mini spoiler, inset slots, grab rails (sheet 62)
+
+Standalone build (`python skin_alone.py`, `spoiler14()` in `skin7.py`). The roll-bar hoop is gone (only the chassis build keeps it). Reference crops: `out/ref62/{top,side,rear,q34}.png`; comparison `out/WS03_rev14_vs_sheet62.png` (crops left, build right; side by side, not registered pixel to pixel because the crops have no known scale).
+
+| Detail | Geometry |
+|---|---|
+| Mini spoiler | slab 4.0 mm thick, 23.5 mm deep (6 % of the car), span 70 mm (38 % of the 184 mm width, kept on the flat roof), plan trailing edge a 5-panel chevron (centre, 2 inner sweeps at 27 deg, 2 outer sweeps at 50 deg), top plane falls rearward 21 deg, leading edge 16 mm (about 10 % of the body height) above the roofline, open underneath, standing only on two 5 x 5 mm end legs plus the deck where the tips meet it |
+| Inset slots | deck cut away through the wall: 1 strip 6 x 44 mm ahead of the centre panel, 2 flank strips 5 x 8 mm at the bay front corners under the outer panels |
+| Grab rails | 2 slanted beams, 6.4 mm tall x 4.6 mm, top edge leaning 1.3 mm inward, 4 stations from the spoiler trailing edge, sloping down and back, kinking down at the tail; stand 2-5 mm proud of the deck |
+
+Checks: skin, front and rear pieces watertight; 11378 faces, volume 339017 mm3; rev 9 chassis rebuilt unchanged (8462 faces, 393198 mm3). IoU against the masks: plan 0.983, side 0.950 (0.953 without the old wing tab). Panel edges under 15 deg longer than 3 mm: 78 (7.8 %), up from 65 (6.7 %): the rail stations and the spoiler legs add about a dozen. The bay opening stayed at 52 mm wide; the sketch's is wider (about 80 mm), so the spoiler and rails are placed relative to our bay, not the sketch's.

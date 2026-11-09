@@ -308,13 +308,14 @@ def features(body, S0, solid_fn, pink):
         for s_ in (1, -1):
             for x in np.arange(xa - 10.0, xb + 10.0, -14.0):
                 body = body + Manifold.sphere(1.6, 8).translate((float(x), s_ * (hw(float(x)) + 2.8), _pl(ZB, float(x)) + 7.0))
-    # 6. roll bar behind the roof
-    xr = Xp(552.0)
-    zt = tz(xr) + 14.0
-    for s_ in (1, -1):
-        top = (xr, s_ * 22.0, zt)
-        body = body + strut((xr + 10.0, top[1], tz(xr + 10.0) - 2.0), top, 4.0) + strut(top, (xr - 12.0, s_ * 22.0, tz(xr - 12.0) - 2.0), 4.0)
-    body = body + strut((xr, -22.0, zt), (xr, 22.0, zt), 4.0)
+    # 6. roll bar behind the roof (rev 14: removed from the standalone skin; replaced by the mini spoiler, slots and grab rails in details13)
+    if not _MASK:
+        xr = Xp(552.0)
+        zt = tz(xr) + 14.0
+        for s_ in (1, -1):
+            top = (xr, s_ * 22.0, zt)
+            body = body + strut((xr + 10.0, top[1], tz(xr + 10.0) - 2.0), top, 4.0) + strut(top, (xr - 12.0, s_ * 22.0, tz(xr - 12.0) - 2.0), 4.0)
+        body = body + strut((xr, -22.0, zt), (xr, 22.0, zt), 4.0)
     # 7. roof lamp pods (windscreen header corners)
     xl0 = Xp(385.0)
     for s_ in (1, -1):
@@ -448,4 +449,58 @@ def details13(body, S0, solid_fn):
     rim = [(e0, -26.0), (e1, -26.0), (e1, 26.0), (e0, 26.0)]
     body = body + (lay_out(2.0) ^ (P_top(_grow(rim, 5.0)) - P_top(_grow(rim, 0.5))))
     DETAILS.append(("engine-bay opening", "top", 4, "rim bezel 2.0 mm, through opening with 3 x 9 mesh"))
+    return spoiler14(body, solid_fn, e0, e1)
+
+
+def spoiler14(body, solid_fn, e0, e1):
+    """Rev 14 (sheet 62): inset slots (deck cut away), mini spoiler floating over the engine-bay front, grab rails on the bay rim."""
+    if os.environ.get("NOSPOIL") == "1":
+        return body
+    zr = tz(e0)
+    DEPTH, T, HALF = 23.5, 4.0, 35.0                                                # plan depth (6 % of the car length), slab thickness, half span (~40 % of the width)
+    xt = lambda y: e0 + (10.0 if abs(y) <= 10.0 else 10.0 - 0.5 * (abs(y) - 10.0) if abs(y) <= 22.0 else 4.0 - 1.2 * (abs(y) - 22.0))     # trailing edge: 5-facet chevron
+    TAN = 0.39                                                                        # top plane falls rearward (21 deg), leading edge 16 mm above the roofline
+    xref = e0 + 10.0 + DEPTH
+    ztop = lambda x: zr + 16.0 - TAN * (xref - x)
+    ys = [-HALF, -22.0, -10.0, 10.0, 22.0, HALF]
+    trail = [(xt(y), y) for y in ys]
+    plan = [(x, y) for x, y in trail] + [(x + DEPTH, y) for x, y in reversed(trail)]
+    plan = [(x + 0.0, y) for x, y in plan]
+    allow = solid_fn(-22.0) - solid_fn(1.2)                                          # outside the cavity: nothing may fill the hollow
+    # inset slots first (the slab is added afterwards, so it is not cut)
+    xlc = e0 + 10.0 + DEPTH
+    slots = [[(xlc + 2.5, -22.0), (xlc + 8.5, -22.0), (xlc + 8.5, 22.0), (xlc + 2.5, 22.0)]]
+    for s_ in (1, -1):
+        slots.append([(e0 + 1.0, s_ * 23.0), (e0 + 6.0, s_ * 23.0), (e0 + 6.0, s_ * 31.0), (e0 + 1.0, s_ * 31.0)])
+    for q in slots:
+        body = body - MB.prism_xy(q, zr - 10.0, zr + 40.0)
+    # slab: plan prism between two parallel planes sloping down to the rear
+    lo, hi = (min(x for x, _ in plan) - 1.0, max(x for x, _ in plan) + 1.0)
+    band = [(lo, ztop(lo)), (hi, ztop(hi)), (hi, ztop(hi) - T), (lo, ztop(lo) - T)]
+    slab = MB.prism_xy(plan, 0.0, 400.0) ^ MB.prism_xz(band, -60.0, 60.0)
+    # legs: the two ends of the slab (|y| > 30) stand on the deck, 5 mm long behind the leading edge
+    legs = None
+    for s_ in (1, -1):
+        y0, y1 = (30.0, HALF) if s_ > 0 else (-HALF, -30.0)
+        xl_ = xt(s_ * 32.0) + DEPTH
+        q = [(xl_ - 5.0, y0), (xl_, y0), (xl_, y1), (xl_ - 5.0, y1)]
+        blk = MB.prism_xy(q, 0.0, 400.0) ^ MB.prism_xz([(xl_ - 6.0, ztop(xl_ - 6.0) - T), (xl_ + 1.0, ztop(xl_ + 1.0) - T), (xl_ + 1.0, zr - 8.0), (xl_ - 6.0, zr - 8.0)], -60.0, 60.0)
+        legs = blk if legs is None else legs + blk
+    body = body + ((slab + legs) ^ allow)
+    DETAILS.append(("mini spoiler", "top/side/rear", len(plan), f"5-facet chevron slab {T} mm thick, {DEPTH} mm deep, +16 mm over the roofline, supported at the ends"))
+    DETAILS.append(("inset slots", "top/rear", 4, "deck cut away: 1 centre strip ahead + 2 flank strips at the bay corners"))
+    # grab rails: slanted bars on the rim, from the spoiler trailing edge, sloping down/back, kinking down at the tail
+    xs_ = [e0 - 3.0, e1 + 14.0, e1 - 4.0, e1 - 14.0]
+    zt_ = [tz(e0 - 3.0) + 5.0, tz(e1 + 14.0) + 3.0, tz(e1 - 4.0) + 2.0, tz(e1 - 14.0) - 3.0]
+    TH, SL = 6.4, 1.3
+    rails = None
+    for s_ in (1, -1):
+        yb = (27.0 * s_, 31.6 * s_)
+        yt = ((27.0 - SL) * s_, (31.6 - SL) * s_)
+        for i in range(len(xs_) - 1):
+            pts = [(xs_[j], yy, zt_[j] - TH) for j in (i, i + 1) for yy in yb] + [(xs_[j], yy, zt_[j]) for j in (i, i + 1) for yy in yt]
+            h = Manifold.hull_points(np.array(pts, float))
+            rails = h if rails is None else rails + h
+    body = body + (rails ^ allow)
+    DETAILS.append(("grab rails", "side/top/rear", 8, f"2 slanted beams {TH} mm tall x 4.6 mm, 4 stations, kink down at the tail, stand 2-5 mm proud"))
     return body
