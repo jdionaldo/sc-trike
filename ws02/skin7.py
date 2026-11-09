@@ -446,10 +446,26 @@ def details13(body, S0, solid_fn):
     QB = (_band(1) + _band(-1)) ^ _above                                   # flank strip only: the projection must not touch the deck, tail face or other surfaces
     P_quarter = lambda p: P_side(p) ^ QB
     SX = lambda pts: [(Xp(a + 0.7), Zp(a, b + 0.45)) for a, b in pts]
-    UP = [(553, 500), (700, 511), (723, 522), (660, 530), (612, 536), (547, 547), (574, 528)]                 # swallow-tail wedge panel
-    apply("upper rear intake panel", "side", P_quarter, SX(UP), bezel=(1.5, 0.8), cuts=((0, 0.8), (4.0, 1.6)))
-    LO = [(546, 545), (736, 526), (650, 550), (603, 603), (585, 643), (484, 677), (544, 628), (577, 566)]      # swept panel down to the rear sill
-    apply("lower rear intake panel", "side", P_quarter, SX(LO), bezel=(2.0, 0.4), cuts=((0, 0.8), (5.0, 1.6)))
+    # rev 15b: the two vents are low faceted triangular "tents" hugging the rear quarter, opening to the front, one above the other
+    for s_ in (1, -1):
+        # upper tent: on the shoulder beside the engine bay, apex swept back toward the tail corner
+        xf, xa = -256.0, -331.0
+        F = [(xf, 48.0), (xf, 62.0), (xa, 64.0), (xa, 61.0)]
+        pts = [(x, s_ * y, surf(x, y) - 2.0) for x, y in F] + [(xf, s_ * 55.0, surf(xf, 55.0) + 5.0), (xa, s_ * 62.5, surf(xa, 62.5) + 0.5)]
+        tent = Manifold.hull_points(np.array(pts, float))
+        mouth = Manifold.hull_points(np.array([(x, s_ * y, surf(xf - 1.0, 55.0) + z) for x in (xf + 0.5, xf - 9.0) for y in (53.5, 56.5) for z in (0.4, 2.0)], float))
+        body = body + tent - mouth
+        # lower tent: a shallow recess in the flank with a low faceted tent standing in it (nothing leaves the outline)
+        p1, p2, pa = SX([(577, 566)])[0], SX([(556, 610)])[0], SX([(700, 528)])[0]
+        tri = [p1, p2, pa]
+        body = body - (lay_in(1.4) ^ P_quarter(_grow(tri, 3.0))) if s_ == 1 else body - (lay_in(1.4) ^ P_quarter(_grow(tri, 3.0)))
+        fm = ((p1[0] + p2[0]) / 2.0, (p1[1] + p2[1]) / 2.0)
+        yb = lambda x: s_ * (hw(x) - 1.7)
+        yr = lambda x: s_ * (hw(x) - 0.25)
+        lp = [(p1[0], yb(p1[0]), p1[1]), (p2[0], yb(p2[0]), p2[1]), (pa[0], yb(pa[0]), pa[1]), (fm[0], yr(fm[0]), fm[1]), (pa[0] + 0.0, yr(pa[0]), pa[1])]
+        body = body + Manifold.hull_points(np.array(lp, float))
+    DETAILS.append(("upper vent tent", "top", 4, "raised faceted triangular tent 5 mm high on the shoulder, 75 mm swept back, 3 x 1.6 mm mouth at the front"))
+    DETAILS.append(("lower vent tent", "side", 3, "triangle recess 1.4 mm in the flank with a 1.15 mm tent inside it, opening forward"))
     thru = lambda poly: (lay_in(0.0) if False else (solid_fn(-1.0) - solid_fn(5.0))) ^ P_quarter(poly)        # through the 2.4 mm wall
     US = [(549, 499), (556, 498), (575, 518), (572, 526)]                   # dark orange: slot at the front notch
     body = body - thru(SX(US))
