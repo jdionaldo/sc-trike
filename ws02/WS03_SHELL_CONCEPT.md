@@ -333,3 +333,34 @@ overall L:W:H built = 1 : 0.488 : 0.555   (sketch top view W/L = 0.471, side vie
 **Rev 9 unchanged.** After the skin7 edit the chassis build (`WS03_SKIN=facet`) was rebuilt: body 8462 faces, volume 393198 mm3, bounds [-446.5, -91.4, -24.3] to [48.8, 91.4, 139.9], pieces 202.1 x 176.7 x 152.5, 146.6 x 182.3 x 159.6, 146.5 x 182.9 x 162.1, facet metrics 4720 triangles / 1144 panels / 121 smooth edges (16.0 %): identical to f99cf87. (The scoop and bull-bar edits had briefly changed it, volume 390568 and nose x 34.3; both are now gated.) Note that rev 9 is f99cf87; 740cb79 is rev 8.
 
 Tools: `tools_skin/preview4.py OUT.png` (flat-shaded iso/side/top/front with visible crease lines), `tools_skin/facet_metrics.py`, `tools_skin/proportions.py`. GLB: `WS03_standalone_skin_v11.glb`. Sheets: `WS03_rev11_preview.png`, `WS03_rev11_overlay_{side,top,front,rear}.png`.
+
+## Rev 12 - outline from the user's silhouette masks (mask61.py, ref/plan_mask.png, ref/side_mask.png)
+
+The plan and side outlines are no longer traced by eye: they are taken from the two masks (solid red). `mask61.py` extracts the edge of each mask per pixel column, reduces it with cv2.approxPolyDP (1.5 px, corners kept), then drops only vertices with a turn under 15 deg whose removal moves the outline by under 2-3 mm (floor: 2 mm). Vertex counts and merged counts:
+
+```
+plan: 13 vertices, 5 with turn < 15 deg; after merging near-collinear ones (<1 mm): 11, 3 under 15 deg
+top: 20 vertices, 8 with turn < 15 deg; after merging near-collinear ones (<1 mm): 15, 3 under 15 deg
+bot: 22 vertices, 2 with turn < 15 deg; after merging near-collinear ones (<1 mm): 20, 0 under 15 deg
+```
+
+**Normalisation.** Both masks are scaled to the same body length (nose tip and tail end line up), L = 391 mm from the sheet-61 tyre scale (112 mm tyre = 176 px): plan 0.2078 mm/px (width/length of the top mask: 188.6 x 391), side 0.2005 mm/px (height/length of the side mask: 167 mm from the sill cut to the wing peak, z 52 to 219). The masks' flat bottom cut is the sill line (z 52.2).
+
+**What comes from the masks.** Plan half width (YF), the roofline (ZR, with the wing / roll-bar tab at px 1318-1560 replaced by a straight line between its feet, because the wing is a separate part) and the floor (ZB: nose chin, front arch, sill, rising rear rail, tail). The first run of red from the top is used for the floor, so the thin sill tab under the rear tyre notch is dropped (about 150 mm2). Belt line and roof width still come from sheet 61 (the masks do not show them); the hood centre is now a ridge 8 mm above the side panels so the twin scoops sit beside it under the traced roofline.
+
+**Silhouette overlay error (pixel IoU of the rendered silhouette against the mask).**
+
+| silhouette | IoU | outside mask | mask not covered |
+|---|---:|---:|---:|
+| plan, skin + wing | 0.992 | 9591 px | 2416 px |
+| plan, skin only | 0.996 | 2030 px | 3621 px |
+| side, skin + wing | 0.967 | 15035 px | 13773 px |
+| side, skin only | 0.954 | 11678 px | 27954 px |
+
+Plan is within 1 %. Side is 3.3 % off with the wing and 4.6 % without it; most of the missing area (about 12000 px, 1.4 %) is the sketch's spoiler tab, which our wing (a different, wider, flatter part, top set on the peak z 219) does not fill; the rest is the sill tab under the tyre notch, the nose chin tip and the engine-bay opening (seen from the side as a slot). Features were moved inside the outline: sill band recessed 1.4 mm instead of raised, rivet heads 0.7 mm proud, bull bar and diamond grille on the chin inside the nose, lamp pods 3 mm, scoops beside the ridge.
+
+**Facets.** 702 panels, flat coverage 97.0 %, median edge change 74 deg. 66 long panel edges (8.5 %) are under 15 deg, because the masks carry their own sub-15 deg corners and the brief was to keep every corner: 31 sit on the rounded tail (x < -300), 11 on the rear fender, 8 at the cowl, the rest on the flank and roof corners of the mask (e.g. 11.2 deg at x -202 in plan, 8.3 deg at the roof peak). They are listed by `/tmp`-style edge dump, not hidden.
+
+Watertight body and both pieces (cut x -165, front 199 x 184 x 153, rear 194 x 189 x 172, four 3.2 mm dowel holes), 2.4 mm walls, wing separate (`wing.stl`). Rev 9 (chassis build) rebuilt after the edits: 8462 faces, volume 393198, bounds [-446.5, -91.4, -24.3] to [48.8, 91.4, 139.9], pieces 202.1 / 146.6 / 146.5 long: unchanged.
+
+Tools: `mask61.py`, `tools_skin/mask_iou.py PREFIX [0]` (IoU and overlay images), `tools_skin/preview4.py`. Sheets: `WS03_rev12_preview.png`, `WS03_rev12_mask_overlay_{plan,side}.png` (with wing), `..._noWing_...`. GLB: `WS03_standalone_skin_v12.glb`.

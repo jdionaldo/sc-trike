@@ -1,6 +1,7 @@
 """Rev 7 faceted skin (WS03_SKIN=facet): a low-poly polyhedron lofted from per-station convex section polygons (flat panels, hard creases),
 with faceted features (windscreen and side-window recesses with bezels, angular hood scoops, grille nose with bull bar, roll bar, lamp pods,
 engine bay, octagonal rear arch). Stations are traced from sheet 61 (same body as sheet 60) and scaled to the 450 mm wheelbase."""
+import os
 import numpy as np
 import trimesh
 from manifold3d import Manifold
@@ -33,7 +34,19 @@ _ZR0, _ZSH0 = ZR, ZSH
 _xh, _xb = _Xp(380.0) + 1.0, _Xp(548.0) + 0.5
 _xc = _Xp(267.0)                                                         # cowl base
 _cz = _pl(T.mm_polyline(T.TOP), _xc) - (8.0 if T.ALONE else 2.0)                                               # cowl break forced to >= 15 deg (the sheet has 10 deg)
-if T.ALONE:
+_MASK = T.ALONE and os.environ.get("WS03_MASK", "1") == "1"
+if _MASK:                                                                # rev 12: plan, roofline and floor straight from the user's silhouette masks (mask61.py)
+    import mask61
+    _mt = mask61.tables()
+    YF = mask61.merge(_mt["plan"], 15.0, 3.0); ZR = mask61.merge(_mt["top"], 15.0, 3.0); ZB = mask61.merge(_mt["bot"], 15.0, 2.0)
+    if not any(abs(p[0] - _xc) < 6.0 for p in ZR):                                                   # keep a cowl vertex on the roofline
+        ZR = sorted(ZR + [(_xc, _pl(ZR, _xc))], reverse=True)
+    _xcw = min((p for p in ZR if abs(p[0] - _xc) < 6.0), key=lambda p: abs(p[0] - _xc))[0]          # cowl vertex of the mask roofline
+    _hood = [(a, b - 8.0 * min(1.0, (ZR[0][0] - a) / 25.0)) for a, b in ZR if a >= _xcw - 0.01]               # the hood centre is a ridge 8 mm above the side panels (the scoops sit beside it, so the silhouette stays the mask's)
+    _rest = [p for p in _ZSH0 if p[0] <= _xb]
+    ZSH = _hood + [(_rest[0][0], _hood[-1][1] - 6.0)] + _rest[1:]
+    ZSH = [(a, min(b, _pl(ZR, a))) for a, b in ZSH]
+elif T.ALONE:
     ZR = T.simplify([_ZR0[0], (_xc, _cz)] + [p for p in _ZR0 if p[0] <= _xh])
     _rest = [p for p in _ZSH0 if p[0] <= _xb]
     ZSH = T.simplify([_ZSH0[0], (_xc, _cz), (_rest[0][0], _cz - 6.0)] + _rest[1:])       # belt dips 6 mm behind the cowl (the sheet's window sill sits below the hood), so hood and belt break >= 15 deg
@@ -85,7 +98,7 @@ if T.ALONE:                                                              # rev 1
 else:
     GB = GC = None
 if T.ALONE:                                                              # rev 11: snap breakpoints that lie within SNAP mm of each other onto one station so every lateral quad is exactly planar
-    SNAP = 3.5
+    SNAP = 1.2 if _MASK else 3.5
     _all = sorted({a for pts in (YF, ZR, ZB, ZSH, YR, GB, GC) for a, _ in pts}, reverse=True)
     _cl, _cur = [], [_all[0]]
     for _x in _all[1:]:
@@ -226,7 +239,20 @@ def features(body, S0, solid_fn, pink):
     swp = lambda poly: MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], 12.2, 90.0) + MB.prism_xz([(x + 0.19, z + 0.23) for x, z in poly], -90.0, -12.2)
     body = body + (out15 ^ (swp(grow(SW, 4.5)) - swp(SW)))
     body = body - (inl ^ swp(grow(SW, -0.4)))
-    if T.ALONE:
+    if _MASK:                                                              # 3. twin hood scoops beside the hood ridge, under the traced roofline: one inclined top plane (15.5 deg), vertical front face, open mouth
+        Y = lambda x, d: _pl(YR, x) + d
+        for s_ in (1, -1):
+            foot = [(-18.0, Y(-18.0, 3.0)), (-18.0, Y(-18.0, 19.0)), (-45.0, Y(-45.0, 19.0)), (-45.0, Y(-45.0, 3.0))]
+            pts = [(x, s_ * y, surf(x, y) - 2.0) for x, y in foot] + [(x, s_ * y, surf(x, y) + (7.5 if x > -20.0 else 0.0)) for x, y in foot]
+            wedge = Manifold.hull_points(np.array(pts, float))
+            ci = [(-20.0, Y(-20.0, 5.0)), (-20.0, Y(-20.0, 17.0)), (-41.0, Y(-41.0, 17.0)), (-41.0, Y(-41.0, 5.0))]
+            cp = [(x, s_ * y, surf(x, y) - 3.0) for x, y in ci] + [(x, s_ * y, surf(x, y) + (4.5 if x > -22.0 else -0.6)) for x, y in ci]
+            cav = Manifold.hull_points(np.array(cp, float))
+            ym = Y(-22.0, 6.0)
+            mouth = Manifold.cube((8.0, 10.0, 5.0), center=False).translate((-26.0, ym if s_ > 0 else -ym - 10.0, surf(-22.0, ym + 5.0) + 0.2))
+            hole = MB.prism_xy([(-24.0, s_ * Y(-24.0, 6.0)), (-36.0, s_ * Y(-36.0, 6.0)), (-36.0, s_ * Y(-36.0, 16.0)), (-24.0, s_ * Y(-24.0, 16.0))], 40.0, 400.0) ^ (solid_fn(-1.0) - solid_fn(5.0))
+            body = body + wedge - cav - mouth - hole
+    elif T.ALONE:
         # 3. twin angular hood scoops: one inclined top plane (16.7 deg to the hood), vertical front face with an open mouth
         for s_ in (1, -1):
             foot = [(-8.0, 7.0), (-8.0, 25.0), (-38.0, 30.0), (-38.0, 10.0)]
@@ -263,10 +289,17 @@ def features(body, S0, solid_fn, pink):
     xa, xb = Xp(305.0), Xp(553.0)
     za, zb_ = _pl(ZB, xa), _pl(ZB, xb)
     sill = [(xa, za), (xb, zb_), (xb, zb_ + 11.0), (xa, za + 11.0)]
-    body = body + (MB.prism_xz(sill, 30.0, 130.0) ^ out30) + (MB.prism_xz(sill, -130.0, -30.0) ^ out30)
-    for s_ in (1, -1):
-        for x in np.arange(xa - 10.0, xb + 10.0, -14.0):
-            body = body + Manifold.sphere(1.6, 8).translate((float(x), s_ * (hw(float(x)) + 2.8), _pl(ZB, float(x)) + 7.0))
+    if _MASK:                                                              # recessed sill band (the plan mask is the outline: nothing may stand proud of it) with low rivet heads
+        lay = S0 - solid_fn(1.4)
+        body = body - (MB.prism_xz(sill, 30.0, 130.0) ^ lay) - (MB.prism_xz(sill, -130.0, -30.0) ^ lay)
+        for s_ in (1, -1):
+            for x in np.arange(xa - 10.0, xb + 10.0, -14.0):
+                body = body + Manifold.sphere(1.6, 8).translate((float(x), s_ * (hw(float(x)) - 1.2), _pl(ZB, float(x)) + 5.5))
+    else:
+        body = body + (MB.prism_xz(sill, 30.0, 130.0) ^ out30) + (MB.prism_xz(sill, -130.0, -30.0) ^ out30)
+        for s_ in (1, -1):
+            for x in np.arange(xa - 10.0, xb + 10.0, -14.0):
+                body = body + Manifold.sphere(1.6, 8).translate((float(x), s_ * (hw(float(x)) + 2.8), _pl(ZB, float(x)) + 7.0))
     # 6. roll bar behind the roof
     xr = Xp(552.0)
     zt = tz(xr) + 14.0
@@ -277,7 +310,7 @@ def features(body, S0, solid_fn, pink):
     # 7. roof lamp pods (windscreen header corners)
     xl0 = Xp(385.0)
     for s_ in (1, -1):
-        pts = [(x, y, tz(x) + dz) for x in (xl0 + 4.0, xl0 + 14.0) for y in ((28.0, 37.0) if s_ > 0 else (-37.0, -28.0)) for dz in (-2.0, 6.0)]
+        pts = [(x, y, tz(x) + dz) for x in (xl0 + 4.0, xl0 + 14.0) for y in ((28.0, 37.0) if s_ > 0 else (-37.0, -28.0)) for dz in (-2.0, 3.0 if _MASK else 6.0)]
         body = body + Manifold.hull_points(np.array(pts, float))
     # 8. open engine bay with mesh grille (sheet top view: rim behind the cabin, hole across the hump)
     e0, e1 = Xt(535.0), Xt(676.0)
@@ -291,6 +324,17 @@ def features(body, S0, solid_fn, pink):
     body = body + (MB.prism_xz([(xt - 6.0, zt0 - 24.0), (xt + 22.0, zt0 - 24.0), (xt + 22.0, zt0 - 17.0), (xt - 6.0, zt0 - 17.0)], -18.0, 18.0) ^ out30)
     # 10. diamond mesh grille through the nose face, and a hexagonal bull bar in front
     xn = ST[0][0]
+    if _MASK:                                                              # the chin of the traced nose carries the grille and the bull bar, all inside the mask outline
+        for zc, ys in ((108.0, (-9.0, -3.0, 3.0, 9.0)), (115.0, (-12.0, -6.0, 0.0, 6.0, 12.0)), (122.0, (-9.0, -3.0, 3.0, 9.0))):
+            for yc_ in ys:
+                pts = [(x, yc_ + dy, zc + dz) for x in (xn - 22.0, xn + 6.0) for dy, dz in ((2.8, 0.0), (-2.8, 0.0), (0.0, 2.8), (0.0, -2.8))]
+                body = body - Manifold.hull_points(np.array(pts, float))
+        zbb_ = 104.0
+        bar = [(xn - 12.0, -20.0, zbb_), (xn - 6.0, -12.0, zbb_), (xn - 6.0, 12.0, zbb_), (xn - 12.0, 20.0, zbb_)]
+        for a, b in zip(bar, bar[1:]):
+            body = body + strut(a, b, 5.0)
+        body = body + strut(bar[0], (xn - 17.0, -22.0, 118.0), 5.0) + strut(bar[-1], (xn - 17.0, 22.0, 118.0), 5.0)
+        return body
     zlo, zhi = ST[0][1], ST[0][8]
     for row, zc in enumerate((zlo + 7.0, zlo + 14.5)):
         ys = (-9.0, -3.0, 3.0, 9.0) if row == 0 else (-12.0, -6.0, 0.0, 6.0, 12.0)

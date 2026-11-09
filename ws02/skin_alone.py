@@ -98,7 +98,9 @@ def wing():
     xt = K.Xp(572.0)
     hang = np.vstack([m.vertices for n, m in ms if "hanger" in n])
     zdeck = K.tz(xt)
-    dz = (zdeck - 8.0) - hang[:, 2].min()
+    import mask61 as _M
+    dz = (_M.Z_SILL + 832 * _M.L_MM / 1951.0) - allv[:, 2].max()                        # wing top on the side mask's peak (sheet tab, z 219)
+    xt = _M.X_NOSE - 1425.0 * _M.L_MM / 1951.0                                        # centre of the mask's wing tab
     parts = []
     for n, m in ms:
         t = m.copy()
