@@ -73,6 +73,8 @@ class Detail:
 
     def groove(self, geom, axis, lo, hi, name):
         """Cut a groove: the part of the outer 0.7 mm layer inside prism(geom)."""
+        from shapely.affinity import translate
+        geom = translate(geom, 0.0313, 0.0171)                     # jitter: avoids exact coincidence with panel creases (pinch points after the boolean)
         cut = prism(geom, axis, lo, hi) ^ self.skin
         self.cutters = getattr(self, "cutters", []) + [cut]
         LOG.append((name, "groove", round(cut.volume(), 1)))
@@ -89,8 +91,19 @@ class Detail:
     def finish(self):
         if getattr(self, "adders", None):
             self.body = Manifold.batch_boolean([self.body] + self.adders, OpType.Add)
+        self.dbg = list(getattr(self, "cutters", []) or []) + getattr(self, "dbg", [])
         if getattr(self, "cutters", None):
-            self.body = self.body - Manifold.batch_boolean(self.cutters, OpType.Add)
+            ok = self.body
+            dropped = 0
+            for c in self.cutters:                       # greedy: a cutter that leaves pinch points after welding is dropped (and logged)
+                nb = ok - c
+                if C.to_trimesh(nb).is_watertight:
+                    ok = nb
+                else:
+                    dropped += 1
+            self.body = ok
+            if dropped:
+                LOG.append(("dropped cutters (non-watertight after weld)", "info", dropped))
         self.adders, self.cutters = [], []
 
 
@@ -196,12 +209,12 @@ def apply_details(d):
             dirv = (b - a) / np.linalg.norm(b - a); nrm = np.array([-dirv[1], dirv[0]])
             quad = [tuple(c0 + nrm * 2.2 + dirv * 2.4), tuple(c0 + nrm * 2.2 - dirv * 2.4), tuple(c0 - nrm * 2.2 - dirv * 2.4), tuple(c0 - nrm * 2.2 + dirv * 2.4)]
             d.through(Polygon(quad), "y", lo, hi, "quarter slot")
-        for (a, b) in (((357, 668), (500, 640)), ((580, 625), (640, 535)), ((640, 535), (700, 508))):
+        for (a, b) in (((357, 668), (500, 640)), ((592, 608), (640, 535)), ((640, 535), (700, 508))):
             d.groove(line_band([C.side_xz(*a), C.side_xz(*b)]), "y", lo, hi, "red line")
     # ---- front layer (grille, headlights) projected along x ----
     hl = [front_yz(*p) for p in ((1250, 185), (1262, 178), (1305, 167), (1303, 178), (1270, 196), (1255, 196))]
     for pts in (hl, mir_y(hl)):
-        d.groove(ring(Polygon(pts)), "x", 0, 45, "headlight")
+        d.groove(ring(Polygon(pts)), "x", -0.37, 45, "headlight")
     grille = [front_yz(*p) for p in ((1172, 205), (1182, 192), (1245, 192), (1253, 205), (1253, 227), (1245, 235), (1182, 235), (1172, 227))]
     gm = [(1.0 * (y - 0.5 * (min(a for a, _ in grille) + max(a for a, _ in grille))) + 0.5 * (min(a for a, _ in grille) + max(a for a, _ in grille)), z) for y, z in grille]
     d.groove(ring(Polygon(grille)), "x", 10, 45, "grille frame")

@@ -52,7 +52,7 @@ def layer_a(m: C.Model):
 
     def vs(name, px, py, w=0.7):                         # on the shoulder (belt) line
         x, y = C.plan_xy(px, py)
-        m.v(name, x, y, zsh(x), w=(3.0, 3.0, 0.5))
+        m.v(name, x, y, zsh(x), w=(3.0, 3.0, 3.0))
         return name
 
     def vc(name, px, w=0.7, d=0.0):                      # on the centre line
@@ -63,10 +63,10 @@ def layer_a(m: C.Model):
     # centre ridge
     vc("c0", 118.5); vc("c2", 258.0); vc("c3", 392.0); vc("c4", 484.0); vc("c5", 525.0); vc("c6", 640.0); vc("c7", 708.0)
     # outline-derived shoulder line S (outline from the mask, inset): nose, flare corner, cowl, rear fender corners, tail
-    for k, ((x, hw), ins) in enumerate(zip(PLAN, (0.0, 7.0, 9.0, 9.0, 8.0, 8.0, 8.0, 8.0, 7.0, 3.0, 0.0))):
+    for k, ((x, hw), ins) in enumerate(zip(PLAN, (0.0, 7.0, 9.0, 16.0, 16.0, 12.0, 9.0, 8.0, 7.0, 3.0, 0.0))):
         last = k == len(PLAN) - 1
         y = 0.0 if last else max(hw - ins, 0.0)
-        m.v(f"S{k}", x, y, zsh(x) if k not in (0, len(PLAN) - 1) else zr(x), w=(3.0, 3.0, 1.0) if not last else (3.0, 100.0, 1.0))
+        m.v(f"S{k}", x, y, zsh(x) if k not in (0, len(PLAN) - 1) else zr(x), w=(3.0, 3.0, 4.0) if not last else (3.0, 100.0, 1.0))
     # hood
     vr("A", 176, 168, s=0.12); vr("B", 242, 150, s=0.12); vr("b2", 258, 151, s=0.12)
     vr("D", 204, 128, s=0.20); vr("C", 262, 108, s=0.14)
@@ -151,7 +151,7 @@ def layer_b(m: C.Model):
     def sv_(name, px, py, y, wy=0.4, wz=1.0):
         x, z = C.side_xz(px, py)
         return m.v(name, x, y(x), z, w=(3.0, wy, 3.0))
-    Fk = sv_("Fk", 305, 583, lambda x: yo(x) - 3.0, 0.3)
+    Fk = sv_("Fk", 321, 583, lambda x: yo(x) - 3.0, 0.3)
     Fb = sv_("Fb", 345, 663, lambda x: yo(x), 3.0)
     Rb = sv_("Rb", 498, 630, lambda x: yo(x), 3.0)
     A1 = sv_("A1", 310, 678, lambda x: yo(x) - 2.0, 3.0)
