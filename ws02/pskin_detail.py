@@ -166,6 +166,12 @@ def scoop(d, pname, tag):
 
 
 def apply_details(d):
+    import os
+    if os.environ.get('WS03_WARP') == '1':
+        import pskin_warp as _W
+        _px, _sx = C.plan_xy, C.side_xz
+        C.plan_xy = lambda px, py: (lambda a: (_W.wx(a[0]), a[1]))(_px(px, py))
+        C.side_xz = lambda px, py: (lambda a: (_W.wx(a[0]), a[1]))(_sx(px, py))
     P = d.P
     Z0, Z1 = 60, 260
     # ---- top layer (plan outlines, projected along z) ----
