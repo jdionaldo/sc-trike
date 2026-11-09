@@ -63,5 +63,5 @@ def render(ax, view):
 
 fig, axs = plt.subplots(2, 2, figsize=(16, 10), dpi=110)
 for ax, v in zip(axs.ravel(), VIEWS): render(ax, v)
-fig.suptitle("WS03 standalone skin (rev 14) - flat shaded, creases drawn where panels meet at more than 12 deg", fontsize=12)
+fig.suptitle("WS03 standalone skin (rev 15) - flat shaded, creases drawn where panels meet at more than 12 deg", fontsize=12)
 fig.tight_layout(); fig.savefig(sys.argv[1]); print("ok")

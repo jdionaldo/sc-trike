@@ -414,3 +414,21 @@ Standalone build (`python skin_alone.py`, `spoiler14()` in `skin7.py`). The roll
 | Grab rails | 2 slanted beams, 6.4 mm tall x 4.6 mm, top edge leaning 1.3 mm inward, 4 stations from the spoiler trailing edge, sloping down and back, kinking down at the tail; stand 2-5 mm proud of the deck |
 
 Checks: skin, front and rear pieces watertight; 11378 faces, volume 339017 mm3; rev 9 chassis rebuilt unchanged (8462 faces, 393198 mm3). IoU against the masks: plan 0.983, side 0.950 (0.953 without the old wing tab). Panel edges under 15 deg longer than 3 mm: 78 (7.8 %), up from 65 (6.7 %): the rail stations and the spoiler legs add about a dozen. The bay opening stayed at 52 mm wide; the sketch's is wider (about 80 mm), so the spoiler and rails are placed relative to our bay, not the sketch's.
+
+## Rev 15 - canopy / hood alignment and rear-quarter intakes
+
+Widths (half width, mm; reference read from the sheet 61 plan, +-3 mm; `tools_skin/width_table.py`):
+
+| station (sheet px) | body ref | body ours | canopy ref | canopy ours | glass ref | glass v14 | glass v15 | hood panel ref (in..out) | scoop v14 | scoop v15 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| nose (122) | 19.1 | 18.8 | 0.5 | 0.4 | - | - | - | - | - | - |
+| hood front (160) | 35.6 | 50.3 | 9.2 | 9.2 | - | - | - | - | - | - |
+| scoop / hood panel (215) | 59.4 | 71.2 | 21.8 | 21.8 | - | - | - | 36..57 | 25..41 | 38..51 |
+| vent (215) | 59.4 | 71.2 | 21.8 | 21.8 | - | - | - | panel centre | 0..9 | 0..9 |
+| windscreen base (297) | 88.7 | 86.3 | 65.1 | 65.1 | 59.3 | 50.0 | 60.0 | - | - | - |
+| roof front (330) | 91.3 | 87.2 | 53.9 | 53.9 | 55.1 | 40.9 | 47.7 | - | - | - |
+| roof rear (385) | 89.0 | 88.7 | 35.1 | 35.1 | - | - | - | - | - | - |
+
+Fix: the scoops moved from the ridge (y 19-35) onto the traced hood panels (36-57 reference; now 38-51); the glass base went from 50 to 60 mm half width (reference about 66), front 24 to 33, header 27 to 29 (the roof ridge there is 35). The outline is untouched: plan IoU 0.982 (v14 0.983), side 0.954. Overlay on the reference plan: `out/WS03_rev15_top_vs_ref.png`. The body outline is the user's mask, so it stays wider than the reference at the hood front (50 vs 36 mm); that is the mask, not the details.
+
+Rear-quarter intakes (sheet 62 markup, int_side / int_top): light areas are shallow faceted panels (bezel 0.4-0.8 mm proud, recess 0.8 mm, inner step 1.6 mm), the dark strips are the real openings, cut through the 2.4 mm wall: dark orange = one 4.5 x 19 mm slot at the front notch of the upper swallow-tail panel; dark green = 5 slanted slots separated by 1.6 mm bars along the leading edge of the lower swept panel. Old fender vent pocket and the three slits per side removed. Skin and both pieces watertight; panel edges under 15 deg: 92 (7.8 %), up from 78. Rev 9 chassis rebuilt unchanged (8462 faces, 393198 mm3).

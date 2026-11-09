@@ -231,6 +231,8 @@ def features(body, S0, solid_fn, pink):
     # 1. raked windscreen: hexagonal glass on the windscreen facets (sheet: front edge at the cowl, widest at the A-pillar feet, narrowing to the header)
     xc, xw, xh = Xt(262.0), Xt(297.0), Xt(380.0)
     W = [(xc - 2.0, 24.0), (xw, 50.0), (xh + 2.0, 27.0), (xh + 2.0, -27.0), (xw, -50.0), (xc - 2.0, -24.0)]
+    if _MASK:                                                              # rev 15: glass base reaches the hood panels' outer rear corners (ref: base 66 mm, front 37 mm, header 35 mm half width)
+        W = [(xc - 2.0, 33.0), (xw, 60.0), (xh + 2.0, 29.0), (xh + 2.0, -29.0), (xw, -60.0), (xc - 2.0, -33.0)]
     body = body + (out15 ^ (pr(grow(W, 5.0)) - pr(W)))
     body = body - (inl ^ pr(grow(W, -0.4)))
     if _MASK:
@@ -248,7 +250,8 @@ def features(body, S0, solid_fn, pink):
     if _MASK:
         body = body + ((S0 - solid_fn(3.0)) ^ swp(grow(SW, -3.0))) - ((S0 - solid_fn(1.8)) ^ swp(grow(SW, -3.0)))
     if _MASK:                                                              # 3. twin hood scoops beside the hood ridge, under the traced roofline: one inclined top plane (15.5 deg), vertical front face, open mouth
-        Y = lambda x, d: _pl(YR, x) + d
+        _hin = sorted([(Xt(178.0), 45.0 * T.HW), (Xt(242.0), 63.0 * T.HW)])                      # rev 15: the scoops sit on the traced hood panels (inner edge of the panel + offset)
+        Y = lambda x, d: float(np.interp(x, [p[0] for p in _hin], [p[1] for p in _hin])) - 1.0 + 0.85 * d
         for s_ in (1, -1):
             foot = [(-18.0, Y(-18.0, 3.0)), (-18.0, Y(-18.0, 19.0)), (-45.0, Y(-45.0, 19.0)), (-45.0, Y(-45.0, 3.0))]
             pts = [(x, s_ * y, surf(x, y) - 2.0) for x, y in foot] + [(x, s_ * y, surf(x, y) + (7.5 if x > -20.0 else 0.0)) for x, y in foot]
@@ -290,7 +293,7 @@ def features(body, S0, solid_fn, pink):
         for k in range(4):
             zl = Zp(318.0, 590.0) + 6.0 * k
             body = body - Manifold.cube((Xp(390.0) - Xp(318.0) if False else abs(Xp(390.0) - xl), 40.0, 2.4), center=False).translate((Xp(390.0), 40.0 if s_ > 0 else -80.0, zl))
-        for k in range(3):
+        for k in range(0 if _MASK else 3):                                   # rev 15: replaced by the two rear-quarter intakes
             xv = Xp(575.0) - 8.0 * k
             body = body - MB.prism_xy([(xv, s_ * 46.0), (xv - 3.0, s_ * 46.0), (xv - 3.0, s_ * 66.0), (xv, s_ * 66.0)], 60.0, 220.0)
     # 5. stepped sill panel with rivets
@@ -436,8 +439,29 @@ def details13(body, S0, solid_fn):
     # side view: door vent pocket, rear-fender vent pocket, door crease (two stepped groove layers)
     DV = [(310, 592), (325, 585), (392, 587), (375, 601)]
     apply("door vent pocket", "side", P_side, [(Xp(a), Zp(a, b)) for a, b in DV], bezel=(2.0, 1.2), cuts=((0, 2.0), (2.5, 3.5)))
-    FV = [(566, 588), (576, 580), (598, 632), (584, 640)]
-    apply("fender vent pocket", "side", P_side, [(Xp(a), Zp(a, b)) for a, b in FV], bezel=(2.0, 1.2), cuts=((0, 2.0), (2.0, 3.5)))
+    # rev 15: two rear-quarter intakes per side (sheet 62 markup). Light areas = shallow faceted panels, dark strips = the real openings (through the wall, louvred)
+    xq = [float(x) for x in np.arange(-240.0, -358.01, -3.0)]
+    _band = lambda sg: MB.prism_xy([(x, sg * (hw(x) + 3.0)) for x in xq] + [(x, sg * (hw(x) - 12.0)) for x in reversed(xq)], -60.0, 400.0)
+    _above = MB.prism_xz([(x, _pl(ZB, x) + 7.0) for x in xq] + [(xq[-1], 320.0), (xq[0], 320.0)], -200.0, 200.0)       # keep above the floor line: the deep (floorless) skin extends below it
+    QB = (_band(1) + _band(-1)) ^ _above                                   # flank strip only: the projection must not touch the deck, tail face or other surfaces
+    P_quarter = lambda p: P_side(p) ^ QB
+    SX = lambda pts: [(Xp(a + 0.7), Zp(a, b + 0.45)) for a, b in pts]
+    UP = [(553, 500), (700, 511), (723, 522), (660, 530), (612, 536), (547, 547), (574, 528)]                 # swallow-tail wedge panel
+    apply("upper rear intake panel", "side", P_quarter, SX(UP), bezel=(1.5, 0.8), cuts=((0, 0.8), (4.0, 1.6)))
+    LO = [(546, 545), (736, 526), (650, 550), (603, 603), (585, 643), (484, 677), (544, 628), (577, 566)]      # swept panel down to the rear sill
+    apply("lower rear intake panel", "side", P_quarter, SX(LO), bezel=(2.0, 0.4), cuts=((0, 0.8), (5.0, 1.6)))
+    thru = lambda poly: (lay_in(0.0) if False else (solid_fn(-1.0) - solid_fn(5.0))) ^ P_quarter(poly)        # through the 2.4 mm wall
+    US = [(549, 499), (556, 498), (575, 518), (572, 526)]                   # dark orange: slot at the front notch
+    body = body - thru(SX(US))
+    DETAILS.append(("upper intake slot", "side", 4, "through the wall, 4.5 x 19 mm, at the notch of the wedge panel"))
+    ls = lambda t: ((577 - 33 * t), (566 + 62 * t))                         # leading edge of the lower panel, t 0..1 (top to bottom)
+    nsl = 5
+    for k in range(nsl):
+        t0, t1 = k / nsl + 0.012, (k + 1) / nsl - 0.012
+        (xa0, ya0), (xa1, ya1) = ls(t0), ls(t1)
+        sl = [(xa0, ya0), (xa0 + 9.0, ya0 - 3.0), (xa1 + 9.0, ya1 - 3.0), (xa1, ya1)]               # dark green strip, angled slats
+        body = body - thru(SX(sl))
+    DETAILS.append(("lower intake strip", "side", 4, "5 through slots with 1.6 mm bars along the leading edge, 6 mm wide"))
     for w_, d_ in ((4.0, 0.8), (1.6, 1.6)):
         a, b = (Xp(390.0), Zp(390.0, 655.0)), (Xp(545.0), Zp(545.0, 572.0))
         dd = np.array(b) - np.array(a); dd /= np.linalg.norm(dd); n_ = np.array([-dd[1], dd[0]]) * w_ / 2.0

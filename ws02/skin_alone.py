@@ -85,6 +85,7 @@ def clean(m):
     t = trimesh.Trimesh(V, Tr, process=False)
     t.merge_vertices()
     t.update_faces(t.nondegenerate_faces())
+    t.update_faces(t.area_faces > 1e-6)                                      # rev 15: drop zero-width slivers left by coincident layer edges
     t.remove_unreferenced_vertices()
     return max(t.split(only_watertight=False), key=lambda c: abs(c.volume))
 
