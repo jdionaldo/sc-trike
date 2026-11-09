@@ -294,7 +294,7 @@ def features(body, S0, solid_fn, pink):
             xv = Xp(575.0) - 8.0 * k
             body = body - MB.prism_xy([(xv, s_ * 46.0), (xv - 3.0, s_ * 46.0), (xv - 3.0, s_ * 66.0), (xv, s_ * 66.0)], 60.0, 220.0)
     # 5. stepped sill panel with rivets
-    xa, xb = Xp(305.0) - 0.43, Xp(553.0)
+    xa, xb = Xp(305.0) - (0.43 if T.ALONE else 0.0), Xp(553.0)
     za, zb_ = _pl(ZB, xa), _pl(ZB, xb)
     sill = [(xa, za), (xb, zb_), (xb, zb_ + 11.0), (xa, za + 11.0)]
     if _MASK:                                                              # recessed sill band (the plan mask is the outline: nothing may stand proud of it) with low rivet heads
