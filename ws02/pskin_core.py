@@ -149,6 +149,14 @@ class Model:
             print("solve cost", sol.cost, "nfev", sol.nfev)
         return sol
 
+    def warp_positions(self, fn):
+        """Apply a point warp fn(p)->p to every solved vertex, then re-solve planarity with the warped positions as (soft) targets."""
+        for n, p in list(self.pos.items()):
+            q = fn(p)
+            self.tg[n] = [float(q[0]), 0.0 if self.tg[n][1] == 0.0 else float(q[1]), float(q[2])]
+            self.w[n] = [3.0, 100.0 if self.tg[n][1] == 0.0 else 3.0, 3.0]
+        return self.solve()
+
     def planarity(self):
         out = []
         for p in self.panels:

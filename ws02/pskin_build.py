@@ -16,6 +16,10 @@ def model(layers="AB"):
         print('scan tie-break:', SF.apply_scan(m, float(os.environ.get('WS03_SCANW', '1.5')), float(os.environ.get('WS03_SCANB', '1.0'))))
     m.tjunctions()
     m.solve(verbose=True)
+    import os
+    if os.environ.get('WS03_WARP') == '1':
+        import pskin_warp as W
+        m.warp_positions(W.make())
     return m
 
 

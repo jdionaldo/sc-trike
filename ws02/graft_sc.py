@@ -22,5 +22,5 @@ for n, m in parts.items():
 for k, nm in (("01c084e8", "pod_a"), ("3fd21f8d", "pod_b"), ("799ca28d", "roof_rack"), ("1713399d", "spoiler")):
     m = trimesh.load(f"scan/sc_{k}.stl"); V = m.vertices / 1000.0; V = np.stack([-V[:, 1], V[:, 0], V[:, 2]], 1)
     t = trimesh.Trimesh(V, m.faces, process=False); t.visual.face_colors = [90, 90, 100, 255]; t.apply_transform(R); sc.add_geometry(t, node_name=nm)
-sc.export("out/pskin/WS03_graft_v1.glb")
-all_ = trimesh.util.concatenate([trimesh.load(f"out/pskin/graft_{n}.stl") for n in parts]); all_.export("out/pskin/graft_all.stl")
+sc.export("out/pskin/WS03_graft_v3.glb")
+all_ = trimesh.util.concatenate([trimesh.load(f"out/pskin/graft_{n}.stl") for n in parts]); all_.export("out/pskin/graft_all3.stl")
