@@ -26,3 +26,7 @@ Branch `ws03-blueprint-shell` (from `ws03-skin-fit` 9f7f702). Nothing merged to 
 * P9 pitched down: ridge on the centreline, flanks run down to P10's top edge (rows at P10's columns).
 * P5 roof frame: the two plates share a joint hull along the crease; pillars start flush with the plate top and end inside P8's top edge, so no stubs or wedges.
 * Silhouette IoU rear 0.50 -> 0.53, top 0.58 -> 0.60, side 0.45 -> 0.44, front 0.56 -> 0.55. Before: `overlay_before_rearwork.png`, after: `overlay_after_rear.png`.
+
+## Rev 3 (frame under the skin)
+* P4 windshield frame + P5 roof frame are now one object `P4P5` (crease joint hulls at x 112 and x 165, no wedge): 239 x 139 x 72 mm, fits the 256 mm bed only (not 220).
+* B pillars end under P8's top skin (foot flares x1.4, inboard of the skin plane); the rear legs taper (6 -> 3.3 sheet mm) and pass through tapered cutouts (leg + 0.5 mm) in P9, ending under its skin. No stub stands above any panel.

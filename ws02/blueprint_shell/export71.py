@@ -7,7 +7,7 @@ import shell71 as B, fit71 as F
 OUT = 'blueprint_shell'
 COL = {'P1': (190, 60, 60), 'P2': (60, 110, 200), 'P3': (60, 170, 220), 'P4': (130, 70, 170), 'P5': (110, 60, 150), 'P6': (150, 100, 200),
        'P7': (120, 60, 180), 'P8': (50, 150, 70), 'P9': (240, 140, 40), 'P10': (230, 120, 30), 'P11': (230, 200, 40)}
-NAMES = {'P1': 'Front Nose / Grille', 'P2': 'Front Side Panel', 'P3': 'Hood Panel', 'P4': 'Windshield Frame', 'P5': 'Roof Frame', 'P6': 'Roof Panel', 'P7': 'Roof Light',
+NAMES = {'P1': 'Front Nose / Grille', 'P2': 'Front Side Panel', 'P3': 'Hood Panel', 'P4': 'Windshield_and_Roof_Frame', 'P6': 'Roof Panel', 'P7': 'Roof Light',
          'P8': 'Side_Panel_with_Rear_Side_Cover', 'P9': 'Rear Upper Cover', 'P10': 'Rear Side Cover', 'P11': 'Rear Lower Diffuser'}
 
 

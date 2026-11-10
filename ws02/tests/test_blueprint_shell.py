@@ -4,11 +4,11 @@ import numpy as np, pytest, trimesh
 
 D = os.path.join(os.path.dirname(__file__), "..", "blueprint_shell")
 REP = json.load(open(os.path.join(D, "shell71_report.json")))
-PANELS = ["P1", "P2L", "P2R", "P3", "P4", "P5", "P6", "P7L", "P7R", "P8P10L", "P8P10R", "P9", "P11"]
+PANELS = ["P1", "P2L", "P2R", "P3", "P4P5", "P6", "P7L", "P7R", "P8P10L", "P8P10R", "P9", "P11"]
 
 
 def test_panel_objects():
-    assert len(PANELS) == 13       # 14 sheet parts; P8 and P10 are fused per side into one object (P8P10L/R), P7 is x2, P2 is L+R
+    assert len(PANELS) == 12       # 14 sheet parts; P8 and P10 are fused per side (P8P10L/R) and P4 + P5 are one frame (P4P5), P7 is x2, P2 is L+R
     for n in PANELS:
         assert os.path.exists(os.path.join(D, "stl", f"{n}.stl")), n
 

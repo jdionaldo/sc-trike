@@ -84,9 +84,9 @@
   "bed256": true
  },
  "P9": {
-  "faces": 628,
+  "faces": 684,
   "watertight": true,
-  "volume_cm3": 39.65,
+  "volume_cm3": 39.05,
   "extent_mm": [
    121.2,
    146.0,
@@ -107,28 +107,16 @@
   "bed220": true,
   "bed256": true
  },
- "P4": {
-  "faces": 32,
+ "P4P5": {
+  "faces": 388,
   "watertight": true,
-  "volume_cm3": 16.29,
+  "volume_cm3": 86.6,
   "extent_mm": [
-   75.2,
-   122.6,
-   42.2
+   239.4,
+   139.1,
+   71.8
   ],
-  "bed220": true,
-  "bed256": true
- },
- "P5": {
-  "faces": 308,
-  "watertight": true,
-  "volume_cm3": 71.57,
-  "extent_mm": [
-   166.4,
-   160.6,
-   55.5
-  ],
-  "bed220": true,
+  "bed220": false,
   "bed256": true
  },
  "P7L": {
@@ -195,8 +183,7 @@
    "P8P10R": 8501.0,
    "P9": 0.0,
    "P11": 0.0,
-   "P4": 0.0,
-   "P5": 0.0,
+   "P4P5": 0.0,
    "P7L": 0.0,
    "P7R": 0.0
   },
