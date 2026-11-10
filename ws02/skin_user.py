@@ -354,7 +354,10 @@ def joints(mans, pcs):
     return out
 
 
-def side_skirts(pcs, x_front=-207.0, x_rear=-331.0, zb=ZOFF - 48.0):
+SKIRT_MARK = [(-205.0, -30.0), (-257.0, -26.0), (-336.0, 70.0), (-205.0, 72.0)]    # the user's yellow outline (chassis x, z): its leaning left edge is replaced by the cab's end plane so the skirt is one piece with the running board / sill (user: incorporate the running boards into the rear addition); right edge as drawn
+
+
+def side_skirts(pcs, x_front=-205.5, x_rear=-331.0, zb=ZOFF - 48.0):
     """Closes the open quarter between the cab sill and the rear shell's flank rim (user's yellow area): a faceted wall (2.4 mm) from the deck line up to the rim,
     one planar panel per segment of the simplified rim line, outer face on the rim's outer y, flush with the neighbouring walls."""
     from shapely.geometry import LineString
@@ -379,7 +382,11 @@ def side_skirts(pcs, x_front=-207.0, x_rear=-331.0, zb=ZOFF - 48.0):
                     hp += [(x, sg * yy, z + 1.5), (x, sg * yy, zb)]
             seg = m3.Manifold.hull_points(np.array(hp))
             out = seg if out is None else out + seg
-    return out
+    import mono_build as MB
+    from shapely.geometry.polygon import orient
+    from shapely.geometry import Polygon
+    mark = orient(Polygon(SKIRT_MARK), 1.0)                      # the user's drawing (x, z): a parallelogram leaning back, read off their side-view screenshot
+    return out ^ (MB.prism_xz(list(mark.exterior.coords)[:-1], -130.0, 0.0) + MB.prism_xz(list(mark.exterior.coords)[:-1], 0.0, 130.0))
 
 
 def fit(pcs):
