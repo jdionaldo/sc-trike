@@ -142,7 +142,7 @@ def frames(X):
     # P4 sloped ring: bottom edge x 64 z 60 (y +-40), top edge x 112 z 86 (y +-34)
     ob = [(62, -42, 60), (62, 42, 60), (112, 34, 86), (112, -34, 86)]
     ib = [(68, -42 + w, 62.5), (68, 42 - w, 62.5), (106, 34 - w, 83.5), (106, -34 + w, 83.5)]
-    p4 = ring_panel(sq(ob), sq(ib), FRAME_DEPTH)
+    out["P4"] = ring_panel(sq(ob), sq(ib), FRAME_DEPTH)
     # P5: front plate (112..165), rear plate (165..226), window in the front plate, another under the roof panel
     def z_f(x): return 86 + (x - 112) * 11 / 53.0
     def z_r(x): return 97 - (x - 165) * 7 / 61.0
@@ -152,40 +152,20 @@ def frames(X):
     irr = [(172, -26, z_r(172)), (172, 26, z_r(172)), (205, 26, z_r(205)), (205, -26, z_r(205))]
     pf = ring_panel(sq(ofr), sq(ifr), FRAME_DEPTH)
     pr = ring_panel(sq(orr), sq(irr), FRAME_DEPTH)
-    parts = [man(p4), man(pf), man(pr)]
+    parts = [man(pf), man(pr)]
+    # crease joint: hull over the shared edge (x 165) of both plates, top and underside, so the two plates are one body without a wedge underneath
     def nrm(o):
         q = [X(p_) for p_ in o]; n_ = np.cross(q[1] - q[0], q[2] - q[1]); n_ /= np.linalg.norm(n_); return -n_ if n_[2] < 0 else n_
-    def crease(edge, o1, o2):
-        """hull over a shared edge of two plates (top face and both undersides): the plates become one body without a wedge underneath."""
-        n1, n2 = nrm(o1), nrm(o2)
-        jp = []
-        for ee in edge: jp += [ee, ee - n1 * FRAME_DEPTH, ee - n2 * FRAME_DEPTH]
-        return man(trimesh.convex.convex_hull(np.array(jp)))
-    parts.append(crease([X((112, -34, 86)), X((112, 34, 86))], ob, ofr))        # windshield frame -> roof frame
-    parts.append(crease([X((165, -38, 97)), X((165, 38, 97))], ofr, orr))       # front plate -> rear plate
+    nf, nr_ = nrm(ofr), nrm(orr)
+    e = [X((165, -38, 97)), X((165, 38, 97))]
+    jp = []
+    for ee in e: jp += [ee, ee - nf * FRAME_DEPTH, ee - nr_ * FRAME_DEPTH]
+    parts.append(man(trimesh.convex.convex_hull(np.array(jp))))
     wb = 6.0 * SCALE
-
-    def tbar(p0, p1, w0, w1):
-        """tapered square leg: cube w0 at p0 hulled to cube w1 at p1 (real mm)."""
-        pts = []
-        for p_, w_ in ((p0, w0), (p1, w1)):
-            for dx in (-w_ / 2, w_ / 2):
-                for dy in (-w_ / 2, w_ / 2):
-                    for dz in (-w_ / 2, w_ / 2): pts.append(np.add(p_, (dx, dy, dz)))
-        return trimesh.convex.convex_hull(np.array(pts))
-    slots = {"P9": []}
     for sy in (1, -1):
-        # B pillar: flush with the plate on top, flares into a wider foot that ends UNDER P8's top skin (no stub above the skin)
-        top, mid, foot = X((160, sy * 34, z_f(160) - 3.0)), X((160, sy * 39, 68)), X((160, sy * 41, 52))
-        parts.append(man(tbar(top, mid, wb, wb)))
-        parts.append(man(tbar(mid, foot, wb, wb * 1.4)))
-        # rear leg: tapers from the roof plate and slots through a cutout in the rear upper cover; its foot stays under P9's skin
-        top, foot = X((178, sy * 35, z_r(178) - 3.0)), X((209, sy * 46, 68))
-        leg = tbar(top, foot, wb, wb * 0.55)
-        parts.append(man(leg))
-        grow = tbar(top, foot, wb + 1.0, wb * 0.55 + 1.0)                    # cutout = leg + 0.5 mm all round
-        slots["P9"].append(man(grow))
-    out["P4P5"] = tm(m3.Manifold.batch_boolean(parts, m3.OpType.Add))
+        parts.append(man(bar(X((160, sy * 34, z_f(160) - 3.0)), X((160, sy * 46, 62)), wb)))        # B pillar: top flush with the plate, foot in P8's top edge
+        parts.append(man(bar(X((178, sy * 35, z_r(178) - 3.0)), X((197, sy * 52, 66)), wb)))        # rear slanted pillar
+    out["P5"] = tm(m3.Manifold.batch_boolean(parts, m3.OpType.Add))
     # P7 roof lights: shelled boxes (open towards the windshield), on the front roof corners
     for sy, nm in ((1, "P7L"), (-1, "P7R")):
         c = X((107, sy * 24, 93))
@@ -193,7 +173,7 @@ def frames(X):
         o = m3.Manifold.cube((sx, sy_, sz), center=True)
         inn = m3.Manifold.cube((sx - WALL, sy_ - 2 * WALL, sz - 2 * WALL), center=True).translate((WALL / 2, 0, 0))
         out[nm] = tm((o - inn).translate(tuple(c)))
-    return out, slots
+    return out
 
 
 def build_all():
@@ -233,9 +213,7 @@ def build_all():
         M = m3.Manifold.batch_boolean(solids, m3.OpType.Add)
         res[name] = M
     res = {k: tm(v) for k, v in res.items()}
-    fr, slots = frames(X)
-    res.update(fr)
-    res["P9"] = tm(man(res["P9"]) - m3.Manifold.batch_boolean(slots["P9"], m3.OpType.Add))
+    res.update(frames(X))
     return openings(res, X)
 
 
