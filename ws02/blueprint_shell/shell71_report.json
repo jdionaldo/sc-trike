@@ -120,13 +120,13 @@
   "bed256": true
  },
  "P5": {
-  "faces": 308,
+  "faces": 322,
   "watertight": true,
-  "volume_cm3": 71.57,
+  "volume_cm3": 87.55,
   "extent_mm": [
    166.4,
-   160.6,
-   55.5
+   177.2,
+   78.1
   ],
   "bed220": true,
   "bed256": true
@@ -157,7 +157,7 @@
  },
  "_overall": {
   "length": 398.6,
-  "width": 169.4,
+  "width": 177.2,
   "height": 146.0,
   "scale": 1.46,
   "nose_x": 60.0,

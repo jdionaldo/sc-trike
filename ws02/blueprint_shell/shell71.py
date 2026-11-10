@@ -134,7 +134,67 @@ def bar(p0, p1, w):
     return trimesh.convex.convex_hull(np.array(pts))
 
 
-def frames(X):
+def ray_hit(meshes, o, d):
+    """first hit of the ray o + t d (t > 0) on any of the meshes (Moller-Trumbore); returns (t, unit normal facing the ray origin)."""
+    best = (np.inf, None)
+    d = np.asarray(d, float) / np.linalg.norm(d)
+    for m in meshes:
+        tri = m.vertices[m.faces]
+        e1, e2 = tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0]
+        pv = np.cross(d, e2)
+        det = np.einsum("ij,ij->i", e1, pv)
+        ok = np.abs(det) > 1e-9
+        inv = np.where(ok, 1.0 / np.where(ok, det, 1.0), 0.0)
+        tv = o - tri[:, 0]
+        u = np.einsum("ij,ij->i", tv, pv) * inv
+        qv = np.cross(tv, e1)
+        v = (qv @ d) * inv
+        t = np.einsum("ij,ij->i", e2, qv) * inv
+        hit = ok & (u >= 0) & (v >= 0) & (u + v <= 1) & (t > 0.5)
+        if hit.any():
+            k = np.argmin(np.where(hit, t, np.inf))
+            if t[k] < best[0]:
+                n = np.cross(e1[k], e2[k]); n /= np.linalg.norm(n)
+                best = (t[k], n if n @ d < 0 else -n)
+    return best
+
+
+def cube_hull(points_w):
+    pts = []
+    for p_, w_ in points_w:
+        for dx in (-w_ / 2, w_ / 2):
+            for dy in (-w_ / 2, w_ / 2):
+                for dz in (-w_ / 2, w_ / 2): pts.append(np.add(p_, (dx, dy, dz)))
+    return trimesh.convex.convex_hull(np.array(pts))
+
+
+def plop(top, aim, w, skin, flare=1.9, rise=1.2, bury=1.6, depth_in=4.0, hit=None):
+    """pillar from `top` towards `aim`, ended where it meets the skin: the leg runs on `depth_in` into the wall (no end face above the skin), and a collar
+    (hull of the leg's section 10 mm above the skin and a pad lying in the skin plane, rim `rise` above it and `bury` into the wall) blends it onto the surface."""
+    top, aim = np.asarray(top, float), np.asarray(aim, float)
+    d = (aim - top) / np.linalg.norm(aim - top)
+    if hit is not None:                                   # explicit contact point and surface normal (pillar lands on the flank's top edge strip)
+        H, n = np.asarray(hit[0], float), np.asarray(hit[1], float)
+        d = (H - top) / np.linalg.norm(H - top)
+        if n @ d > 0: n = -n
+    else:
+        t, n = ray_hit(skin, top, d)
+        if n is None: raise RuntimeError("pillar does not meet the skin")
+        H = top + d * t
+    leg = man(cube_hull([(top, w), (H + d * 2 * w, w * flare)])).trim_by_plane(tuple(n), float(n @ H) - 1.0)      # one flared taper, cut by the skin plane: it widens into the surface, no end face outside the skin
+    u = d - n * (d @ n); u /= np.linalg.norm(u); v = np.cross(n, u)
+    pad = []
+    for su, sv, hz in ((-1, -1, rise), (1, -1, rise), (1, 1, rise), (-1, 1, rise), (-1.35, -1.25, -bury), (1.35, -1.25, -bury), (1.35, 1.25, -bury), (-1.35, 1.25, -bury)):
+        pad.append(H + u * su * w * flare / 2 + v * sv * w * flare / 2 + n * hz)
+    ring = [H - d * 10.0 + a_ * (w / 2) * sa + b_ * (w / 2) * sb for a_, b_ in [(np.cross(d, [0, 0, 1]) / np.linalg.norm(np.cross(d, [0, 0, 1])), None)] for sa in (-1, 1) for sb in (0,)] if False else None
+    a1 = np.cross(d, [0.0, 0.0, 1.0]); a1 /= np.linalg.norm(a1); a2 = np.cross(d, a1)
+    ringp = [H - d * 10.0 + a1 * sa * w / 2 + a2 * sb * w / 2 for sa in (-1, 1) for sb in (-1, 1)]
+    collar = trimesh.convex.convex_hull(np.array(pad[:4] + ringp))
+    padsolid = trimesh.convex.convex_hull(np.array(pad))
+    return [leg]
+
+
+def frames(X, res=None):
     """P4 windshield frame, P5 roof frame (+ B-pillars), P7 roof lights; returns {name: trimesh} in chassis mm."""
     out = {}
     def sq(pts): return [X(p) for p in pts]
@@ -162,9 +222,16 @@ def frames(X):
     for ee in e: jp += [ee, ee - nf * FRAME_DEPTH, ee - nr_ * FRAME_DEPTH]
     parts.append(man(trimesh.convex.convex_hull(np.array(jp))))
     wb = 6.0 * SCALE
+    skin = [res["P8P10L"], res["P8P10R"], res["P9"]]
     for sy in (1, -1):
-        parts.append(man(bar(X((160, sy * 34, z_f(160) - 3.0)), X((160, sy * 46, 62)), wb)))        # B pillar: top flush with the plate, foot in P8's top edge
-        parts.append(man(bar(X((178, sy * 35, z_r(178) - 3.0)), X((197, sy * 52, 66)), wb)))        # rear slanted pillar
+        # B pillar and rear pillar run into the skin and are blended onto it by a collar + pad (no flat end face standing on the surface)
+        p1, p2 = X((160, sy * 46, 62)), X((160, sy * 54, 40))
+        nb = np.cross([1.0, 0, 0], p2 - p1); nb /= np.linalg.norm(nb)
+        if nb @ np.array([0, sy, 1.0]) < 0: nb = -nb
+        Hb = X((160, sy * 48, 56.5))
+        leg = man(cube_hull([(X((160, sy * 34, z_f(160) - 3.0)), wb), (X((160, sy * 49, 48)), wb * 1.5)]))
+        parts.append(leg.trim_by_plane(tuple(-nb), float(-(nb @ Hb) - 0.2)))        # B pillar comes out from behind the flank's top edge, clipped to the skin's outer plane
+        parts += plop(X((178, sy * 35, z_r(178) - 3.0)), X((199, sy * 54, 60)), wb, skin)
     out["P5"] = tm(m3.Manifold.batch_boolean(parts, m3.OpType.Add))
     # P7 roof lights: shelled boxes (open towards the windshield), on the front roof corners
     for sy, nm in ((1, "P7L"), (-1, "P7R")):
@@ -213,7 +280,7 @@ def build_all():
         M = m3.Manifold.batch_boolean(solids, m3.OpType.Add)
         res[name] = M
     res = {k: tm(v) for k, v in res.items()}
-    res.update(frames(X))
+    res.update(frames(X, res))
     return openings(res, X)
 
 

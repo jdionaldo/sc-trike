@@ -26,3 +26,6 @@ Branch `ws03-blueprint-shell` (from `ws03-skin-fit` 9f7f702). Nothing merged to 
 * P9 pitched down: ridge on the centreline, flanks run down to P10's top edge (rows at P10's columns).
 * P5 roof frame: the two plates share a joint hull along the crease; pillars start flush with the plate top and end inside P8's top edge, so no stubs or wedges.
 * Silhouette IoU rear 0.50 -> 0.53, top 0.58 -> 0.60, side 0.45 -> 0.44, front 0.56 -> 0.55. Before: `overlay_before_rearwork.png`, after: `overlay_after_rear.png`.
+
+## Rev 3b (pillars blended; rev 3 reverted)
+Rev 3 (P4+P5 merge, legs through P9 cutouts) was reverted (d1855e0). Instead the B pillars and the rear pillars of the roof frame are blended onto the skin: each pillar tapers into a flared foot (x1.5 / x1.9 of its section) that is cut by the skin plane, so it widens into the surface and has no flat end face standing on it (`plop()` in `shell71.py`; the B pillar is clipped to the flank's outer plane). Checked with x-sections (`sect_pillars3.png`) and close-ups (`plop_*.png`).
