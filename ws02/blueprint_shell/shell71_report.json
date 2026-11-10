@@ -84,9 +84,9 @@
   "bed256": true
  },
  "P9": {
-  "faces": 628,
+  "faces": 792,
   "watertight": true,
-  "volume_cm3": 39.65,
+  "volume_cm3": 38.92,
   "extent_mm": [
    121.2,
    146.0,
@@ -120,11 +120,11 @@
   "bed256": true
  },
  "P5": {
-  "faces": 322,
+  "faces": 420,
   "watertight": true,
-  "volume_cm3": 87.55,
+  "volume_cm3": 83.09,
   "extent_mm": [
-   166.4,
+   185.0,
    177.2,
    78.1
   ],

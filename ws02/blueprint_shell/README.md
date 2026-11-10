@@ -29,3 +29,6 @@ Branch `ws03-blueprint-shell` (from `ws03-skin-fit` 9f7f702). Nothing merged to 
 
 ## Rev 3b (pillars blended; rev 3 reverted)
 Rev 3 (P4+P5 merge, legs through P9 cutouts) was reverted (d1855e0). Instead the B pillars and the rear pillars of the roof frame are blended onto the skin: each pillar tapers into a flared foot (x1.5 / x1.9 of its section) that is cut by the skin plane, so it widens into the surface and has no flat end face standing on it (`plop()` in `shell71.py`; the B pillar is clipped to the flank's outer plane). Checked with x-sections (`sect_pillars3.png`) and close-ups (`plop_*.png`).
+
+## Rev 4 (roof frame tail tapers into P9)
+The roof frame's rear plate now ends at x 212; its left/right legs continue as tongues that taper in plan (14.6 -> 8.8 mm) and dive from the plate's height to under P9's skin through matching tapered cutouts (tongue + 0.5 mm all round). Top view with and without the roof panel: `taper_top.png`, `taper_top_noP6.png`.

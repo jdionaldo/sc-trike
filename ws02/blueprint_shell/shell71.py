@@ -208,8 +208,8 @@ def frames(X, res=None):
     def z_r(x): return 97 - (x - 165) * 7 / 61.0
     ofr = [(112, -34, 86), (112, 34, 86), (165, 38, 97), (165, -38, 97)]
     ifr = [(122, -27, z_f(122)), (122, 27, z_f(122)), (160, 27, z_f(160)), (160, -27, z_f(160))]
-    orr = [(165, -38, 97), (165, 38, 97), (226, 36, 90), (226, -36, 90)]
-    irr = [(172, -26, z_r(172)), (172, 26, z_r(172)), (205, 26, z_r(205)), (205, -26, z_r(205))]
+    orr = [(165, -38, 97), (165, 38, 97), (212, 36, z_r(212)), (212, -36, z_r(212))]
+    irr = [(172, -26, z_r(172)), (172, 26, z_r(172)), (203, 26, z_r(203)), (203, -26, z_r(203))]
     pf = ring_panel(sq(ofr), sq(ifr), FRAME_DEPTH)
     pr = ring_panel(sq(orr), sq(irr), FRAME_DEPTH)
     parts = [man(pf), man(pr)]
@@ -232,6 +232,18 @@ def frames(X, res=None):
         leg = man(cube_hull([(X((160, sy * 34, z_f(160) - 3.0)), wb), (X((160, sy * 49, 48)), wb * 1.5)]))
         parts.append(leg.trim_by_plane(tuple(-nb), float(-(nb @ Hb) - 0.2)))        # B pillar comes out from behind the flank's top edge, clipped to the skin's outer plane
         parts += plop(X((178, sy * 35, z_r(178) - 3.0)), X((199, sy * 54, 60)), wb, skin)
+    # left / right roof-frame legs: the rear ends taper in plan (14.6 -> 8.8 mm wide) and dive through matching cutouts in the rear upper cover, ending under its skin
+    def slab(xc, yc, zc, wy, wz):
+        return trimesh.creation.box(extents=(2.0, wy, wz), transform=trimesh.transformations.translation_matrix(X((xc, yc, zc))))
+    slot_parts = []
+    for sy in (1, -1):
+        a0, a1 = (212, sy * 31, z_r(212) - 1.6), (238, sy * 30, 80)
+        tongue = trimesh.convex.convex_hull(np.vstack([slab(*a0, 10 * SCALE, FRAME_DEPTH).vertices, slab(*a1, 6 * SCALE, FRAME_DEPTH).vertices]))
+        parts.append(man(tongue))
+        slot = trimesh.convex.convex_hull(np.vstack([slab(*a0, 10 * SCALE + 1.0, FRAME_DEPTH + 1.0).vertices, slab(*a1, 6 * SCALE + 1.0, FRAME_DEPTH + 1.0).vertices]))
+        slot_parts.append(man(slot))
+    if res is not None:
+        res["P9"] = tm(man(res["P9"]) - m3.Manifold.batch_boolean(slot_parts, m3.OpType.Add))
     out["P5"] = tm(m3.Manifold.batch_boolean(parts, m3.OpType.Add))
     # P7 roof lights: shelled boxes (open towards the windshield), on the front roof corners
     for sy, nm in ((1, "P7L"), (-1, "P7R")):
