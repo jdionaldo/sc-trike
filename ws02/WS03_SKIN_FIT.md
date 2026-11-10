@@ -90,3 +90,7 @@ its nose pin; the rear tyre and arm have the same arch as before.  **The skin's 
 ## 10. Skirt follows the drawing, merged with the running board
 
 The skirt is cut to the user's yellow outline (right edge as drawn, x -257 at the sill to -336 at the roof line); its leaning left edge is replaced by the cab's end plane (x -205) so the skirt is one piece with the cab's running board / sill.  No clashes, swing clean to 35 deg, 3 pieces watertight.  The fender-corner wedges are still open (arm clearance, see section 9).
+
+## 11. Skirt facets follow the flank angles
+
+The skirt no longer drops straight down: at each rim station the wall continues along the steepest descent of the flank face above it (facets with the established angles) to the deck line, and the cut uses the drawn slanted ends again (left edge from x -197 at the sill, right edge to -336 at the roof line).  Rocker extension: not done, see the open question.

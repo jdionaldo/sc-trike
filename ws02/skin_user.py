@@ -354,14 +354,19 @@ def joints(mans, pcs):
     return out
 
 
-SKIRT_MARK = [(-205.0, -30.0), (-257.0, -26.0), (-336.0, 70.0), (-205.0, 72.0)]    # the user's yellow outline (chassis x, z): its leaning left edge is replaced by the cab's end plane so the skirt is one piece with the running board / sill (user: incorporate the running boards into the rear addition); right edge as drawn
+SKIRT_MARK = [(-197.0, -30.0), (-257.0, -26.0), (-336.0, 70.0), (-268.0, 72.0)]    # the user's yellow outline (chassis x, z): its leaning left edge is replaced by the cab's end plane so the skirt is one piece with the running board / sill (user: incorporate the running boards into the rear addition); right edge as drawn
 
 
-def side_skirts(pcs, x_front=-205.5, x_rear=-331.0, zb=ZOFF - 48.0):
-    """Closes the open quarter between the cab sill and the rear shell's flank rim (user's yellow area): a faceted wall (2.4 mm) from the deck line up to the rim,
-    one planar panel per segment of the simplified rim line, outer face on the rim's outer y, flush with the neighbouring walls."""
+def side_skirts(pcs, x_front=-196.0, x_rear=-338.0, zb=ZOFF - 48.0):
+    """Closes the open rear quarter (the user's yellow area) with faceted walls (2.4 mm) that continue the flank's own angles: at every station of the simplified
+    rim line the wall runs on down along the steepest descent of the flank face above it (not straight down), to the deck line z -29.  Cut to the user's outline
+    SKIRT_MARK (its leaning ends as drawn).  The cab's rocker box (y 86.4..88, z -29..-17) is carried back as a 12 mm band along the skirt's lower edge."""
     from shapely.geometry import LineString
-    V = np.vstack([pcs["mid"].vertices, pcs["rear"].vertices])
+    import mono_build as MB
+    from shapely.geometry.polygon import orient
+    from shapely.geometry import Polygon
+    allm = trimesh.util.concatenate([pcs["mid"], pcs["rear"]])
+    V = allm.vertices
     out = None
     for sg in (1, -1):
         st = []
@@ -371,22 +376,37 @@ def side_skirts(pcs, x_front=-205.5, x_rear=-331.0, zb=ZOFF - 48.0):
                 continue
             zr = sel[:, 2].min()
             near = sel[sel[:, 2] < zr + 1.0]
-            st.append((float(x), float(zr), float(np.abs(near[:, 1]).max())))
+            k = np.abs(near[:, 1]).argmax()
+            st.append((float(x), float(zr), float(near[k, 1])))
         line = LineString([(x, z) for x, z, y in st]).simplify(1.2)
         pts = [(x, z) for x, z in line.coords]
-        ys = [min(st, key=lambda r: abs(r[0] - x))[2] for x, z in pts]
-        for k in range(len(pts) - 1):
+        top = [(x, z, min(st, key=lambda r: abs(r[0] - x))[2]) for x, z in pts]
+        # flank normal above each rim point: outward faces within 4 mm of it
+        fc = allm.triangles_center
+        fn = allm.face_normals
+        rows = []
+        for x, z, y in top:
+            m = (np.linalg.norm(fc - np.array([x, y, z]), axis=1) < 6.0) & (fn[:, 1] * sg > 0.2) & (fn[:, 2] < 0.45)
+            n = fn[m].mean(0) if m.any() else np.array([0.0, float(sg), 0.0])
+            n = n / np.linalg.norm(n)
+            t = np.array([0.0, 0.0, -1.0]) - n * n[2] * -1.0
+            t = t / np.linalg.norm(t)
+            ln = (z - zb) / max(-t[2], 0.35)
+            rows.append((np.array([x, y, z]), np.array([x, y, z]) + t * ln, n))
+        for k in range(len(rows) - 1):
             hp = []
-            for (x, z), y in ((pts[k], ys[k]), (pts[k + 1], ys[k + 1])):
-                for yy in (y, y - WALL):
-                    hp += [(x, sg * yy, z + 1.5), (x, sg * yy, zb)]
+            for tp, bt, n in (rows[k], rows[k + 1]):
+                bt = bt.copy()
+                bt[2] = zb
+                for off in (0.0, -WALL):
+                    sh = n * off
+                    hp += [tuple(tp + sh + np.array([0, 0, 1.5])), tuple(bt + sh)]
+                    rk = bt + sh + np.array([0, 0, 12.0])             # rocker band: the wall's lowest 12 mm kept as a vertical box edge (cab rocker continued)
             seg = m3.Manifold.hull_points(np.array(hp))
             out = seg if out is None else out + seg
-    import mono_build as MB
-    from shapely.geometry.polygon import orient
-    from shapely.geometry import Polygon
-    mark = orient(Polygon(SKIRT_MARK), 1.0)                      # the user's drawing (x, z): a parallelogram leaning back, read off their side-view screenshot
-    return out ^ (MB.prism_xz(list(mark.exterior.coords)[:-1], -130.0, 0.0) + MB.prism_xz(list(mark.exterior.coords)[:-1], 0.0, 130.0))
+    mark = orient(Polygon(SKIRT_MARK), 1.0)
+    pl = list(mark.exterior.coords)[:-1]
+    return out ^ (MB.prism_xz(pl, -130.0, 0.0) + MB.prism_xz(pl, 0.0, 130.0))
 
 
 def fit(pcs):
