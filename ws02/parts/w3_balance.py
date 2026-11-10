@@ -6,7 +6,7 @@ import mono_build as MB
 from parts.w3_style import MeshPart, _clean
 
 DECK_BOT = -29.0                       # w3_deck_front underside; floor of the carrier is against it, lid faces the ground (ground is about 25 mm lower here)
-PLATE = (40.0, 20.0, 4.0)              # tungsten alloy (about 17.5 g/cc) 40 x 20 x 4 = 3.2 cc = 56 g (user's skin: the old rear wing is gone and the skin sits further forward; the plate moved from the nose to the tail deck and is 1 mm thicker: front share 64.3 %); lead (11.3 g/cc) would need 40 x 20 x 6.2
+PLATE = (40.0, 20.0, 5.0)              # tungsten alloy (about 17.5 g/cc) 40 x 20 x 5 = 4 cc = 70 g (user's skin: the old rear wing is gone and the skin sits further forward; the plate moved from the nose to the tail deck and is 2 mm thicker: front share 64.5 %); lead (11.3 g/cc) would need 40 x 20 x 6.2
 PLATE_RHO = 17.5e-3                    # g/mm3
 BALLAST_ON = True
 FIT = 0.3                              # clearance each side of the plate

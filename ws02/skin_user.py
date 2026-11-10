@@ -316,6 +316,7 @@ def arm_slot(pcs, margin=2.0, step=3.0):
     return out
 
 
+JOINT_X = (XOFF - 57.5, XOFF - 115.0, XOFF - 181.0)     # front|mid, mid|rear, rear|tail (chassis x): front runs to the old end of the cab, mid moved back 57.5 mm
 PIN_D, SOCKET_D, SOCKET_L, BOSS_R = 3.0, 3.2, 7.0, 3.6          # steel dowel pins 3 x 12 mm at the joints, 3.2 mm sockets 7 mm deep, 7.2 mm bosses
 
 
@@ -324,10 +325,11 @@ def joints(mans, pcs):
     each drilled 3.2 mm x 7 mm from the joint plane on both sides, so a 3 x 12 mm pin aligns the pieces (CA glue or M2 later)."""
     W = _noacc()
     out = {k: v for k, v in mans.items()}
-    plan = [(XOFF, "front", "mid"), (XOFF - 57.5, "mid", "rear"), (XOFF - 181.0, "rear", "tail")]
+    plan = [(x, "all", "all") for x in JOINT_X]
     for xj, a, b in plan:                                               # a is the piece at x > xj, b at x < xj
         spots = []
-        for y in (-38.0, 38.0):
+        yr = 26.0 if abs(xj - JOINT_X[1]) < 1 else 38.0            # at the mid|rear joint the roof rails run at y 38..54 and 8: bosses between them
+        for y in (-yr, yr):
             h = W.ray.intersects_location([[xj, y, 300.0]], [[0, 0, -1.0]])[0]
             z = np.sort(h[:, 2])[::-1]
             zin = z[1] if len(z) > 1 else z[0]
@@ -361,7 +363,6 @@ def fit(pcs):
     for s_ in (1, -1):
         y0, y1 = (slot["y"][0], 120.0) if s_ > 0 else (-120.0, -slot["y"][0])
         mans["front"] = mans["front"] - MB.prism_xz(sp, y0, y1)
-    mans = joints(mans, pcs)
     # hinge ears on the roof's underside at the nose pin
     zt = top_z(FR.HINGE_PIN[0], WALL, ys=(0.0, 8.0, 16.0)) + 0.4
     for s_ in (1, -1):
@@ -392,22 +393,31 @@ def main(force=False):
     for k, t in pcs.items():                                   # first pass: the unfitted pieces, so the assembly-based scans below see a skin
         t.export(f"out/mono3/body3_{k}.stl")
     pcs = fit(pcs)
-    allm = None
-    for k, t in list(pcs.items()):
-        t = unpinch(t)
-        t.vertices = np.asarray(t.vertices, np.float32).astype(np.float64)
-        t.merge_vertices()
-        t = split_pinches(t)
-        t.vertices = np.asarray(t.vertices, np.float32).astype(np.float64)
-        pcs[k] = t
-        t.export(f"out/mono3/body3_{k}.stl")
-        print(k, len(t.faces), "watertight", t.is_watertight, "vol cm3", round(abs(t.volume) / 1e3, 1), np.round(t.bounds, 1).tolist())
-        allm = man(t) if allm is None else allm + man(t)
-    w = unpinch(tm(allm))
+    w = None
+    for k, t in pcs.items():
+        w = man(t) if w is None else w + man(t)
+    w = joints({"all": w}, pcs)["all"]
+    w = w - rear_top_opening(tm(w))
+    w = unpinch(tm(w))
     w.vertices = np.asarray(w.vertices, np.float32).astype(np.float64)
     w.merge_vertices()
     w.export("out/mono3/body3.stl")
     print("body3", len(w.faces), w.is_watertight, round(abs(w.volume) / 1e3, 1), "cm3")
+
+
+def rear_top_opening(w, x0=JOINT_X[1] - 4.0, x1=JOINT_X[2] + 4.0, frame=12.0, zmin=40.0):
+    """Open top of the rear piece: a prism through the deck over the rear piece (4 mm short of its joints), a 12 mm frame left all round."""
+    from shapely.geometry import Polygon
+    from shapely.geometry.polygon import orient
+    xs = np.linspace(x0, x1, 9)
+    pts = []
+    for x in xs:
+        sec = w.section(plane_origin=[x, 0, 62.0], plane_normal=[1, 0, 0])
+        hw = float(np.abs(sec.vertices[:, 1]).max()) if sec is not None else 60.0
+        pts.append((float(x), hw - frame))
+    poly = Polygon([(x, h) for x, h in pts] + [(x, -h) for x, h in reversed(pts)])
+    cs = m3.CrossSection([[(float(a), float(b)) for a, b in list(orient(poly, 1.0).exterior.coords)[:-1]]])
+    return m3.Manifold.extrude(cs, 120.0).translate((0, 0, zmin))
 
 
 # ---------------------------------------------------------------- what the cage asks of the skin (body3_build.top_z / hw_in delegate here)

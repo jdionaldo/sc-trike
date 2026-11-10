@@ -67,3 +67,9 @@ its nose pin; the rear tyre and arm have the same arch as before.  **The skin's 
 * Strength (`WS03_STRENGTH.md` regenerated): all rows ok except the known 1 m rear drop. The wing rows are stale (wing off).
 * Support (`support_check.py`): every skin point is within 62 mm of a cage member (0.1 % beyond 60 mm, rear flanks); 4 magnet stations + nose hinge hold the skin; the rear flanks (x -240..-320, |y| 85-101) remain the least supported spans (up to 62 mm): an outrigger pair would be the next cage addition.
 * Images/GLBs: `skin_fit_out/` (assembly and skin-only GLB, 4 views, 8 close-ups).
+
+## 7. Re-split (user request): longer front, mid moved back, open rear top
+
+* Joints now at chassis x -205.9 (front|mid), -263.4 (mid|rear), -329.4 (rear|tail): `front` runs from the nose to the old end of the cab (239 x 185 x 131 mm: needs the P2S 256 bed, `test_body_pieces` uses 256 for the body pieces), `mid` is moved back 57.5 mm (58 mm long), `rear` is 66 mm long.  Dowel bosses are made on the welded skin at the new joints (roof bosses at the mid|rear joint at y +-26, between the roof rails).
+* Top of `rear` opened: the deck is cut through over the whole piece (4 mm short of each joint) with a 12 mm frame all round; the cage rails show through.  The rear magnet bosses fall inside the opening and are gone: the rear is held by its dowels to mid and tail; the old rear tab pads stay on the cage.
+* Re-checked: no clashes, swing sweep clean to 35 deg, 4 watertight pieces, front share 64.5 % (plate 5 mm, 70 g), mass 2292 g, 231 pass (3 legacy mono fails as before).

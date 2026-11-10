@@ -58,7 +58,13 @@ def test_body_pieces(body_built):
         assert t.is_watertight
         pm = t.copy()
         pm.apply_translation((0, 0, -pm.bounds[0][2]))
-        ok, msg = validate.check_bed(pm, 3.0)
+        import dataclasses
+        P0 = validate.P
+        validate.P = dataclasses.replace(P0, bed_x=256.0, bed_y=256.0)      # the front piece runs from the nose to the end of the cab (239 mm): Bambu P2S bed 256 x 256 (the repo's 220 default is for the small parts)
+        try:
+            ok, msg = validate.check_bed(pm, 3.0)
+        finally:
+            validate.P = P0
         assert ok, msg
 
 

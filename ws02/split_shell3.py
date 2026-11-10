@@ -5,7 +5,7 @@ import mono_build as MB, validate
 
 PIECES = ("front", "mid", "rear", "tail")
 import skin_user as _SU
-CUTS = (_SU.XOFF, _SU.XOFF - 57.5, _SU.XOFF - 181.0)    # x of the two cut planes (front|mid, mid|rear): the joints of the user's skin pieces
+CUTS = _SU.JOINT_X    # x of the two cut planes (front|mid, mid|rear): the joints of the user's skin pieces
 
 
 def main():
