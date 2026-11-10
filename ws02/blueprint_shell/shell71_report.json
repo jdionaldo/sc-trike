@@ -1,0 +1,241 @@
+{
+ "P1": {
+  "faces": 656,
+  "watertight": true,
+  "volume_cm3": 15.96,
+  "extent_mm": [
+   33.7,
+   134.3,
+   75.9
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P2L": {
+  "faces": 164,
+  "watertight": true,
+  "volume_cm3": 1.7,
+  "extent_mm": [
+   52.6,
+   11.3,
+   52.6
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P2R": {
+  "faces": 172,
+  "watertight": true,
+  "volume_cm3": 1.7,
+  "extent_mm": [
+   52.6,
+   11.3,
+   52.6
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P3": {
+  "faces": 346,
+  "watertight": true,
+  "volume_cm3": 22.64,
+  "extent_mm": [
+   82.3,
+   116.8,
+   35.6
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P8L": {
+  "faces": 5254,
+  "watertight": true,
+  "volume_cm3": 19.62,
+  "extent_mm": [
+   193.4,
+   26.3,
+   94.9
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P8R": {
+  "faces": 5268,
+  "watertight": true,
+  "volume_cm3": 19.62,
+  "extent_mm": [
+   193.4,
+   26.3,
+   94.9
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P6": {
+  "faces": 170,
+  "watertight": true,
+  "volume_cm3": 17.53,
+  "extent_mm": [
+   67.3,
+   108.0,
+   15.5
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P9": {
+  "faces": 322,
+  "watertight": true,
+  "volume_cm3": 27.14,
+  "extent_mm": [
+   105.1,
+   122.6,
+   16.9
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P10L": {
+  "faces": 188,
+  "watertight": true,
+  "volume_cm3": 13.31,
+  "extent_mm": [
+   113.9,
+   31.1,
+   55.5
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P10R": {
+  "faces": 184,
+  "watertight": true,
+  "volume_cm3": 13.31,
+  "extent_mm": [
+   113.9,
+   31.1,
+   55.5
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P11": {
+  "faces": 868,
+  "watertight": true,
+  "volume_cm3": 22.34,
+  "extent_mm": [
+   114.4,
+   88.2,
+   40.2
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P4": {
+  "faces": 32,
+  "watertight": true,
+  "volume_cm3": 15.76,
+  "extent_mm": [
+   72.4,
+   116.8,
+   42.2
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P5": {
+  "faces": 286,
+  "watertight": true,
+  "volume_cm3": 71.91,
+  "extent_mm": [
+   166.4,
+   160.6,
+   56.9
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P7L": {
+  "faces": 28,
+  "watertight": true,
+  "volume_cm3": 1.77,
+  "extent_mm": [
+   14.6,
+   17.5,
+   10.2
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "P7R": {
+  "faces": 28,
+  "watertight": true,
+  "volume_cm3": 1.77,
+  "extent_mm": [
+   14.6,
+   17.5,
+   10.2
+  ],
+  "bed220": true,
+  "bed256": true
+ },
+ "_overall": {
+  "length": 398.6,
+  "width": 169.4,
+  "height": 146.0,
+  "scale": 1.46,
+  "nose_x": 60.0,
+  "relieved_items": [
+   "arm_-1",
+   "arm_1",
+   "b_lean_shock_-1",
+   "b_lean_shock_1",
+   "diff_out_-1",
+   "diff_out_1",
+   "mock_fbelt_-1",
+   "mock_fbelt_1",
+   "mock_fpulley_pivot_-1",
+   "mock_fpulley_pivot_1",
+   "mock_fpulley_tip_-1",
+   "mock_fpulley_tip_1",
+   "steer_horn_-1",
+   "steer_horn_1",
+   "tie_rod_-1",
+   "tie_rod_1",
+   "tip_shaft_-1",
+   "tip_shaft_1",
+   "uplink_-1",
+   "uplink_1",
+   "w3_uplink_standoff_-1",
+   "w3_uplink_standoff_1"
+  ],
+  "removed_mm3": {
+   "P1": 0.0,
+   "P2L": 4133.0,
+   "P2R": 4133.0,
+   "P3": 252.0,
+   "P8L": 8500.0,
+   "P8R": 8501.0,
+   "P6": 0.0,
+   "P9": 0.0,
+   "P10L": 0.0,
+   "P10R": 0.0,
+   "P11": -0.0,
+   "P4": 0.0,
+   "P5": 0.0,
+   "P7L": 0.0,
+   "P7R": 0.0
+  },
+  "slivers_dropped": {
+   "P2L": 1,
+   "P2R": 1,
+   "P8L": 9,
+   "P8R": 8,
+   "P9": 3,
+   "P10L": 3,
+   "P10R": 3,
+   "P11": 2
+  },
+  "overlap_after": {}
+ }
+}
