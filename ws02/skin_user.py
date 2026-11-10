@@ -271,6 +271,8 @@ def to_chassis(t):
     return t
 
 
+ZHI = 40.0         # above this height the arms pierce the skin only near the flank: the slot's upper part starts at the smallest pierce y found there
+SLOT_Y0 = 53.5     # the arm slot starts at the flank wall, not at y 53: the roof's shoulder over the arms stays closed (no open triangles at the fender corners)
 FRONT_MOVERS = ("arm_", "pod_", "uplink_", "tip_shaft_", "tie_rod_", "mock_fbelt_", "mock_fpulley_tip_", "diff_out_", "carrier_", "knuckle_", "steer_horn_")
 
 
@@ -305,13 +307,16 @@ def arm_slot(pcs, margin=2.0, step=3.0):
             if k + dk < len(per_pose):
                 hulls.append(MultiPoint(np.vstack([pts, per_pose[k + dk][:, [0, 2]]])).convex_hull)
     u = unary_union(hulls).buffer(margin, join_style=2)
-    u = u.convex_hull if u.geom_type != "Polygon" else u
-    u = u.simplify(2.5)
+    if u.geom_type != "Polygon":
+        u = unary_union([g.convex_hull for g in u.geoms]).convex_hull
+    u = u.convex_hull.simplify(2.5)
     x0, z0, x1, z1 = u.bounds
     belly = ZOFF - 48.0
     if z0 < belly + 12.0:                                              # the slot reaches (nearly) the rim: open it down to a wheel arch
         u = unary_union([u, box(x0, belly - 5.0, x1, z0 + 1.0)]).convex_hull.simplify(1.0)
-    out = {"poly": [[float(a), float(b)] for a, b in list(u.exterior.coords)[:-1]], "y": [float(min(a for a, b in ys)) - 2.0, float(max(b for a, b in ys)) + 2.0]}
+    allv = np.vstack(per_pose)
+    hi = allv[allv[:, 2] > ZHI]
+    out = {"poly": [[float(a), float(b)] for a, b in list(u.exterior.coords)[:-1]], "y": [float(min(a for a, b in ys)) - 2.0, float(max(b for a, b in ys)) + 2.0], "y_hi": float(hi[:, 1].min()) - 2.0 if len(hi) else 99.0}
     json.dump(out, open(f, "w"))
     return out
 
@@ -349,6 +354,34 @@ def joints(mans, pcs):
     return out
 
 
+def side_skirts(pcs, x_front=-207.0, x_rear=-331.0, zb=ZOFF - 48.0):
+    """Closes the open quarter between the cab sill and the rear shell's flank rim (user's yellow area): a faceted wall (2.4 mm) from the deck line up to the rim,
+    one planar panel per segment of the simplified rim line, outer face on the rim's outer y, flush with the neighbouring walls."""
+    from shapely.geometry import LineString
+    V = np.vstack([pcs["mid"].vertices, pcs["rear"].vertices])
+    out = None
+    for sg in (1, -1):
+        st = []
+        for x in np.arange(x_front, x_rear - 0.1, -2.0):
+            sel = V[(np.abs(V[:, 0] - x) < 1.5) & (V[:, 1] * sg > 56.0)]
+            if len(sel) == 0:
+                continue
+            zr = sel[:, 2].min()
+            near = sel[sel[:, 2] < zr + 1.0]
+            st.append((float(x), float(zr), float(np.abs(near[:, 1]).max())))
+        line = LineString([(x, z) for x, z, y in st]).simplify(1.2)
+        pts = [(x, z) for x, z in line.coords]
+        ys = [min(st, key=lambda r: abs(r[0] - x))[2] for x, z in pts]
+        for k in range(len(pts) - 1):
+            hp = []
+            for (x, z), y in ((pts[k], ys[k]), (pts[k + 1], ys[k + 1])):
+                for yy in (y, y - WALL):
+                    hp += [(x, sg * yy, z + 1.5), (x, sg * yy, zb)]
+            seg = m3.Manifold.hull_points(np.array(hp))
+            out = seg if out is None else out + seg
+    return out
+
+
 def fit(pcs):
     """Cuts and additions that tie the skin to the cage (all in the chassis frame): arm windows, tube relief + swing channels + rear wheel arch (the skin opens
     on its nose pin), hinge ears, magnet bosses.  Returns the three pieces."""
@@ -358,11 +391,16 @@ def fit(pcs):
     from shapely.geometry.polygon import orient
     from shapely.geometry import Polygon
     mans = {k: man(v) for k, v in pcs.items()}
+    pcs_orig_front = pcs["front"]
     slot = arm_slot(pcs)
     sp = list(orient(Polygon(slot["poly"]), 1.0).exterior.coords)[:-1]
     for s_ in (1, -1):
-        y0, y1 = (slot["y"][0], 120.0) if s_ > 0 else (-120.0, -slot["y"][0])
+        y0, y1 = (SLOT_Y0, 120.0) if s_ > 0 else (-120.0, -SLOT_Y0)
         mans["front"] = mans["front"] - MB.prism_xz(sp, y0, y1)
+        if slot.get("y_hi", 0) > SLOT_Y0:                                    # the upper part of the slot is narrower in y: put the skin above z ZHI back inside it
+            yh = slot["y_hi"]
+            keep = m3.Manifold.cube((300.0, yh - SLOT_Y0, 200.0), center=False).translate((-300.0, SLOT_Y0 if s_ > 0 else -yh, ZHI))
+            mans["front"] = mans["front"] + (keep ^ man(pcs_orig_front))
     # hinge ears on the roof's underside at the nose pin
     zt = top_z(FR.HINGE_PIN[0], WALL, ys=(0.0, 8.0, 16.0)) + 0.4
     for s_ in (1, -1):
@@ -392,6 +430,8 @@ def main(force=False):
     pcs = {k: to_chassis(t) for k, t in skin_frame_pieces(force).items()}
     for k, t in pcs.items():                                   # first pass: the unfitted pieces, so the assembly-based scans below see a skin
         t.export(f"out/mono3/body3_{k}.stl")
+    sk = side_skirts(pcs)
+    pcs["rear"] = tm(man(pcs["rear"]) + sk)
     pcs = fit(pcs)
     w = None
     for k, t in pcs.items():

@@ -80,3 +80,9 @@ its nose pin; the rear tyre and arm have the same arch as before.  **The skin's 
 * The `tail` piece is deleted (skin ends at x -329 again, spoiler/rack already removed). Three pieces: front 239 mm (P2S bed), mid 58, rear 66.
 * Checks: no clashes, swing clean to 35 deg, 231 tests pass (3 legacy mono fails as on base), mass 2283 g, front share 64.9 % (plate 6 mm, 84 g).
 * Rear suspension redesign: not started, see the open question in the session.
+
+## 9. Gap fill (user marks)
+
+* Side view (rear quarter between the cab sill and the rear shell, through which the cage showed): closed with a faceted 2.4 mm skirt wall on each side, deck line (z -29) up to the rear shell's flank rim, x -207 .. -331, one planar panel per segment of the simplified rim line (`skin_user.side_skirts`).  Merged into the rear piece before the cuts, so tubes/arm relief still apply; no clashes at rest or in the +-20/17 lean poses, swing clean to 35 deg, all pieces watertight.  Before/after: `skin_fit_out/renders/skirt_{before,after}_{side,top,front34}.png`.
+* Top-view and front-3/4 triangles at the fender corners (the arm windows' corners): NOT closed.  The arm slot is the swept pierce region of the front arms, pods and links over lean +-20 / steer +-17; its upper part starts at y 53.5 (checked: starting it at y 80 puts 443 mm3 of each arm inside the skin), so those corner wedges are the clearance the lean travel needs.  Closing them needs a smaller lean range or a relieved panel; say which.
+* Mass 2319 g, front share 64.5 %, 231 tests pass (3 legacy mono fails as on base).
