@@ -12,7 +12,7 @@ Branch `ws03-blueprint-shell` (from `ws03-skin-fit` 9f7f702). Nothing merged to 
 | 5 outputs | `stl/P*.stl`, `WS03_blueprint_shell.glb`, `shell71_report.json` | 15 meshes (14 sheet parts; P7 x2, L/R pairs), one named GLB node each |
 
 ## Result (honest)
-* Built: all 14 parts, watertight, 2.4 mm walls (P4/P5 are solid 4.8 mm plates, not folded box sections), each fits a 220 x 220 bed (largest: roof frame 166 x 161), so no further split and no dowels are needed. Overall 399 x 169 x 146 mm.
+* Built: all 14 parts, closed (no open edge; P8 L/R and P11 hold two bodies touching along an edge, so a strict single-shell watertight test fails for them), 2.4 mm walls (P4/P5 are solid 4.8 mm plates, not folded box sections), each fits a 220 x 220 bed (largest: roof frame 166 x 161), so no further split and no dowels are needed. Overall 399 x 169 x 146 mm.
 * Hardware: 0 mm3 overlap with every assembly item over lean -20..20 x steer -17..17 (motor, servos, rear shock, rear arm and diff never touched a panel).
 * Does NOT match the sheet 1:1. Silhouette IoU against the sheet views: side 0.45, top 0.58, front 0.56, rear 0.50, perspective 0.56. The panels are located from the views by eye and from an AI-generated sheet whose patterns are not geometrically foldable: tab numbers could not be used to derive the folds exactly. Folded flat-pattern areas were not reproduced.
 * The front mechanism (arms, uplinks, tie rods) sweeps through the flank where the sheet puts P2 / front P8; those panels lose ~70 % (P2) and ~30 % (P8) of their volume to the arm window, so the front flank is open.
