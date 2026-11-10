@@ -36,37 +36,13 @@
   "bed256": true
  },
  "P3": {
-  "faces": 346,
+  "faces": 414,
   "watertight": true,
-  "volume_cm3": 22.64,
+  "volume_cm3": 27.64,
   "extent_mm": [
-   82.3,
-   116.8,
-   35.6
-  ],
-  "bed220": true,
-  "bed256": true
- },
- "P8L": {
-  "faces": 5254,
-  "watertight": true,
-  "volume_cm3": 19.62,
-  "extent_mm": [
-   193.4,
-   26.3,
-   94.9
-  ],
-  "bed220": true,
-  "bed256": true
- },
- "P8R": {
-  "faces": 5268,
-  "watertight": true,
-  "volume_cm3": 19.62,
-  "extent_mm": [
-   193.4,
-   26.3,
-   94.9
+   85.0,
+   134.3,
+   37.5
   ],
   "bed220": true,
   "bed256": true
@@ -83,50 +59,50 @@
   "bed220": true,
   "bed256": true
  },
+ "P8P10L": {
+  "faces": 3200,
+  "watertight": true,
+  "volume_cm3": 31.56,
+  "extent_mm": [
+   300.8,
+   31.1,
+   116.8
+  ],
+  "bed220": false,
+  "bed256": true
+ },
+ "P8P10R": {
+  "faces": 3202,
+  "watertight": true,
+  "volume_cm3": 31.83,
+  "extent_mm": [
+   300.8,
+   31.1,
+   116.8
+  ],
+  "bed220": false,
+  "bed256": true
+ },
  "P9": {
-  "faces": 322,
+  "faces": 628,
   "watertight": true,
-  "volume_cm3": 27.14,
+  "volume_cm3": 39.65,
   "extent_mm": [
-   105.1,
-   122.6,
-   16.9
-  ],
-  "bed220": true,
-  "bed256": true
- },
- "P10L": {
-  "faces": 188,
-  "watertight": true,
-  "volume_cm3": 13.31,
-  "extent_mm": [
-   113.9,
-   31.1,
-   55.5
-  ],
-  "bed220": true,
-  "bed256": true
- },
- "P10R": {
-  "faces": 184,
-  "watertight": true,
-  "volume_cm3": 13.31,
-  "extent_mm": [
-   113.9,
-   31.1,
-   55.5
+   121.2,
+   146.0,
+   38.2
   ],
   "bed220": true,
   "bed256": true
  },
  "P11": {
-  "faces": 868,
+  "faces": 1970,
   "watertight": true,
-  "volume_cm3": 22.34,
+  "volume_cm3": 35.62,
   "extent_mm": [
-   114.4,
-   88.2,
-   40.2
+   91.3,
+   119.7,
+   62.3
   ],
   "bed220": true,
   "bed256": true
@@ -134,23 +110,23 @@
  "P4": {
   "faces": 32,
   "watertight": true,
-  "volume_cm3": 15.76,
+  "volume_cm3": 16.29,
   "extent_mm": [
-   72.4,
-   116.8,
+   75.2,
+   122.6,
    42.2
   ],
   "bed220": true,
   "bed256": true
  },
  "P5": {
-  "faces": 286,
+  "faces": 308,
   "watertight": true,
-  "volume_cm3": 71.91,
+  "volume_cm3": 71.57,
   "extent_mm": [
    166.4,
    160.6,
-   56.9
+   55.5
   ],
   "bed220": true,
   "bed256": true
@@ -213,14 +189,12 @@
    "P1": 0.0,
    "P2L": 4133.0,
    "P2R": 4133.0,
-   "P3": 252.0,
-   "P8L": 8500.0,
-   "P8R": 8501.0,
+   "P3": 601.0,
    "P6": 0.0,
+   "P8P10L": 8500.0,
+   "P8P10R": 8501.0,
    "P9": 0.0,
-   "P10L": 0.0,
-   "P10R": 0.0,
-   "P11": -0.0,
+   "P11": 0.0,
    "P4": 0.0,
    "P5": 0.0,
    "P7L": 0.0,
@@ -229,12 +203,10 @@
   "slivers_dropped": {
    "P2L": 1,
    "P2R": 1,
-   "P8L": 9,
-   "P8R": 8,
-   "P9": 3,
-   "P10L": 3,
-   "P10R": 3,
-   "P11": 2
+   "P3": 9,
+   "P8P10L": 10,
+   "P8P10R": 13,
+   "P9": 6
   },
   "overlap_after": {}
  }

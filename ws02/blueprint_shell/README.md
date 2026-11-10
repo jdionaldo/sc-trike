@@ -18,3 +18,11 @@ Branch `ws03-blueprint-shell` (from `ws03-skin-fit` 9f7f702). Nothing merged to 
 * The front mechanism (arms, uplinks, tie rods) sweeps through the flank where the sheet puts P2 / front P8; those panels lose ~70 % (P2) and ~30 % (P8) of their volume to the arm window, so the front flank is open.
 * The sheet's wheelbase does not fit the chassis (sheet shell 278 mm vs wheelbase 450 mm at 1:10-ish): the rear tyre sits behind the tail, the "rear wheel opening" is the gap between the P10 covers and the diffuser.
 * Panels are butted at the sheet's tab edges, not joined: no dowel bosses, no gluing flange were modelled.
+
+## Rev 2 (rear lower + alignment)
+* P11 rebuilt as a **tunnel front to back** (open belly): ceiling folded at mid length and rising 46 -> 73 (sheet mm), outer cheeks, two inner walls, two vent slots; ends on a flat plane z = 56 above the rear swing envelope. One watertight shell, 35.6 cm3, 91 x 120 x 62 mm.
+* Hood P3 rows now run through the grille's top edge, the headlight-wing ridge, the fender tip and P2's top row; P4's base follows P2's end.
+* P8 and P10 are one object per side (`P8P10L/R.stl`, one GLB node): P10's first column is P8's last column. 301 x 31 x 117 mm, so it fits the 256 mm bed only on the diagonal (not 220).
+* P9 pitched down: ridge on the centreline, flanks run down to P10's top edge (rows at P10's columns).
+* P5 roof frame: the two plates share a joint hull along the crease; pillars start flush with the plate top and end inside P8's top edge, so no stubs or wedges.
+* Silhouette IoU rear 0.50 -> 0.53, top 0.58 -> 0.60, side 0.45 -> 0.44, front 0.56 -> 0.55. Before: `overlay_before_rearwork.png`, after: `overlay_after_rear.png`.

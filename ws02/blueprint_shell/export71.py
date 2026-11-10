@@ -8,7 +8,7 @@ OUT = 'blueprint_shell'
 COL = {'P1': (190, 60, 60), 'P2': (60, 110, 200), 'P3': (60, 170, 220), 'P4': (130, 70, 170), 'P5': (110, 60, 150), 'P6': (150, 100, 200),
        'P7': (120, 60, 180), 'P8': (50, 150, 70), 'P9': (240, 140, 40), 'P10': (230, 120, 30), 'P11': (230, 200, 40)}
 NAMES = {'P1': 'Front Nose / Grille', 'P2': 'Front Side Panel', 'P3': 'Hood Panel', 'P4': 'Windshield Frame', 'P5': 'Roof Frame', 'P6': 'Roof Panel', 'P7': 'Roof Light',
-         'P8': 'Side Panel', 'P9': 'Rear Upper Cover', 'P10': 'Rear Side Cover', 'P11': 'Rear Lower Diffuser'}
+         'P8': 'Side_Panel_with_Rear_Side_Cover', 'P9': 'Rear Upper Cover', 'P10': 'Rear Side Cover', 'P11': 'Rear Lower Diffuser'}
 
 
 def key(n): return n[:3] if n.startswith(('P10', 'P11')) else n[:2]
@@ -35,7 +35,7 @@ def main():
         t.export(f'{OUT}/stl/{n}.stl')
         ext = np.ptp(t.bounds, 0)
         rep[n] = dict(faces=len(t.faces), watertight=bool(t.is_watertight), volume_cm3=round(abs(t.volume) / 1e3, 2), extent_mm=[round(float(e), 1) for e in ext],
-                      bed220=bool(sorted(ext[:2])[1] <= 220 and sorted(ext[:2])[0] <= 220), bed256=bool(max(ext[:2]) <= 256))
+                      bed220=bool(sorted(ext[:2])[1] <= 220 and sorted(ext[:2])[0] <= 220), bed256=bool(max(ext[:2]) <= 256 or sum(sorted(ext[:2])) / 2 ** 0.5 <= 256))     # or on the diagonal
         c = np.array(COL[key(n)] + (255,), np.uint8)
         tt = t.copy(); tt.visual.face_colors = np.tile(c, (len(tt.faces), 1)); tt.apply_transform(R)
         sc.add_geometry(tt, node_name=f'{n}_{NAMES[key(n)].replace(" / ", "_").replace(" ", "_")}', geom_name=n)

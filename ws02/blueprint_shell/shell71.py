@@ -62,38 +62,45 @@ def panels():
     P["P2L"] = dict(tris=strip([r0, r1, r2]), inside=(44, 20, 38))
     P["P2R"] = dict(tris=strip(mirror_pts([r0, r1, r2])), inside=(44, -20, 38))
     # ---- P3 hood
-    h0 = [(6, -27, 37), (6, -14, 39), (6, 14, 39), (6, 27, 37)]
-    h1 = [(34, -40, 50), (34, -16, 56), (34, 16, 56), (34, 40, 50)]
-    h2 = [(62, -40, 56), (62, -26, 60), (62, 26, 60), (62, 40, 56)]
-    P["P3"] = dict(tris=strip([h0, h1, h2]), inside=(34, 0, 20))
+    h0 = gt                                                                      # shares the grille's top edge
+    h1 = [(10, -36, 47), (10, -14, 52), (10, 14, 52), (10, 36, 47)]              # through the headlight wing's ridge vertex
+    h2 = [(26, -46, 52), (26, -18, 56), (26, 18, 56), (26, 46, 52)]              # fender tip (wing / P2 top corner)
+    h3 = [(44, -45, 58), (44, -22, 59), (44, 22, 59), (44, 45, 58)]              # P2 top row
+    h4 = [(62, -42, 60), (62, -26, 61), (62, 26, 61), (62, 42, 60)]              # P2 end = windshield frame base
+    P["P3"] = dict(tris=strip([h0, h1, h2, h3, h4]), inside=(34, 0, 20))
     # ---- P8 side panels
     t = [(62, 40, 46), (96, 41, 44), (130, 43, 54), (160, 46, 62), (194, 50, 67)]
     m_ = [(62, 46, 24), (96, 48, 26), (130, 50, 30), (152, 53, 36), (194, 58, 58)]
     b = [(62, 42, 2), (96, 44, 2), (130, 46, 2), (150, 50, 4), (194, 54, 46)]
-    P["P8L"] = dict(tris=strip([t, m_, b]), inside=(130, 20, 40))
-    P["P8R"] = dict(tris=strip(mirror_pts([t, m_, b])), inside=(130, -20, 40))
+    P8L_t = strip([t, m_, b])
+    P8R_t = strip(mirror_pts([t, m_, b]))
     # ---- P6 roof panel (rear part of the roof, ridge in the middle)
     q0 = [(176, -37, 95), (176, -15, 100), (176, 15, 100), (176, 37, 95)]
     q1 = [(198, -37, 94), (198, -15, 99), (198, 15, 99), (198, 37, 94)]
     q2 = [(222, -36, 91), (222, -14, 95), (222, 14, 95), (222, 36, 91)]
     P["P6"] = dict(tris=strip([q0, q1, q2]), inside=(198, 0, 60))
-    # ---- P9 rear upper cover
-    d0 = [(205, -36, 90), (205, -14, 92), (205, 14, 92), (205, 36, 90)]
-    d1 = [(232, -40, 91), (232, -15, 92), (232, 15, 92), (232, 40, 91)]
-    d2 = [(262, -42, 85), (262, -14, 86), (262, 14, 86), (262, 42, 85)]
-    d3 = [(277, -36, 82), (277, -12, 82), (277, 12, 82), (277, 36, 82)]
-    P["P9"] = dict(tris=strip([d0, d1, d2, d3]), inside=(240, 0, 40))
-    # ---- P10 rear side covers (claws that leave the rear opening between them)
-    c_t = [(190, 44, 66), (215, 50, 80), (242, 50, 82), (268, 40, 80)]
-    c_m = [(190, 52, 56), (215, 58, 62), (242, 56, 64), (268, 42, 70)]
-    c_b = [(194, 48, 46), (218, 52, 44), (244, 50, 48), (264, 38, 56)]
-    P["P10L"] = dict(tris=strip([c_t, c_m, c_b]), inside=(220, 30, 50))
-    P["P10R"] = dict(tris=strip(mirror_pts([c_t, c_m, c_b])), inside=(220, -30, 50))
-    # ---- P11 rear lower diffuser
-    e0 = [(198, -30, 46), (198, -12, 44), (198, 12, 44), (198, 30, 46)]
-    e1 = [(240, -28, 56), (240, -12, 52), (240, 12, 52), (240, 28, 56)]
-    e2 = [(276, -30, 68), (276, -14, 70), (276, 14, 70), (276, 30, 68)]
-    P["P11"] = dict(tris=strip([e0, e1, e2]), inside=(240, 0, 100))
+    # ---- P10 rear side covers: first column = P8's last column (one object with P8); P9 pitches down to P10's top row
+    c_t = [(194, 50, 67), (215, 50, 80), (242, 50, 82), (268, 40, 80)]
+    c_m = [(194, 58, 58), (215, 58, 62), (242, 56, 64), (268, 42, 70)]
+    c_b = [(194, 54, 46), (218, 52, 44), (244, 50, 48), (264, 38, 56)]
+    P10L_t = strip([c_t, c_m, c_b])
+    P10R_t = strip(mirror_pts([c_t, c_m, c_b]))
+    P["P8P10L"] = dict(tris=P8L_t + P10L_t, inside=(190, 20, 40))
+    P["P8P10R"] = dict(tris=P8R_t + P10R_t, inside=(190, -20, 40))
+    # ---- P9 rear upper cover: ridge down the middle, flanks drop to P10's top edge (rows at P10's columns)
+    d0 = [(194, -50, 67), (194, -18, 90), (194, 18, 90), (194, 50, 67)]
+    d1 = [(215, -50, 80), (215, -16, 92), (215, 16, 92), (215, 50, 80)]
+    d2 = [(242, -50, 82), (242, -15, 91), (242, 15, 91), (242, 50, 82)]
+    d3 = [(268, -40, 80), (268, -13, 85), (268, 13, 85), (268, 40, 80)]
+    d4 = [(277, -30, 78), (277, -12, 82), (277, 12, 82), (277, 30, 78)]
+    P["P9"] = dict(tris=strip([d0, d1, d2, d3, d4]), inside=(240, 0, 40))
+    # ---- P11 rear lower diffuser = the rear tunnel (open belly), front to back: ceiling with a fold at mid length, outer cheeks that meet the P10 covers, inner walls
+    # (flat pattern: centre rectangle + two kite wings folded down; tabs 3/3 on P9, 8 on the rear lip, 0/1/9 on P10).  Stations x: rake rises 46 -> 76.
+    st = [(198, 46), (222, 56), (242, 66), (260, 70), (276, 73)]
+    ceil = [[(x, -41, zc + 4), (x, -29, zc + 2), (x, -17, zc), (x, -6, zc + 2.5), (x, 6, zc + 2.5), (x, 17, zc), (x, 29, zc + 2), (x, 41, zc + 4)] for x, zc in st]
+    wallL = [[(x, 29, zc + 2), (x, 28, 36)] for x, zc in st]
+    wallR = [[(x, -29, zc + 2), (x, -28, 36)] for x, zc in st]
+    P["P11"] = dict(tris=strip(ceil) + strip(wallL) + strip(wallR), inside=(240, 0, 100), toward=True)
     return P
 
 
@@ -133,8 +140,8 @@ def frames(X):
     def sq(pts): return [X(p) for p in pts]
     w = 7.0
     # P4 sloped ring: bottom edge x 64 z 60 (y +-40), top edge x 112 z 86 (y +-34)
-    ob = [(64, -40, 60), (64, 40, 60), (112, 34, 86), (112, -34, 86)]
-    ib = [(70, -40 + w, 62.5), (70, 40 - w, 62.5), (106, 34 - w, 83.5), (106, -34 + w, 83.5)]
+    ob = [(62, -42, 60), (62, 42, 60), (112, 34, 86), (112, -34, 86)]
+    ib = [(68, -42 + w, 62.5), (68, 42 - w, 62.5), (106, 34 - w, 83.5), (106, -34 + w, 83.5)]
     out["P4"] = ring_panel(sq(ob), sq(ib), FRAME_DEPTH)
     # P5: front plate (112..165), rear plate (165..226), window in the front plate, another under the roof panel
     def z_f(x): return 86 + (x - 112) * 11 / 53.0
@@ -146,10 +153,18 @@ def frames(X):
     pf = ring_panel(sq(ofr), sq(ifr), FRAME_DEPTH)
     pr = ring_panel(sq(orr), sq(irr), FRAME_DEPTH)
     parts = [man(pf), man(pr)]
+    # crease joint: hull over the shared edge (x 165) of both plates, top and underside, so the two plates are one body without a wedge underneath
+    def nrm(o):
+        q = [X(p_) for p_ in o]; n_ = np.cross(q[1] - q[0], q[2] - q[1]); n_ /= np.linalg.norm(n_); return -n_ if n_[2] < 0 else n_
+    nf, nr_ = nrm(ofr), nrm(orr)
+    e = [X((165, -38, 97)), X((165, 38, 97))]
+    jp = []
+    for ee in e: jp += [ee, ee - nf * FRAME_DEPTH, ee - nr_ * FRAME_DEPTH]
+    parts.append(man(trimesh.convex.convex_hull(np.array(jp))))
     wb = 6.0 * SCALE
     for sy in (1, -1):
-        parts.append(man(bar(X((160, sy * 36, 95)), X((160, sy * 46, 62)), wb)))        # B pillar
-        parts.append(man(bar(X((178, sy * 37, 94)), X((197, sy * 52, 66)), wb)))        # rear slanted pillar
+        parts.append(man(bar(X((160, sy * 34, z_f(160) - 3.0)), X((160, sy * 46, 62)), wb)))        # B pillar: top flush with the plate, foot in P8's top edge
+        parts.append(man(bar(X((178, sy * 35, z_r(178) - 3.0)), X((197, sy * 52, 66)), wb)))        # rear slanted pillar
     out["P5"] = tm(m3.Manifold.batch_boolean(parts, m3.OpType.Add))
     # P7 roof lights: shelled boxes (open towards the windshield), on the front roof corners
     for sy, nm in ((1, "P7L"), (-1, "P7R")):
@@ -180,17 +195,21 @@ def build_all():
             n = np.cross(p[1] - p[0], p[2] - p[0])
             if np.linalg.norm(n) < 1e-6: continue
             n /= np.linalg.norm(n)
-            if n @ (np.mean(p, 0) - ins) < 0: n = -n           # outward
+            if d.get("toward"):                                  # tunnel panel: the visible (outer) face looks into the tunnel, the wall grows outwards from it
+                c = np.mean(p, 0)
+                if n @ (X((0, 0, 0)) * 0 + np.array([c[0], 0.0, Z_BELLY + 15 * s]) - c) < 0: n = -n
+            elif n @ (np.mean(p, 0) - ins) < 0: n = -n           # outward
             info.append((p, n))
             hull = np.array(p + [q - n * WALL for q in p])
             solids.append(man(trimesh.convex.convex_hull(hull)))
             for a, b_ in ((0, 1), (1, 2), (2, 0)):
                 edges.setdefault(frozenset((key(p[a]), key(p[b_]))), []).append((p[a], p[b_], n))
         for e, lst in edges.items():
-            if len(lst) == 2:
-                (a, b_, n1), (_, _, n2) = lst
-                pts = np.array([a, b_, a - n1 * WALL, b_ - n1 * WALL, a - n2 * WALL, b_ - n2 * WALL])
-                solids.append(man(trimesh.convex.convex_hull(pts)))
+            for i1 in range(len(lst)):
+                for i2 in range(i1 + 1, len(lst)):            # a crease shared by 3 facets (ceiling / cheek / wall) is joined pairwise
+                    (a, b_, n1), (_, _, n2) = lst[i1], lst[i2]
+                    pts = np.array([a, b_, a - n1 * WALL, b_ - n1 * WALL, a - n2 * WALL, b_ - n2 * WALL])
+                    solids.append(man(trimesh.convex.convex_hull(pts)))
         M = m3.Manifold.batch_boolean(solids, m3.OpType.Add)
         res[name] = M
     res = {k: tm(v) for k, v in res.items()}
@@ -216,6 +235,17 @@ def openings(res, X):
         box_ = m3.Manifold.cube((lx * SCALE, ly * SCALE, 30), center=True).rotate((0, 0, ang)).translate((c[0], c[1], c[2]))
         v.append(box_)
     res["P9"] = tm(man(res["P9"]) - m3.Manifold.batch_boolean(v, m3.OpType.Add))
+    vv = []
+    for cy in (-11, 11):
+        c = X((252, cy, 72))
+        vv.append(m3.Manifold.cube((12 * SCALE, 5 * SCALE, 30), center=True).translate((c[0], c[1], c[2])))
+    # the tunnel ends on a flat plane z = 56 (just above the top of the rear swing envelope z <= 52): the front, still low, part of the ceiling and the wall feet fall away
+    # in one clean planar cut instead of a tangent cut along the swing channel
+    low = m3.Manifold.cube((600, 600, 200), center=True).translate((0, 0, 56 - 100))
+    P11 = (man(res["P11"]) - m3.Manifold.batch_boolean(vv, m3.OpType.Add)) - low
+    parts = tm(P11).split(only_watertight=False)
+    parts = [q for q in parts if abs(q.volume) > 500]
+    res["P11"] = trimesh.util.concatenate(parts) if len(parts) > 1 else parts[0]
     return res
 
 
