@@ -73,3 +73,10 @@ its nose pin; the rear tyre and arm have the same arch as before.  **The skin's 
 * Joints now at chassis x -205.9 (front|mid), -263.4 (mid|rear), -329.4 (rear|tail): `front` runs from the nose to the old end of the cab (239 x 185 x 131 mm: needs the P2S 256 bed, `test_body_pieces` uses 256 for the body pieces), `mid` is moved back 57.5 mm (58 mm long), `rear` is 66 mm long.  Dowel bosses are made on the welded skin at the new joints (roof bosses at the mid|rear joint at y +-26, between the roof rails).
 * Top of `rear` opened: the deck is cut through over the whole piece (4 mm short of each joint) with a 12 mm frame all round; the cage rails show through.  The rear magnet bosses fall inside the opening and are gone: the rear is held by its dowels to mid and tail; the old rear tab pads stay on the cage.
 * Re-checked: no clashes, swing sweep clean to 35 deg, 4 watertight pieces, front share 64.5 % (plate 5 mm, 70 g), mass 2292 g, 231 pass (3 legacy mono fails as before).
+
+## 8. Correction: open the hatch pocket, delete the tail
+
+* The pocket in the rear deck (the marked section) is cut through its floor (walls stay); the earlier whole-rear-roof opening is gone.
+* The `tail` piece is deleted (skin ends at x -329 again, spoiler/rack already removed). Three pieces: front 239 mm (P2S bed), mid 58, rear 66.
+* Checks: no clashes, swing clean to 35 deg, 231 tests pass (3 legacy mono fails as on base), mass 2283 g, front share 64.9 % (plate 6 mm, 84 g).
+* Rear suspension redesign: not started, see the open question in the session.

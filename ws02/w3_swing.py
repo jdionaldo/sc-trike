@@ -21,7 +21,7 @@ def rot(m, deg):
 
 
 def load_body():
-    bodies = [MB.man(trimesh.load(f"out/mono3/body3_{p}.stl")) for p in ("front", "mid", "rear", "tail")]
+    bodies = [MB.man(trimesh.load(f"out/mono3/body3_{p}.stl")) for p in ("front", "mid", "rear")]
     import w3_assembly as A
     wing = [MB.man(m) for n, m, k in A.assembly(0.0, 0.0) if n.startswith("w3_tail")]
     out = bodies[0] + bodies[1] + bodies[2]

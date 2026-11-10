@@ -112,7 +112,7 @@ def skin_frame_pieces(force=False):
         c = m3.Manifold.cylinder(6.2, 2.3, 2.3, 24).translate((-165.7, sy, 43.1))
         posts = c if posts is None else posts + c
     # spoiler (g6) and its posts removed at the user's request (the old rear wing is off as well)
-    return {"front": tm(front), "mid": tm(mid), "rear": tm(rear), "tail": tail_cover()}
+    return {"front": tm(front), "mid": tm(mid), "rear": tm(rear)}
 
 
 def unpinch(t, eps=0.006):
@@ -316,7 +316,7 @@ def arm_slot(pcs, margin=2.0, step=3.0):
     return out
 
 
-JOINT_X = (XOFF - 57.5, XOFF - 115.0, XOFF - 181.0)     # front|mid, mid|rear, rear|tail (chassis x): front runs to the old end of the cab, mid moved back 57.5 mm
+JOINT_X = (XOFF - 57.5, XOFF - 115.0)     # front|mid, mid|rear, rear|tail (chassis x): front runs to the old end of the cab, mid moved back 57.5 mm
 PIN_D, SOCKET_D, SOCKET_L, BOSS_R = 3.0, 3.2, 7.0, 3.6          # steel dowel pins 3 x 12 mm at the joints, 3.2 mm sockets 7 mm deep, 7.2 mm bosses
 
 
@@ -397,7 +397,7 @@ def main(force=False):
     for k, t in pcs.items():
         w = man(t) if w is None else w + man(t)
     w = joints({"all": w}, pcs)["all"]
-    w = w - rear_top_opening(tm(w))
+    w = w - pocket_opening()
     w = unpinch(tm(w))
     w.vertices = np.asarray(w.vertices, np.float32).astype(np.float64)
     w.merge_vertices()
@@ -405,18 +405,21 @@ def main(force=False):
     print("body3", len(w.faces), w.is_watertight, round(abs(w.volume) / 1e3, 1), "cm3")
 
 
-def rear_top_opening(w, x0=JOINT_X[1] - 4.0, x1=JOINT_X[2] + 4.0, frame=12.0, zmin=40.0):
-    """Open top of the rear piece: a prism through the deck over the rear piece (4 mm short of its joints), a 12 mm frame left all round."""
-    from shapely.geometry import Polygon
+def pocket_opening(inset=1.5, zmin=40.0):
+    """Opens the user's hatch pocket in the rear deck: its floor footprint (found on the unmodified hollow skin: columns whose top is >8 mm below the deck beside
+    them) is cut through, the pocket walls stay."""
+    from shapely.geometry import MultiPoint
     from shapely.geometry.polygon import orient
-    xs = np.linspace(x0, x1, 9)
+    t = _noacc()
     pts = []
-    for x in xs:
-        sec = w.section(plane_origin=[x, 0, 62.0], plane_normal=[1, 0, 0])
-        hw = float(np.abs(sec.vertices[:, 1]).max()) if sec is not None else 60.0
-        pts.append((float(x), hw - frame))
-    poly = Polygon([(x, h) for x, h in pts] + [(x, -h) for x, h in reversed(pts)])
-    cs = m3.CrossSection([[(float(a), float(b)) for a, b in list(orient(poly, 1.0).exterior.coords)[:-1]]])
+    for x in np.arange(-312.0, -228.0, 2.0):
+        for y in np.arange(-48.0, 48.1, 2.0):
+            h = t.ray.intersects_location([[x, y, 300.0]], [[0, 0, -1.0]])[0]
+            hs = t.ray.intersects_location([[x, 62.0, 300.0]], [[0, 0, -1.0]])[0]
+            if len(h) and len(hs) and h[:, 2].max() < hs[:, 2].max() - 8.0:
+                pts.append((x, y))
+    poly = orient(MultiPoint(pts).convex_hull.buffer(-inset, join_style=2), 1.0)
+    cs = m3.CrossSection([[(float(a), float(b)) for a, b in list(poly.exterior.coords)[:-1]]])
     return m3.Manifold.extrude(cs, 120.0).translate((0, 0, zmin))
 
 

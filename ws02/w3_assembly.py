@@ -77,7 +77,7 @@ def assembly(phi_deg=0.0, steer=None):
     items.append(("w3_skid", sm, "printed"))
     rows, t0, L = rear_arm_mats()
     items.append(("w3_rear_arm", _t(f"{STL}/w3_rear_arm.stl", M(rows, t0)), "printed"))
-    for part in ("front", "mid", "rear", "tail"):
+    for part in ("front", "mid", "rear"):
         if os.path.exists(f"{MONO}/body3_{part}.stl"):                          # absent while the body is being rebuilt (the body build itself calls the assembly)
             items.append((f"body3_{part}", _t(f"{MONO}/body3_{part}.stl"), "printed"))
     b = LY.blocks()

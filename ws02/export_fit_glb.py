@@ -10,9 +10,9 @@ out = Path(sys.argv[1] if len(sys.argv) > 1 else "out")
 out.mkdir(parents=True, exist_ok=True)
 w3_paint.build(str(out / "WS03_skin_fit_assembly.glb"), yup=True)
 R = np.array([[1, 0, 0, 0], [0, 0, 1, 0], [0, -1, 0, 0], [0, 0, 0, 1.0]])
-cols = {"tail": [190, 45, 35, 255], "front": [200, 52, 40, 255], "mid": [226, 122, 40, 255], "rear": [168, 36, 30, 255]}
+cols = {"front": [200, 52, 40, 255], "mid": [226, 122, 40, 255], "rear": [168, 36, 30, 255]}
 sc = trimesh.Scene()
-for k in ("front", "mid", "rear", "tail"):
+for k in ("front", "mid", "rear"):
     m = trimesh.load(f"out/mono3/body3_{k}.stl")
     m.visual.face_colors = cols[k]
     m.apply_transform(R)

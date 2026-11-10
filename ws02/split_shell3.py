@@ -3,7 +3,7 @@ import numpy as np, trimesh
 from manifold3d import Manifold
 import mono_build as MB, validate
 
-PIECES = ("front", "mid", "rear", "tail")
+PIECES = ("front", "mid", "rear")
 import skin_user as _SU
 CUTS = _SU.JOINT_X    # x of the two cut planes (front|mid, mid|rear): the joints of the user's skin pieces
 
