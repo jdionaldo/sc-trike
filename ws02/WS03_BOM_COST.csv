@@ -1,0 +1,58 @@
+ref,qty,part,MPN,source,unit price,currency,line total,vendor,notes
+w3_arm_left,1,w3_arm_left,,printed PETG (FDM),3.97,USD,3.97,3DAPI via kernelCAD,"121.0 x 31.6 x 20.3 mm, 30.6 cm3 solid, 19.1 g at 1.2 mm walls + infill"
+w3_arm_right,1,w3_arm_right,,printed PETG (FDM),3.98,USD,3.98,3DAPI via kernelCAD,"121.0 x 31.6 x 20.3 mm, 30.6 cm3 solid, 19.1 g at 1.2 mm walls + infill"
+w3_carrier_left,1,w3_carrier_left,,printed PETG (FDM),3.26,USD,3.26,3DAPI via kernelCAD,"18.0 x 54.5 x 28.3 mm, 6.3 cm3 solid, 3.9 g at 1.2 mm walls + infill"
+w3_carrier_right,1,w3_carrier_right,,printed PETG (FDM),3.26,USD,3.26,3DAPI via kernelCAD,"18.0 x 54.5 x 28.3 mm, 6.3 cm3 solid, 3.9 g at 1.2 mm walls + infill"
+w3_cdc_lower,1,w3_cdc_lower,,printed PETG (FDM),3.63,USD,3.63,3DAPI via kernelCAD,"47.0 x 52.0 x 22.0 mm, 29.4 cm3 solid, 16.2 g at 1.2 mm walls + infill"
+w3_cdc_upper,1,w3_cdc_upper,,printed PETG (FDM),3.63,USD,3.63,3DAPI via kernelCAD,"47.0 x 52.0 x 22.0 mm, 28.8 cm3 solid, 15.9 g at 1.2 mm walls + infill"
+w3_fdc_lower,1,w3_fdc_lower,,printed PETG (FDM),4.66,USD,4.66,3DAPI via kernelCAD,"78.0 x 80.5 x 22.0 mm, 88.6 cm3 solid, 40.3 g at 1.2 mm walls + infill"
+w3_fdc_upper,1,w3_fdc_upper,,printed PETG (FDM),4.32,USD,4.32,3DAPI via kernelCAD,"78.0 x 60.0 x 22.0 mm, 77.7 cm3 solid, 35.1 g at 1.2 mm walls + infill"
+w3_knuckle_left,1,w3_knuckle_left,,printed PETG (FDM),3.24,USD,3.24,3DAPI via kernelCAD,"22.0 x 43.0 x 26.0 mm, 5.5 cm3 solid, 3.3 g at 1.2 mm walls + infill"
+w3_knuckle_right,1,w3_knuckle_right,,printed PETG (FDM),3.24,USD,3.24,3DAPI via kernelCAD,"22.0 x 43.0 x 26.0 mm, 5.5 cm3 solid, 3.3 g at 1.2 mm walls + infill"
+w3_lean_rod,2,w3_lean_rod,,printed PETG (FDM),2.86,USD,5.72,3DAPI via kernelCAD,"40.4 x 10.4 x 5.0 mm, 1.1 cm3 solid, 0.9 g at 1.2 mm walls + infill"
+w3_motor_plate,1,w3_motor_plate,,printed PETG (FDM),2.96,USD,2.96,3DAPI via kernelCAD,"45.0 x 30.0 x 4.0 mm, 4.9 cm3 solid, 3.6 g at 1.2 mm walls + infill"
+w3_pod,2,w3_pod,,printed PETG (FDM),2.91,USD,5.82,3DAPI via kernelCAD,"27.0 x 8.0 x 14.3 mm, 2.3 cm3 solid, 1.7 g at 1.2 mm walls + infill"
+w3_rbc_lower,1,w3_rbc_lower,,printed PETG (FDM),3.45,USD,3.45,3DAPI via kernelCAD,"53.0 x 30.0 x 21.0 mm, 24.5 cm3 solid, 12.7 g at 1.2 mm walls + infill"
+w3_rbc_upper,1,w3_rbc_upper,,printed PETG (FDM),3.45,USD,3.45,3DAPI via kernelCAD,"53.0 x 30.0 x 21.0 mm, 24.5 cm3 solid, 12.7 g at 1.2 mm walls + infill"
+w3_rear_arm,1,w3_rear_arm,,printed PETG (FDM),4.47,USD,4.47,3DAPI via kernelCAD,"114.6 x 40.0 x 30.3 mm, 44.0 cm3 solid, 26.5 g at 1.2 mm walls + infill"
+w3_uplink_left,1,w3_uplink_left,,printed PETG (FDM),2.98,USD,2.98,3DAPI via kernelCAD,"109.0 x 9.0 x 6.0 mm, 3.2 cm3 solid, 2.4 g at 1.2 mm walls + infill"
+w3_uplink_right,1,w3_uplink_right,,printed PETG (FDM),2.98,USD,2.98,3DAPI via kernelCAD,"109.0 x 9.0 x 6.0 mm, 3.2 cm3 solid, 2.4 g at 1.2 mm walls + infill"
+w3_uplink_standoff,2,w3_uplink_standoff,,printed PETG (FDM),2.82,USD,5.64,3DAPI via kernelCAD,"8.0 x 8.0 x 6.8 mm, 0.3 cm3 solid, 0.3 g at 1.2 mm walls + infill"
+w3_deck_front,1,w3_deck_front,,printed PETG (FDM),5.51,USD,5.51,3DAPI via kernelCAD,"150.5 x 109.0 x 11.0 mm, 85.2 cm3 solid, 48.0 g at 1.2 mm walls + infill"
+w3_deck_rear,1,w3_deck_rear,,printed PETG (FDM),5.11,USD,5.11,3DAPI via kernelCAD,"143.0 x 109.0 x 6.0 mm, 82.0 cm3 solid, 44.4 g at 1.2 mm walls + infill"
+w3_frame_front,1,w3_frame_front,,printed PETG (FDM),8.88,USD,8.88,3DAPI via kernelCAD,"204.0 x 125.6 x 99.3 mm, 104.5 cm3 solid, 62.0 g at 1.2 mm walls + infill"
+w3_frame_rear,1,w3_frame_rear,,printed PETG (FDM),6.34,USD,6.34,3DAPI via kernelCAD,"92.5 x 127.0 x 94.2 mm, 62.6 cm3 solid, 34.6 g at 1.2 mm walls + infill"
+w3_skid,1,w3_skid,,printed PETG (FDM),3.53,USD,3.53,3DAPI via kernelCAD,"59.1 x 80.0 x 13.0 mm, 12.4 cm3 solid, 9.9 g at 1.2 mm walls + infill"
+w3_tail_hanger_left,1,w3_tail_hanger_left,,printed PETG (FDM),3.11,USD,3.11,3DAPI via kernelCAD,"88.1 x 31.4 x 10.0 mm, 5.0 cm3 solid, 4.1 g at 1.2 mm walls + infill"
+w3_tail_hanger_right,1,w3_tail_hanger_right,,printed PETG (FDM),3.11,USD,3.11,3DAPI via kernelCAD,"88.1 x 31.4 x 10.0 mm, 5.0 cm3 solid, 4.1 g at 1.2 mm walls + infill"
+w3_tail_main,1,w3_tail_main,,printed PETG (FDM),7.96,USD,7.96,3DAPI via kernelCAD,"88.0 x 200.5 x 45.5 mm, 99.6 cm3 solid, 53.1 g at 1.2 mm walls + infill"
+w3_tail_right,1,w3_tail_right,,printed PETG (FDM),4.93,USD,4.93,3DAPI via kernelCAD,"86.5 x 68.5 x 39.5 mm, 38.5 cm3 solid, 20.7 g at 1.2 mm walls + infill"
+body3_front,1,body3_front,,printed PETG (FDM),7.24,USD,7.24,3DAPI via kernelCAD,"195.0 x 145.6 x 104.7 mm, 84.7 cm3 solid, 64.8 g at 1.2 mm walls + infill"
+body3_rear,1,body3_rear,,printed PETG (FDM),9.92,USD,9.92,3DAPI via kernelCAD,"183.0 x 147.0 x 123.0 mm, 126.1 cm3 solid, 99.7 g at 1.2 mm walls + infill"
+B01,1,Hobbywing QuicRun Fusion SE 1200KV 2-in-1 motor/ESC,HWI30404318,bought,79.99,USD,79.99,havocspeed.com,ESC built in; replaces the 2830 motor + 60 A ESC rows
+B02,4,12 kg servo (priced: Savox B-12KG standard size),SAV-B-12KG,bought,16.99,USD,67.96,smalladdictionsrc.com,design needs SHORT body 40x20x19.3; B-12KG is standard height: placeholder price
+B03,2,Axial 6-Bolt Heavy Duty Gear Set 30T/8T (front + centre diff),AXI232003,bought,19.99,USD,39.98,997rcraceway.com,
+B04,1,Axial 6-Bolt Differential Locker (optional crawl mode),AXI232002,bought,7.99,USD,7.99,nankinhobby.com,out of stock
+B05,1,Axial Input Metal Gears 27T/20T/34T (reduction / cross-over),AXI232033,bought,15.99,USD,15.99,nankinhobby.com,regular price; on sale 10.99
+B06,3,"Tire on wheel about 112 x 62, 12 mm hex (priced: Roapex Tracker MT)",ROPR3002-B0,bought,29.99,USD,89.97,store.hobbyetc.com,pack qty not stated; dims unverified
+B07,1,LiPo 3S 1300 mAh (75x35x25 envelope),T1300.3S.30,bought,10.29,USD,10.29,hobbyking.com,out of stock
+B08,1,Radio 6+ ch with mixing (priced: FlySky FS-i6X + FS-iA10B),TE-328-010,bought,69.99,USD,69.99,superdroidrobots.com,listing not available
+B09,1,"Bearing 8x16x5 (688), 10-pack",688-2RS,bought,9.99,USD,9.99,walmart.com,need 2
+B10,6,"GT2 pulley 20T 5 mm bore (priced: Adafruit, 6 mm belt)",ADA1251,bought,7.95,USD,47.7,adafruit.com,"need 20T x3, 16T x2, 22T x1 for 3 mm belt; out of stock"
+B11,1,CVD / universal drive shaft kit,ebay 356156996883,bought,7.98,USD,7.98,ebay.com,plus 2.99 ship; confirm it covers 2 joints
+B12,1,"M3 stainless turnbuckle pushrod, 2-pack",Secraft SUS M3,bought,3.3,USD,3.3,gator-rc.com,listed to 100 mm; design wants about 105 mm
+B13,2,"Bearing 5x11x5 (685ZZ), 10-pack",685-ZZ,bought,21.42,GBP,42.84,bearingboys.co.uk,"design wants 5x11x4 (MR115), about 14; ex VAT"
+B14,1,"Bearing 4x8x3 (MR84ZZ), 10-pack",3RB-MR84-ZZ/10,bought,8.6,CAD,8.6,rcjaz.ca,need 4
+U01,4,"GT2 3 mm closed belts (front x2, rear x1, spare)",,bought,,,,,not priced
+U02,5,"Shafts 5 mm (about 40, 55, 52 mm) and output stubs",,bought,,,,,not priced
+U03,1,Rear axle 8 mm,,bought,,,,,not priced
+U04,4,Front axles / tip shafts 4 mm,,bought,,,,,not priced
+U05,2,Kingpins 4 mm steel about 30 mm,,bought,,,,,not priced
+U06,8,Steel pins 3 mm (link pivots),,bought,,,,,not priced
+U07,8,M2 ball studs / rod ends,,bought,,,,,not priced
+U08,4,Servo horns aluminium 28 mm (lean) + 12 mm (steer),,bought,,,,,not priced
+U09,1,"Screws M2, M2.5 and heat-set inserts",,bought,,,,,not priced
+U10,4,Disc magnets 6 x 2 mm (hood pads),,bought,,,,,not priced
+U11,3,LEDs 3 mm (nose light bar),,bought,,,,,not priced
+U12,1,Hinge pin 3 mm,,bought,,,,,not priced
+U13,1,Program card for Fusion SE,,bought,,,,,not priced
