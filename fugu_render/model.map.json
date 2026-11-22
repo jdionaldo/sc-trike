@@ -1,0 +1,2283 @@
+{
+ "version": 0,
+ "build": "fe0ee4b15aa04cc9873777d5bda029a6",
+ "parts": [
+  {
+   "id": "0:Tail_light_housing",
+   "name": "Tail light housing",
+   "step_name": "Tail_light_housing",
+   "role": "part",
+   "group": "Print shell",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -46.414,
+     178.772,
+     146.389
+    ],
+    [
+     46.414,
+     236.066,
+     194.207
+    ]
+   ],
+   "volume": 48034.784
+  },
+  {
+   "id": "1:Front_shell",
+   "name": "Front shell",
+   "step_name": "Front_shell",
+   "role": "part",
+   "group": "Print shell",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -92.749,
+     -307.0,
+     22.228
+    ],
+    [
+     92.749,
+     115.71,
+     170.952
+    ]
+   ],
+   "volume": 244376.208
+  },
+  {
+   "id": "2:Canopy",
+   "name": "Canopy",
+   "step_name": "Canopy",
+   "role": "part",
+   "group": "Print shell",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -89.323,
+     -209.669,
+     135.072
+    ],
+    [
+     89.323,
+     114.727,
+     225.0
+    ]
+   ],
+   "volume": 83580.031
+  },
+  {
+   "id": "3:Grille_insert",
+   "name": "Grille insert",
+   "step_name": "Grille_insert",
+   "role": "part",
+   "group": "Print shell",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -40.654,
+     -295.457,
+     64.985
+    ],
+    [
+     40.654,
+     -270.883,
+     97.307
+    ]
+   ],
+   "volume": 10336.557
+  },
+  {
+   "id": "4:Tail_light_strip",
+   "name": "Tail light strip",
+   "step_name": "Tail_light_strip",
+   "role": "part",
+   "group": "Lights",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -38.0,
+     213.808,
+     165.2
+    ],
+    [
+     38.0,
+     234.793,
+     180.357
+    ]
+   ],
+   "volume": 1799.132
+  },
+  {
+   "id": "5:Nose_light_strip",
+   "name": "Nose light strip",
+   "step_name": "Nose_light_strip",
+   "role": "part",
+   "group": "Lights",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -57.371,
+     -304.507,
+     96.214
+    ],
+    [
+     57.371,
+     -258.707,
+     120.597
+    ]
+   ],
+   "volume": 2909.582
+  },
+  {
+   "id": "6:arm_-1",
+   "name": "arm -1",
+   "step_name": "arm_-1",
+   "role": "part",
+   "group": "Chassis/Suspension",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -93.5,
+     -224.05,
+     26.68
+    ],
+    [
+     -57.733,
+     -107.8,
+     81.459
+    ]
+   ],
+   "volume": 50219.809
+  },
+  {
+   "id": "7:arm_1",
+   "name": "arm 1",
+   "step_name": "arm_1",
+   "role": "part",
+   "group": "Chassis/Suspension",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     57.733,
+     -224.05,
+     26.68
+    ],
+    [
+     93.5,
+     -107.8,
+     81.459
+    ]
+   ],
+   "volume": 50219.809
+  },
+  {
+   "id": "8:uplink_-1",
+   "name": "uplink -1",
+   "step_name": "uplink_-1",
+   "role": "part",
+   "group": "Chassis/Suspension",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -109.8,
+     -223.8,
+     86.5
+    ],
+    [
+     -63.7,
+     -114.9,
+     102.7
+    ]
+   ],
+   "volume": 5134.629
+  },
+  {
+   "id": "9:uplink_1",
+   "name": "uplink 1",
+   "step_name": "uplink_1",
+   "role": "part",
+   "group": "Chassis/Suspension",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     63.7,
+     -223.8,
+     86.5
+    ],
+    [
+     109.8,
+     -114.9,
+     102.7
+    ]
+   ],
+   "volume": 5134.629
+  },
+  {
+   "id": "10:b_battery",
+   "name": "b battery",
+   "step_name": "b_battery",
+   "role": "part",
+   "group": "Chassis/Electronics and power",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -37.5,
+     -215.032,
+     29.765
+    ],
+    [
+     -2.5,
+     -138.471,
+     59.936
+    ]
+   ],
+   "volume": 65625.0
+  },
+  {
+   "id": "11:b_rear_ring",
+   "name": "b rear ring",
+   "step_name": "b_rear_ring",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     23.175,
+     101.875,
+     50.918
+    ],
+    [
+     28.675,
+     127.489,
+     76.49
+    ]
+   ],
+   "volume": 2773.247
+  },
+  {
+   "id": "12:b_rear_shaft",
+   "name": "b rear shaft",
+   "step_name": "b_rear_shaft",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     18.5,
+     7.435,
+     53.744
+    ],
+    [
+     23.5,
+     109.535,
+     65.847
+    ]
+   ],
+   "volume": 1989.921
+  },
+  {
+   "id": "13:mock_receiver",
+   "name": "mock receiver",
+   "step_name": "mock_receiver",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     12.0,
+     -184.279,
+     28.83
+    ],
+    [
+     27.0,
+     -159.709,
+     39.482
+    ]
+   ],
+   "volume": 3240.0
+  },
+  {
+   "id": "14:tip_shaft_-1",
+   "name": "tip shaft -1",
+   "step_name": "tip_shaft_-1",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -110.0,
+     -218.545,
+     38.568
+    ],
+    [
+     -55.5,
+     -214.554,
+     42.559
+    ]
+   ],
+   "volume": 680.475
+  },
+  {
+   "id": "15:tip_shaft_1",
+   "name": "tip shaft 1",
+   "step_name": "tip_shaft_1",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     55.5,
+     -218.545,
+     38.568
+    ],
+    [
+     110.0,
+     -214.554,
+     42.559
+    ]
+   ],
+   "volume": 680.475
+  },
+  {
+   "id": "16:w3_pillow_lower",
+   "name": "w3 pillow lower",
+   "step_name": "w3_pillow_lower",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     6.0,
+     44.314,
+     37.856
+    ],
+    [
+     36.0,
+     59.744,
+     59.781
+    ]
+   ],
+   "volume": 8256.845
+  },
+  {
+   "id": "17:w3_pillow_upper",
+   "name": "w3 pillow upper",
+   "step_name": "w3_pillow_upper",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     6.0,
+     42.849,
+     58.805
+    ],
+    [
+     36.0,
+     58.279,
+     80.73
+    ]
+   ],
+   "volume": 8256.845
+  },
+  {
+   "id": "18:w3_rbc_lower",
+   "name": "w3 rbc lower",
+   "step_name": "w3_rbc_lower",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     6.0,
+     75.531,
+     40.039
+    ],
+    [
+     40.1,
+     141.046,
+     65.467
+    ]
+   ],
+   "volume": 34171.552
+  },
+  {
+   "id": "19:w3_rbc_upper",
+   "name": "w3 rbc upper",
+   "step_name": "w3_rbc_upper",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     6.0,
+     74.066,
+     60.988
+    ],
+    [
+     40.1,
+     139.581,
+     86.415
+    ]
+   ],
+   "volume": 34171.552
+  },
+  {
+   "id": "20:w3_rring_hub",
+   "name": "w3 rring hub",
+   "step_name": "w3_rring_hub",
+   "role": "part",
+   "group": "Chassis/Drivetrain",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     22.675,
+     103.646,
+     52.727
+    ],
+    [
+     31.675,
+     125.637,
+     74.718
+    ]
+   ],
+   "volume": 1437.984
+  },
+  {
+   "id": "21:battery_tray_c",
+   "name": "battery tray c",
+   "step_name": "battery_tray_c",
+   "role": "part",
+   "group": "Chassis/Frame and decks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -39.9,
+     -216.24,
+     17.934
+    ],
+    [
+     7.9,
+     -135.867,
+     43.144
+    ]
+   ],
+   "volume": 13429.493
+  },
+  {
+   "id": "22:w3_deck_front",
+   "name": "w3 deck front",
+   "step_name": "w3_deck_front",
+   "role": "part",
+   "group": "Chassis/Frame and decks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -54.5,
+     -212.5,
+     12.663
+    ],
+    [
+     54.5,
+     -61.899,
+     29.192
+    ]
+   ],
+   "volume": 92226.133
+  },
+  {
+   "id": "23:w3_deck_rear",
+   "name": "w3 deck rear",
+   "step_name": "w3_deck_rear",
+   "role": "part",
+   "group": "Chassis/Frame and decks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -54.5,
+     -62.318,
+     22.307
+    ],
+    [
+     54.5,
+     60.0,
+     113.288
+    ]
+   ],
+   "volume": 94188.701
+  },
+  {
+   "id": "24:w3_deck_tail",
+   "name": "w3 deck tail",
+   "step_name": "w3_deck_tail",
+   "role": "part",
+   "group": "Chassis/Frame and decks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -48.233,
+     59.385,
+     30.817
+    ],
+    [
+     48.233,
+     148.0,
+     96.11
+    ]
+   ],
+   "volume": 52263.265
+  },
+  {
+   "id": "25:w3_skid",
+   "name": "w3 skid",
+   "step_name": "w3_skid",
+   "role": "part",
+   "group": "Chassis/Frame and decks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -40.0,
+     -245.359,
+     11.592
+    ],
+    [
+     40.0,
+     -201.558,
+     54.396
+    ]
+   ],
+   "volume": 12425.974
+  },
+  {
+   "id": "26:carrier_-1",
+   "name": "carrier -1",
+   "step_name": "carrier_-1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -130.5,
+     -225.533,
+     31.58
+    ],
+    [
+     -98.8,
+     -207.566,
+     96.0
+    ]
+   ],
+   "volume": 8942.527
+  },
+  {
+   "id": "27:carrier_1",
+   "name": "carrier 1",
+   "step_name": "carrier_1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     98.8,
+     -225.533,
+     31.58
+    ],
+    [
+     130.5,
+     -207.566,
+     96.0
+    ]
+   ],
+   "volume": 8942.527
+  },
+  {
+   "id": "28:knuckle_-1",
+   "name": "knuckle -1",
+   "step_name": "knuckle_-1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -130.0,
+     -226.675,
+     9.636
+    ],
+    [
+     -104.0,
+     -204.648,
+     52.604
+    ]
+   ],
+   "volume": 5464.903
+  },
+  {
+   "id": "29:knuckle_1",
+   "name": "knuckle 1",
+   "step_name": "knuckle_1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     104.0,
+     -226.675,
+     9.636
+    ],
+    [
+     130.0,
+     -204.648,
+     52.604
+    ]
+   ],
+   "volume": 5464.903
+  },
+  {
+   "id": "30:steer_horn_-1",
+   "name": "steer horn -1",
+   "step_name": "steer_horn_-1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -69.5,
+     -99.622,
+     21.167
+    ],
+    [
+     -67.2,
+     -90.1,
+     39.989
+    ]
+   ],
+   "volume": 289.8
+  },
+  {
+   "id": "31:steer_horn_1",
+   "name": "steer horn 1",
+   "step_name": "steer_horn_1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     67.2,
+     -99.622,
+     21.167
+    ],
+    [
+     69.5,
+     -90.1,
+     39.989
+    ]
+   ],
+   "volume": 289.8
+  },
+  {
+   "id": "32:steer_servo_-1",
+   "name": "steer servo -1",
+   "step_name": "steer_servo_-1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -60.5,
+     -105.791,
+     26.543
+    ],
+    [
+     -34.0,
+     -63.595,
+     49.738
+    ]
+   ],
+   "volume": 21798.24
+  },
+  {
+   "id": "33:steer_servo_1",
+   "name": "steer servo 1",
+   "step_name": "steer_servo_1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     34.0,
+     -105.791,
+     26.543
+    ],
+    [
+     60.5,
+     -63.595,
+     49.738
+    ]
+   ],
+   "volume": 21798.24
+  },
+  {
+   "id": "34:tie_rod_-1",
+   "name": "tie rod -1",
+   "step_name": "tie_rod_-1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -110.434,
+     -217.532,
+     10.812
+    ],
+    [
+     -63.536,
+     -88.547,
+     28.106
+    ]
+   ],
+   "volume": 5252.549
+  },
+  {
+   "id": "35:tie_rod_1",
+   "name": "tie rod 1",
+   "step_name": "tie_rod_1",
+   "role": "part",
+   "group": "Chassis/Steering",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     63.536,
+     -217.532,
+     10.812
+    ],
+    [
+     110.434,
+     -88.547,
+     28.106
+    ]
+   ],
+   "volume": 5252.542
+  },
+  {
+   "id": "36:mock_axle_-1",
+   "name": "mock axle -1",
+   "step_name": "mock_axle_-1",
+   "role": "part",
+   "group": "Chassis/Wheels",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -150.0,
+     -218.545,
+     38.568
+    ],
+    [
+     -120.0,
+     -214.554,
+     42.559
+    ]
+   ],
+   "volume": 374.573
+  },
+  {
+   "id": "37:mock_axle_1",
+   "name": "mock axle 1",
+   "step_name": "mock_axle_1",
+   "role": "part",
+   "group": "Chassis/Wheels",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     120.0,
+     -218.545,
+     38.568
+    ],
+    [
+     150.0,
+     -214.554,
+     42.559
+    ]
+   ],
+   "volume": 374.573
+  },
+  {
+   "id": "38:mock_tire_-1",
+   "name": "mock tire -1",
+   "step_name": "mock_tire_-1",
+   "role": "part",
+   "group": "Chassis/Wheels",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -175.0,
+     -272.625,
+     -15.619
+    ],
+    [
+     -113.0,
+     -160.16,
+     96.698
+    ]
+   ],
+   "volume": 464924.202
+  },
+  {
+   "id": "39:mock_tire_1",
+   "name": "mock tire 1",
+   "step_name": "mock_tire_1",
+   "role": "part",
+   "group": "Chassis/Wheels",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     113.0,
+     -272.684,
+     -15.619
+    ],
+    [
+     175.0,
+     -160.366,
+     96.803
+    ]
+   ],
+   "volume": 465168.671
+  },
+  {
+   "id": "40:b_front_pivot_axle",
+   "name": "b front pivot axle",
+   "step_name": "b_front_pivot_axle",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -86.0,
+     -119.293,
+     45.039
+    ],
+    [
+     86.0,
+     -114.293,
+     50.039
+    ]
+   ],
+   "volume": 3377.212
+  },
+  {
+   "id": "41:w3_arm_pivot_block_1",
+   "name": "w3 arm pivot block 1",
+   "step_name": "w3_arm_pivot_block_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     40.0,
+     -124.293,
+     23.355
+    ],
+    [
+     54.5,
+     -109.293,
+     54.539
+    ]
+   ],
+   "volume": 6232.084
+  },
+  {
+   "id": "42:w3_arm_pivot_block_-1",
+   "name": "w3 arm pivot block -1",
+   "step_name": "w3_arm_pivot_block_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -54.5,
+     -124.293,
+     23.355
+    ],
+    [
+     -40.0,
+     -109.293,
+     54.539
+    ]
+   ],
+   "volume": 6232.084
+  },
+  {
+   "id": "43:b_rear_shaft_front",
+   "name": "b rear shaft front",
+   "step_name": "b_rear_shaft_front",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     18.5,
+     -2.625,
+     53.113
+    ],
+    [
+     23.5,
+     7.694,
+     58.787
+    ]
+   ],
+   "volume": 196.35
+  },
+  {
+   "id": "44:b_spur_gear",
+   "name": "b spur gear",
+   "step_name": "b_spur_gear",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     4.5,
+     -2.588,
+     39.215
+    ],
+    [
+     37.5,
+     6.659,
+     72.617
+    ]
+   ],
+   "volume": 5849.646
+  },
+  {
+   "id": "45:b_motor_pinion",
+   "name": "b motor pinion",
+   "step_name": "b_motor_pinion",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -7.5,
+     -1.868,
+     49.69
+    ],
+    [
+     4.5,
+     5.939,
+     62.142
+    ]
+   ],
+   "volume": 735.384
+  },
+  {
+   "id": "46:b_motor_shaft",
+   "name": "b motor shaft",
+   "step_name": "b_motor_shaft",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -3.1,
+     -9.048,
+     53.565
+    ],
+    [
+     0.1,
+     6.635,
+     57.821
+    ]
+   ],
+   "volume": 124.658
+  },
+  {
+   "id": "47:b_motor",
+   "name": "b motor",
+   "step_name": "b_motor",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -19.5,
+     -69.533,
+     33.124
+    ],
+    [
+     16.5,
+     -7.205,
+     73.153
+    ]
+   ],
+   "volume": 61068.54
+  },
+  {
+   "id": "48:w3_motor_plate",
+   "name": "w3 motor plate",
+   "step_name": "w3_motor_plate",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -31.5,
+     -23.991,
+     31.054
+    ],
+    [
+     28.5,
+     -2.867,
+     77.418
+    ]
+   ],
+   "volume": 15654.814
+  },
+  {
+   "id": "49:wheel_f_1",
+   "name": "wheel f 1",
+   "step_name": "wheel_f_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     127.0,
+     -243.082,
+     14.005
+    ],
+    [
+     161.0,
+     -189.822,
+     67.265
+    ]
+   ],
+   "volume": 21371.219
+  },
+  {
+   "id": "50:wheel_f_-1",
+   "name": "wheel f -1",
+   "step_name": "wheel_f_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -161.0,
+     -243.127,
+     13.99
+    ],
+    [
+     -127.0,
+     -189.867,
+     67.25
+    ]
+   ],
+   "volume": 21370.88
+  },
+  {
+   "id": "51:b_steer_spline_1",
+   "name": "b steer spline 1",
+   "step_name": "b_steer_spline_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     60.5,
+     -99.135,
+     36.52
+    ],
+    [
+     70.0,
+     -93.135,
+     42.52
+    ]
+   ],
+   "volume": 236.534
+  },
+  {
+   "id": "52:b_steer_horn_screw_1",
+   "name": "b steer horn screw 1",
+   "step_name": "b_steer_horn_screw_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     70.0,
+     -98.935,
+     36.72
+    ],
+    [
+     71.3,
+     -93.335,
+     42.32
+    ]
+   ],
+   "volume": 32.019
+  },
+  {
+   "id": "53:b_steer_horn_end_ball_1",
+   "name": "b steer horn end ball 1",
+   "step_name": "b_steer_horn_end_ball_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     66.9,
+     -97.936,
+     24.355
+    ],
+    [
+     70.603,
+     -92.14,
+     27.313
+    ]
+   ],
+   "volume": 7.451
+  },
+  {
+   "id": "54:b_steer_horn_end_stud_1",
+   "name": "b steer horn end stud 1",
+   "step_name": "b_steer_horn_end_stud_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     61.0,
+     -96.598,
+     22.855
+    ],
+    [
+     77.0,
+     -93.598,
+     25.855
+    ]
+   ],
+   "volume": 45.032
+  },
+  {
+   "id": "55:b_steer_horn_end_nut_1",
+   "name": "b steer horn end nut 1",
+   "step_name": "b_steer_horn_end_nut_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     74.0,
+     -98.274,
+     21.605
+    ],
+    [
+     76.4,
+     -91.923,
+     27.105
+    ]
+   ],
+   "volume": 45.906
+  },
+  {
+   "id": "56:b_steer_horn_end_washer_1",
+   "name": "b steer horn end washer 1",
+   "step_name": "b_steer_horn_end_washer_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     73.2,
+     -98.344,
+     21.055
+    ],
+    [
+     74.0,
+     -91.798,
+     27.655
+    ]
+   ],
+   "volume": 11.465
+  },
+  {
+   "id": "57:b_steer_knuckle_end_ball_1",
+   "name": "b steer knuckle end ball 1",
+   "step_name": "b_steer_knuckle_end_ball_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     104.879,
+     -215.329,
+     14.6
+    ],
+    [
+     108.23,
+     -213.088,
+     17.591
+    ]
+   ],
+   "volume": 11.538
+  },
+  {
+   "id": "58:b_steer_knuckle_end_stud_1",
+   "name": "b steer knuckle end stud 1",
+   "step_name": "b_steer_knuckle_end_stud_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     105.0,
+     -215.1,
+     6.6
+    ],
+    [
+     108.0,
+     -212.1,
+     22.6
+    ]
+   ],
+   "volume": 55.831
+  },
+  {
+   "id": "59:b_steer_knuckle_end_nut_1",
+   "name": "b steer knuckle end nut 1",
+   "step_name": "b_steer_knuckle_end_nut_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     103.325,
+     -216.35,
+     19.6
+    ],
+    [
+     108.782,
+     -210.85,
+     22.0
+    ]
+   ],
+   "volume": 31.61
+  },
+  {
+   "id": "60:b_steer_knuckle_end_washer_1",
+   "name": "b steer knuckle end washer 1",
+   "step_name": "b_steer_knuckle_end_washer_1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     103.2,
+     -216.9,
+     18.8
+    ],
+    [
+     108.263,
+     -210.3,
+     19.6
+    ]
+   ],
+   "volume": 7.448
+  },
+  {
+   "id": "61:b_steer_spline_-1",
+   "name": "b steer spline -1",
+   "step_name": "b_steer_spline_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -70.0,
+     -99.135,
+     36.52
+    ],
+    [
+     -60.5,
+     -93.135,
+     42.52
+    ]
+   ],
+   "volume": 236.534
+  },
+  {
+   "id": "62:b_steer_horn_screw_-1",
+   "name": "b steer horn screw -1",
+   "step_name": "b_steer_horn_screw_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -71.3,
+     -98.935,
+     36.72
+    ],
+    [
+     -70.0,
+     -93.335,
+     42.32
+    ]
+   ],
+   "volume": 32.019
+  },
+  {
+   "id": "63:b_steer_horn_end_ball_-1",
+   "name": "b steer horn end ball -1",
+   "step_name": "b_steer_horn_end_ball_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -70.603,
+     -97.936,
+     24.355
+    ],
+    [
+     -66.9,
+     -92.14,
+     27.313
+    ]
+   ],
+   "volume": 7.45
+  },
+  {
+   "id": "64:b_steer_horn_end_stud_-1",
+   "name": "b steer horn end stud -1",
+   "step_name": "b_steer_horn_end_stud_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -77.0,
+     -96.598,
+     22.855
+    ],
+    [
+     -61.0,
+     -93.598,
+     25.855
+    ]
+   ],
+   "volume": 45.032
+  },
+  {
+   "id": "65:b_steer_horn_end_nut_-1",
+   "name": "b steer horn end nut -1",
+   "step_name": "b_steer_horn_end_nut_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -76.4,
+     -98.274,
+     21.605
+    ],
+    [
+     -74.0,
+     -91.923,
+     27.105
+    ]
+   ],
+   "volume": 45.906
+  },
+  {
+   "id": "66:b_steer_horn_end_washer_-1",
+   "name": "b steer horn end washer -1",
+   "step_name": "b_steer_horn_end_washer_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -74.0,
+     -98.344,
+     21.055
+    ],
+    [
+     -73.2,
+     -91.798,
+     27.655
+    ]
+   ],
+   "volume": 11.465
+  },
+  {
+   "id": "67:b_steer_knuckle_end_ball_-1",
+   "name": "b steer knuckle end ball -1",
+   "step_name": "b_steer_knuckle_end_ball_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -108.23,
+     -215.329,
+     14.6
+    ],
+    [
+     -104.879,
+     -213.088,
+     17.591
+    ]
+   ],
+   "volume": 11.538
+  },
+  {
+   "id": "68:b_steer_knuckle_end_stud_-1",
+   "name": "b steer knuckle end stud -1",
+   "step_name": "b_steer_knuckle_end_stud_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -108.0,
+     -215.1,
+     6.6
+    ],
+    [
+     -105.0,
+     -212.1,
+     22.6
+    ]
+   ],
+   "volume": 55.831
+  },
+  {
+   "id": "69:b_steer_knuckle_end_nut_-1",
+   "name": "b steer knuckle end nut -1",
+   "step_name": "b_steer_knuckle_end_nut_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -108.782,
+     -216.35,
+     19.6
+    ],
+    [
+     -103.325,
+     -210.85,
+     22.0
+    ]
+   ],
+   "volume": 31.61
+  },
+  {
+   "id": "70:b_steer_knuckle_end_washer_-1",
+   "name": "b steer knuckle end washer -1",
+   "step_name": "b_steer_knuckle_end_washer_-1",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -108.263,
+     -216.9,
+     18.8
+    ],
+    [
+     -103.2,
+     -210.3,
+     19.6
+    ]
+   ],
+   "volume": 7.448
+  },
+  {
+   "id": "71:mock_rear_axle",
+   "name": "mock rear axle",
+   "step_name": "mock_rear_axle",
+   "role": "part",
+   "group": "Rear swingarm",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -24.0,
+     232.432,
+     50.704
+    ],
+    [
+     76.0,
+     240.431,
+     58.703
+    ]
+   ],
+   "volume": 4994.308
+  },
+  {
+   "id": "72:mock_rear_hub",
+   "name": "mock rear hub",
+   "step_name": "mock_rear_hub",
+   "role": "part",
+   "group": "Rear swingarm",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -28.0,
+     228.44,
+     46.689
+    ],
+    [
+     -16.0,
+     244.446,
+     62.705
+    ]
+   ],
+   "volume": 2379.371
+  },
+  {
+   "id": "73:w3_rear_arm",
+   "name": "w3 rear arm",
+   "step_name": "w3_rear_arm",
+   "role": "part",
+   "group": "Rear swingarm",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -10.4,
+     103.64,
+     33.423
+    ],
+    [
+     80.0,
+     253.433,
+     112.134
+    ]
+   ],
+   "volume": 136321.7
+  },
+  {
+   "id": "74:pulley_r_pivot",
+   "name": "pulley r pivot",
+   "step_name": "pulley_r_pivot",
+   "role": "part",
+   "group": "Rear swingarm",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     52.7,
+     105.551,
+     54.581
+    ],
+    [
+     65.7,
+     123.743,
+     72.773
+    ]
+   ],
+   "volume": 1797.98
+  },
+  {
+   "id": "75:pulley_r_axle",
+   "name": "pulley r axle",
+   "step_name": "pulley_r_axle",
+   "role": "part",
+   "group": "Rear swingarm",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     52.7,
+     226.062,
+     44.334
+    ],
+    [
+     65.7,
+     246.801,
+     65.073
+    ]
+   ],
+   "volume": 2219.668
+  },
+  {
+   "id": "76:b_gt2_belt_r",
+   "name": "b gt2 belt r",
+   "step_name": "b_gt2_belt_r",
+   "role": "part",
+   "group": "Rear swingarm",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     54.2,
+     105.375,
+     44.159
+    ],
+    [
+     60.2,
+     246.976,
+     72.949
+    ]
+   ],
+   "volume": 2358.129
+  },
+  {
+   "id": "77:wheel_r",
+   "name": "wheel r",
+   "step_name": "wheel_r",
+   "role": "part",
+   "group": "Rear swingarm",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -23.0,
+     205.924,
+     24.239
+    ],
+    [
+     23.0,
+     266.804,
+     85.119
+    ]
+   ],
+   "volume": 31179.759
+  },
+  {
+   "id": "78:Rear_tire",
+   "name": "Rear tire",
+   "step_name": "Rear_tire",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -31.0,
+     166.433,
+     -15.3
+    ],
+    [
+     31.0,
+     306.433,
+     124.7
+    ]
+   ],
+   "volume": 771555.693
+  },
+  {
+   "id": "79:Rear_shock__100_mm_class",
+   "name": "Rear shock (100 mm class)",
+   "step_name": "Rear_shock__100_mm_class",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -9.0,
+     137.634,
+     96.634
+    ],
+    [
+     9.0,
+     161.619,
+     187.2
+    ]
+   ],
+   "volume": 12012.652
+  },
+  {
+   "id": "80:M6_shock_pin__lower",
+   "name": "M6 shock pin (lower)",
+   "step_name": "M6_shock_pin__lower",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -16.4,
+     149.619,
+     97.884
+    ],
+    [
+     15.4,
+     159.619,
+     109.384
+    ]
+   ],
+   "volume": 1443.141
+  },
+  {
+   "id": "81:M6_shock_pin",
+   "name": "M6 shock pin",
+   "step_name": "M6_shock_pin",
+   "role": "part",
+   "group": "Chassis",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -18.0,
+     140.3,
+     174.45
+    ],
+    [
+     17.0,
+     150.3,
+     185.95
+    ]
+   ],
+   "volume": 1533.619
+  },
+  {
+   "id": "82:Lean_beam",
+   "name": "Lean beam",
+   "step_name": "Lean_beam",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -64.659,
+     -128.594,
+     66.211
+    ],
+    [
+     64.659,
+     -92.613,
+     79.128
+    ]
+   ],
+   "volume": 31976.343
+  },
+  {
+   "id": "83:Lean_centring_spring_1",
+   "name": "Lean centring spring 1",
+   "step_name": "Lean_centring_spring_1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     37.5,
+     -100.613,
+     69.95
+    ],
+    [
+     42.5,
+     -92.013,
+     74.95
+    ]
+   ],
+   "volume": 168.861
+  },
+  {
+   "id": "84:Lean_centring_spring_-1",
+   "name": "Lean centring spring -1",
+   "step_name": "Lean_centring_spring_-1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -42.5,
+     -100.613,
+     69.95
+    ],
+    [
+     -37.5,
+     -92.013,
+     74.95
+    ]
+   ],
+   "volume": 168.861
+  },
+  {
+   "id": "85:Lean_beam_pivot_bolt",
+   "name": "Lean beam pivot bolt",
+   "step_name": "Lean_beam_pivot_bolt",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -4.0,
+     -113.613,
+     61.7
+    ],
+    [
+     4.0,
+     -105.613,
+     91.0
+    ]
+   ],
+   "volume": 561.403
+  },
+  {
+   "id": "86:Front_shock_pin_lower_1",
+   "name": "Front shock pin lower 1",
+   "step_name": "Front_shock_pin_lower_1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     58.725,
+     -156.851,
+     73.396
+    ],
+    [
+     71.288,
+     -151.109,
+     76.396
+    ]
+   ],
+   "volume": 86.237
+  },
+  {
+   "id": "87:Front_shock_pin_upper_1",
+   "name": "Front shock pin upper 1",
+   "step_name": "Front_shock_pin_upper_1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     51.104,
+     -124.81,
+     71.326
+    ],
+    [
+     63.667,
+     -119.068,
+     74.326
+    ]
+   ],
+   "volume": 86.237
+  },
+  {
+   "id": "88:Front_shock_shock_1",
+   "name": "Front shock shock 1",
+   "step_name": "Front_shock_shock_1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     53.657,
+     -158.079,
+     69.025
+    ],
+    [
+     68.735,
+     -117.84,
+     78.823
+    ]
+   ],
+   "volume": 1315.479
+  },
+  {
+   "id": "89:Front_shock_pin_lower_-1",
+   "name": "Front shock pin lower -1",
+   "step_name": "Front_shock_pin_lower_-1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -71.288,
+     -156.851,
+     73.396
+    ],
+    [
+     -58.725,
+     -151.109,
+     76.396
+    ]
+   ],
+   "volume": 86.237
+  },
+  {
+   "id": "90:Front_shock_pin_upper_-1",
+   "name": "Front shock pin upper -1",
+   "step_name": "Front_shock_pin_upper_-1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -63.667,
+     -124.81,
+     71.326
+    ],
+    [
+     -51.104,
+     -119.068,
+     74.326
+    ]
+   ],
+   "volume": 86.237
+  },
+  {
+   "id": "91:Front_shock_shock_-1",
+   "name": "Front shock shock -1",
+   "step_name": "Front_shock_shock_-1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -68.735,
+     -158.079,
+     69.025
+    ],
+    [
+     -53.657,
+     -117.84,
+     78.823
+    ]
+   ],
+   "volume": 1315.479
+  },
+  {
+   "id": "92:Uplink_pin_inner_1",
+   "name": "Uplink pin inner 1",
+   "step_name": "Uplink_pin_inner_1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     62.4,
+     -120.9,
+     96.4
+    ],
+    [
+     74.6,
+     -117.9,
+     99.4
+    ]
+   ],
+   "volume": 86.237
+  },
+  {
+   "id": "93:Uplink_pin_outer_1",
+   "name": "Uplink pin outer 1",
+   "step_name": "Uplink_pin_outer_1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     98.9,
+     -220.8,
+     89.5
+    ],
+    [
+     111.1,
+     -217.8,
+     92.5
+    ]
+   ],
+   "volume": 86.237
+  },
+  {
+   "id": "94:Uplink_pin_inner_-1",
+   "name": "Uplink pin inner -1",
+   "step_name": "Uplink_pin_inner_-1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -74.6,
+     -120.9,
+     96.4
+    ],
+    [
+     -62.4,
+     -117.9,
+     99.4
+    ]
+   ],
+   "volume": 86.237
+  },
+  {
+   "id": "95:Uplink_pin_outer_-1",
+   "name": "Uplink pin outer -1",
+   "step_name": "Uplink_pin_outer_-1",
+   "role": "part",
+   "group": "Chassis/Front shocks",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -111.1,
+     -220.8,
+     89.5
+    ],
+    [
+     -98.9,
+     -217.8,
+     92.5
+    ]
+   ],
+   "volume": 86.237
+  },
+  {
+   "id": "96:Cage",
+   "name": "Cage",
+   "step_name": "Cage",
+   "role": "part",
+   "group": "Cage",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -74.7,
+     -233.4,
+     20.4
+    ],
+    [
+     74.7,
+     223.699,
+     220.7
+    ]
+   ],
+   "volume": 424329.784
+  },
+  {
+   "id": "97:Front_light_contact_block",
+   "name": "Front light contact block",
+   "step_name": "Front_light_contact_block",
+   "role": "part",
+   "group": "Cage/Light connectors",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -14.0,
+     -222.0,
+     107.0
+    ],
+    [
+     14.0,
+     -208.0,
+     136.268
+    ]
+   ],
+   "volume": 5140.847
+  },
+  {
+   "id": "98:Rear_light_contact_block",
+   "name": "Rear light contact block",
+   "step_name": "Rear_light_contact_block",
+   "role": "part",
+   "group": "Cage/Light connectors",
+   "file": "model.py",
+   "line": 6,
+   "end_line": 6,
+   "bbox": [
+    [
+     -14.0,
+     -5.0,
+     213.8
+    ],
+    [
+     14.0,
+     9.0,
+     220.342
+    ]
+   ],
+   "volume": 1558.819
+  }
+ ]
+}
