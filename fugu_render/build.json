@@ -1,0 +1,1190 @@
+{
+ "status": "ok",
+ "format": 1,
+ "started": 1795304922.7323031,
+ "warnings": [],
+ "parts": [
+  {
+   "name": "Tail light housing",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Front shell",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Canopy",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Grille insert",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Tail light strip",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Nose light strip",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "arm -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "arm 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "uplink -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "uplink 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b battery",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b rear ring",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b rear shaft",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "mock receiver",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "tip shaft -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "tip shaft 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 pillow lower",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 pillow upper",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 rbc lower",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 rbc upper",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 rring hub",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "battery tray c",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 deck front",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 deck rear",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 deck tail",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 skid",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "carrier -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "carrier 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "knuckle -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "knuckle 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "steer horn -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "steer horn 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "steer servo -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "steer servo 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "tie rod -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "tie rod 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "mock axle -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "mock axle 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "mock tire -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "mock tire 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b front pivot axle",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 arm pivot block 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 arm pivot block -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b rear shaft front",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b spur gear",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b motor pinion",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b motor shaft",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b motor",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 motor plate",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "wheel f 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "wheel f -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer spline 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn screw 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn end ball 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn end stud 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn end nut 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn end washer 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer knuckle end ball 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer knuckle end stud 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer knuckle end nut 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer knuckle end washer 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer spline -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn screw -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn end ball -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn end stud -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn end nut -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer horn end washer -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer knuckle end ball -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer knuckle end stud -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer knuckle end nut -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b steer knuckle end washer -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "mock rear axle",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "mock rear hub",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "w3 rear arm",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "pulley r pivot",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "pulley r axle",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "b gt2 belt r",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "wheel r",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Rear tire",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Rear shock (100 mm class)",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "M6 shock pin (lower)",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "M6 shock pin",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Lean beam",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Lean centring spring 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Lean centring spring -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Lean beam pivot bolt",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Front shock pin lower 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Front shock pin upper 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Front shock shock 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Front shock pin lower -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Front shock pin upper -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Front shock shock -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Uplink pin inner 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Uplink pin outer 1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Uplink pin inner -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Uplink pin outer -1",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Cage",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Front light contact block",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  },
+  {
+   "name": "Rear light contact block",
+   "role": "part",
+   "file": "model.py",
+   "line": 6
+  }
+ ],
+ "glb_bytes": 12685436,
+ "tolerance": 0.2,
+ "params": [
+  {
+   "name": "LENGTH",
+   "label": "Shell length",
+   "kind": "number",
+   "default": 278.0,
+   "min": 260.0,
+   "max": 290.0,
+   "step": null,
+   "unit": "mm",
+   "options": null,
+   "group": "Shell",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 5,
+   "value": 278.0,
+   "source": "code"
+  },
+  {
+   "name": "SHELL_SCALE",
+   "label": "Shell scale (fits the 1:1 chassis)",
+   "kind": "number",
+   "default": 2.17,
+   "min": 1.0,
+   "max": 2.4,
+   "step": 0.01,
+   "unit": null,
+   "options": null,
+   "group": "Shell",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 8,
+   "value": 2.17,
+   "source": "code"
+  },
+  {
+   "name": "WALL_PRINT",
+   "label": "Printed panel thickness",
+   "kind": "number",
+   "default": 3.0,
+   "min": 2.4,
+   "max": 5.0,
+   "step": 0.1,
+   "unit": "mm",
+   "options": null,
+   "group": "Shell",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 9,
+   "value": 3.0,
+   "source": "code"
+  },
+  {
+   "name": "SHELL_Z",
+   "label": "Shell height factor (lower = more aggressive stance)",
+   "kind": "number",
+   "default": 0.9,
+   "min": 0.75,
+   "max": 1.0,
+   "step": 0.01,
+   "unit": null,
+   "options": null,
+   "group": "Shell",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 10,
+   "value": 0.9,
+   "source": "code"
+  },
+  {
+   "name": "CABIN_WIDTH",
+   "label": "Cabin width factor (1.0 = blueprint)",
+   "kind": "number",
+   "default": 0.8,
+   "min": 0.6,
+   "max": 1.0,
+   "step": 0.01,
+   "unit": null,
+   "options": null,
+   "group": "Shell",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 19,
+   "value": 0.8,
+   "source": "code"
+  },
+  {
+   "name": "PANEL_GAP",
+   "label": "Panel seam gap (canopy, grille, shell seams)",
+   "kind": "number",
+   "default": 0.3,
+   "min": 0.15,
+   "max": 0.6,
+   "step": 0.05,
+   "unit": "mm",
+   "options": null,
+   "group": "Shell",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 26,
+   "value": 0.3,
+   "source": "code"
+  },
+  {
+   "name": "CHASSIS_Y",
+   "label": "Chassis shift along Y (shell forward of the guard)",
+   "kind": "number",
+   "default": 9.0,
+   "min": -120.0,
+   "max": 120.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 52,
+   "value": 9.0,
+   "source": "code"
+  },
+  {
+   "name": "CHASSIS_Z",
+   "label": "Ground below shell rocker",
+   "kind": "number",
+   "default": -15.3,
+   "min": -160.0,
+   "max": -5.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 53,
+   "value": -15.3,
+   "source": "code"
+  },
+  {
+   "name": "RELIEF",
+   "label": "Clearance around tires and suspension",
+   "kind": "number",
+   "default": 8.0,
+   "min": 4.0,
+   "max": 20.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 55,
+   "value": 8.0,
+   "source": "code"
+  },
+  {
+   "name": "TIRE_GAP",
+   "label": "Gap between front fenders and tires",
+   "kind": "number",
+   "default": 2.0,
+   "min": 0.0,
+   "max": 10.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 56,
+   "value": 2.0,
+   "source": "code"
+  },
+  {
+   "name": "SHELL_PITCH",
+   "label": "Shell rake (tail up, about the front axle)",
+   "kind": "number",
+   "default": 3.0,
+   "min": 0.0,
+   "max": 6.0,
+   "step": 0.1,
+   "unit": "deg",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 58,
+   "value": 3.0,
+   "source": "code"
+  },
+  {
+   "name": "REAR_TIRE_OD",
+   "label": "Rear tire diameter",
+   "kind": "number",
+   "default": 140.0,
+   "min": 112.0,
+   "max": 165.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Rear wheel",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 59,
+   "value": 140.0,
+   "source": "code"
+  },
+  {
+   "name": "BUMP_TRAVEL",
+   "label": "Suspension bump travel allowed under the shell",
+   "kind": "number",
+   "default": 20.0,
+   "min": 0.0,
+   "max": 40.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 60,
+   "value": 20.0,
+   "source": "code"
+  },
+  {
+   "name": "STEER_LOCK",
+   "label": "Front steering lock each way",
+   "kind": "number",
+   "default": 30.0,
+   "min": 0.0,
+   "max": 40.0,
+   "step": 1.0,
+   "unit": "deg",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 61,
+   "value": 30.0,
+   "source": "code"
+  },
+  {
+   "name": "REAR_SHOCK_RISE",
+   "label": "Rear shock top mount raised above the original",
+   "kind": "number",
+   "default": 66.0,
+   "min": 0.0,
+   "max": 70.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Rear wheel",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 62,
+   "value": 66.0,
+   "source": "code"
+  },
+  {
+   "name": "DECK_TRIM",
+   "label": "Shell bottom edge relative to the deck top plane (-6.06 = level with the deck underside)",
+   "kind": "number",
+   "default": -6.06,
+   "min": -10.0,
+   "max": 30.0,
+   "step": 0.01,
+   "unit": "mm",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 63,
+   "value": -6.06,
+   "source": "code"
+  },
+  {
+   "name": "SHELL_HALF_WIDTH",
+   "label": "Widest shell half-width (93.5 = outer edge of the swingarm arms)",
+   "kind": "number",
+   "default": 93.5,
+   "min": 80.0,
+   "max": 175.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 67,
+   "value": 93.5,
+   "source": "code"
+  },
+  {
+   "name": "NOSE_HALF_WIDTH",
+   "label": "Nose half-width (40 = front guard / skid plate)",
+   "kind": "number",
+   "default": 40.0,
+   "min": 25.0,
+   "max": 70.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Chassis fit",
+   "help": null,
+   "file": "parts/params.py",
+   "line": 74,
+   "value": 40.0,
+   "source": "code"
+  },
+  {
+   "name": "LIGHT_FRONT_Y",
+   "label": "Front light connector, Y position",
+   "kind": "number",
+   "default": -215.0,
+   "min": -245.0,
+   "max": -180.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Light connectors",
+   "help": null,
+   "file": "parts/light_contacts.py",
+   "line": 15,
+   "value": -215.0,
+   "source": "code"
+  },
+  {
+   "name": "LIGHT_REAR_Y",
+   "label": "Rear light connector, Y position (under the B-pillar roof)",
+   "kind": "number",
+   "default": 2.0,
+   "min": -10.0,
+   "max": 4.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Light connectors",
+   "help": null,
+   "file": "parts/light_contacts.py",
+   "line": 16,
+   "value": 2.0,
+   "source": "code"
+  },
+  {
+   "name": "LIGHT_MAGNET_D",
+   "label": "Magnet diameter",
+   "kind": "number",
+   "default": 6.0,
+   "min": 4.0,
+   "max": 10.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Light connectors",
+   "help": null,
+   "file": "parts/light_contacts.py",
+   "line": 17,
+   "value": 6.0,
+   "source": "code"
+  },
+  {
+   "name": "LIGHT_MAGNET_T",
+   "label": "Magnet thickness",
+   "kind": "number",
+   "default": 3.0,
+   "min": 2.0,
+   "max": 5.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Light connectors",
+   "help": null,
+   "file": "parts/light_contacts.py",
+   "line": 18,
+   "value": 3.0,
+   "source": "code"
+  },
+  {
+   "name": "LIGHT_SPACING",
+   "label": "Distance between plus and minus magnet",
+   "kind": "number",
+   "default": 16.0,
+   "min": 10.0,
+   "max": 30.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Light connectors",
+   "help": null,
+   "file": "parts/light_contacts.py",
+   "line": 19,
+   "value": 16.0,
+   "source": "code"
+  },
+  {
+   "name": "FRONT_LEG_X",
+   "label": "Cage front legs, half distance (outside the left-side parts on the front deck)",
+   "kind": "number",
+   "default": 45.0,
+   "min": 42.0,
+   "max": 48.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Cage",
+   "help": null,
+   "file": "parts/cage.py",
+   "line": 16,
+   "value": 45.0,
+   "source": "code"
+  },
+  {
+   "name": "REAR_LEG_X",
+   "label": "Cage rear bridge legs, half distance",
+   "kind": "number",
+   "default": 45.0,
+   "min": 40.0,
+   "max": 52.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Cage",
+   "help": null,
+   "file": "parts/cage.py",
+   "line": 17,
+   "value": 45.0,
+   "source": "code"
+  },
+  {
+   "name": "REAR_SUP_X",
+   "label": "Tail tube ends, half distance",
+   "kind": "number",
+   "default": 30.0,
+   "min": 25.0,
+   "max": 50.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Cage",
+   "help": null,
+   "file": "parts/cage.py",
+   "line": 18,
+   "value": 30.0,
+   "source": "code"
+  },
+  {
+   "name": "CAGE_BEAM",
+   "label": "Cage main tube diameter",
+   "kind": "number",
+   "default": 10.0,
+   "min": 6.0,
+   "max": 14.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Cage",
+   "help": null,
+   "file": "parts/cage.py",
+   "line": 19,
+   "value": 10.0,
+   "source": "code"
+  },
+  {
+   "name": "PILLAR_IN",
+   "label": "Pillar tube centre inboard of the shell frame node",
+   "kind": "number",
+   "default": 6.5,
+   "min": 5.0,
+   "max": 14.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Cage",
+   "help": null,
+   "file": "parts/cage.py",
+   "line": 21,
+   "value": 6.5,
+   "source": "code"
+  },
+  {
+   "name": "BELT_CLEAR",
+   "label": "Cage upper tubes below the shell belt line",
+   "kind": "number",
+   "default": 14.0,
+   "min": 8.0,
+   "max": 30.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Cage",
+   "help": null,
+   "file": "parts/cage.py",
+   "line": 22,
+   "value": 14.0,
+   "source": "code"
+  },
+  {
+   "name": "TAIL_HALF",
+   "label": "Tail light strip half length",
+   "kind": "number",
+   "default": 38.0,
+   "min": 20.0,
+   "max": 42.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Light strips",
+   "help": null,
+   "file": "parts/light_strips.py",
+   "line": 21,
+   "value": 38.0,
+   "source": "code"
+  },
+  {
+   "name": "NOSE_HALF",
+   "label": "Nose light strip half length",
+   "kind": "number",
+   "default": 32.0,
+   "min": 15.0,
+   "max": 38.0,
+   "step": 1.0,
+   "unit": "mm",
+   "options": null,
+   "group": "Light strips",
+   "help": null,
+   "file": "parts/light_strips.py",
+   "line": 28,
+   "value": 32.0,
+   "source": "code"
+  },
+  {
+   "name": "NOSE_END_WALL",
+   "label": "Nose light end wall",
+   "kind": "number",
+   "default": 3.0,
+   "min": 0.0,
+   "max": 6.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Light strips",
+   "help": null,
+   "file": "parts/light_strips.py",
+   "line": 35,
+   "value": 3.0,
+   "source": "code"
+  },
+  {
+   "name": "NOSE_EDGE_GAP",
+   "label": "Nose light bar gap below the hood edge",
+   "kind": "number",
+   "default": 1.0,
+   "min": 0.5,
+   "max": 4.0,
+   "step": 0.1,
+   "unit": "mm",
+   "options": null,
+   "group": "Light strips",
+   "help": null,
+   "file": "parts/light_strips.py",
+   "line": 113,
+   "value": 1.0,
+   "source": "code"
+  },
+  {
+   "name": "NOSE_BAR_H",
+   "label": "Nose light bar height",
+   "kind": "number",
+   "default": 10.0,
+   "min": 4.0,
+   "max": 14.0,
+   "step": 0.5,
+   "unit": "mm",
+   "options": null,
+   "group": "Light strips",
+   "help": null,
+   "file": "parts/light_strips.py",
+   "line": 114,
+   "value": 10.0,
+   "source": "code"
+  }
+ ],
+ "timings": {
+  "model": 255.01,
+  "step": 2.471,
+  "glb": 6.611
+ },
+ "finished": 1795305186.874161
+}
