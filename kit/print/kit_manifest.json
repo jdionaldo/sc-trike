@@ -1,0 +1,447 @@
+{
+ "title": "Fugu reverse trike kit",
+ "profile": "../p2s_profile.config",
+ "out": "bambu",
+ "bed": [
+  256.0,
+  256.0
+ ],
+ "margin": 5,
+ "gap": 22,
+ "filament_slot": 3,
+ "supports": "easy_peel",
+ "plates": [
+  {
+   "name": "01_CH_PETG",
+   "title": "Chassis frame and decks (PETG)",
+   "parts": [
+    {
+     "stl": "stl/CH6.stl",
+     "name": "CH6",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH7.stl",
+     "name": "CH7",
+     "walls": 3,
+     "infill": "20%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH8.stl",
+     "name": "CH8",
+     "walls": 3,
+     "infill": "20%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH1.stl",
+     "name": "CH1",
+     "walls": 4,
+     "infill": "35%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH2.stl",
+     "name": "CH2",
+     "walls": 4,
+     "infill": "35%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH3.stl",
+     "name": "CH3",
+     "walls": 4,
+     "infill": "35%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH5.stl",
+     "name": "CH5",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH4.stl",
+     "name": "CH4",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "02_SU_PETG",
+   "title": "Front suspension (PETG)",
+   "parts": [
+    {
+     "stl": "stl/SU5L.stl",
+     "name": "SU5L",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU5R.stl",
+     "name": "SU5R",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU4L.stl",
+     "name": "SU4L",
+     "walls": 6,
+     "infill": "80%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU4R.stl",
+     "name": "SU4R",
+     "walls": 6,
+     "infill": "80%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU1.stl",
+     "name": "SU1",
+     "walls": 6,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU3L.stl",
+     "name": "SU3L",
+     "walls": 6,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU3R.stl",
+     "name": "SU3R",
+     "walls": 6,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU2L.stl",
+     "name": "SU2L",
+     "walls": 6,
+     "infill": "70%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU2R.stl",
+     "name": "SU2R",
+     "walls": 6,
+     "infill": "70%",
+     "support": "auto",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "02_SU_TPU_95A",
+   "title": "Front suspension (TPU 95A)",
+   "parts": [
+    {
+     "stl": "stl/SU6L.stl",
+     "name": "SU6L",
+     "walls": 3,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU6R.stl",
+     "name": "SU6R",
+     "walls": 3,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU7.stl",
+     "name": "SU7",
+     "walls": 3,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "03_ST_PETG",
+   "title": "Steering (PETG)",
+   "parts": [
+    {
+     "stl": "stl/ST1.stl",
+     "name": "ST1",
+     "walls": 6,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST2.stl",
+     "name": "ST2",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "04_DT_PETG",
+   "title": "Drivetrain housings and rear arm (PETG)",
+   "parts": [
+    {
+     "stl": "stl/DT15.stl",
+     "name": "DT15",
+     "walls": 6,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT14.stl",
+     "name": "DT14",
+     "walls": 6,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT5.stl",
+     "name": "DT5",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT6.stl",
+     "name": "DT6",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT7.stl",
+     "name": "DT7",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT8.stl",
+     "name": "DT8",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT11.stl",
+     "name": "DT11",
+     "walls": 6,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT10.stl",
+     "name": "DT10",
+     "walls": 4,
+     "infill": "80%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT16L.stl",
+     "name": "DT16L",
+     "walls": 6,
+     "infill": "60%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT16R.stl",
+     "name": "DT16R",
+     "walls": 6,
+     "infill": "60%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT17.stl",
+     "name": "DT17",
+     "walls": 6,
+     "infill": "60%",
+     "support": "off",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "05_CG_PETG",
+   "title": "Cage (PETG)",
+   "parts": [
+    {
+     "stl": "stl/CG1a.stl",
+     "name": "CG1a",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4,
+     "brim": 3
+    },
+    {
+     "stl": "stl/CG1b.stl",
+     "name": "CG1b",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4,
+     "brim": 3
+    },
+    {
+     "stl": "stl/CG1c.stl",
+     "name": "CG1c",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CG2.stl",
+     "name": "CG2",
+     "walls": 3,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CG3.stl",
+     "name": "CG3",
+     "walls": 3,
+     "infill": "15%",
+     "support": "auto",
+     "slot": 4,
+     "brim": 3
+    }
+   ]
+  },
+  {
+   "name": "06_SH_PLA",
+   "title": "Shell (PLA)",
+   "parts": [
+    {
+     "stl": "stl/SH1a.stl",
+     "name": "SH1a",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH1b1.stl",
+     "name": "SH1b1",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH1b2.stl",
+     "name": "SH1b2",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH1c1.stl",
+     "name": "SH1c1",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH1c2.stl",
+     "name": "SH1c2",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH4.stl",
+     "name": "SH4",
+     "walls": 3,
+     "infill": "15%",
+     "support": "off",
+     "slot": 3
+    },
+    {
+     "stl": "stl/SH3.stl",
+     "name": "SH3",
+     "walls": 3,
+     "infill": "15%",
+     "support": "auto",
+     "slot": 3
+    }
+   ]
+  },
+  {
+   "name": "07_LT_PLA_translucent",
+   "title": "Lights (PLA-translucent)",
+   "parts": [
+    {
+     "stl": "stl/LT1.stl",
+     "name": "LT1",
+     "walls": 3,
+     "infill": "100%",
+     "support": "auto",
+     "slot": 3
+    },
+    {
+     "stl": "stl/LT2.stl",
+     "name": "LT2",
+     "walls": 3,
+     "infill": "100%",
+     "support": "auto",
+     "slot": 3
+    }
+   ]
+  }
+ ]
+}

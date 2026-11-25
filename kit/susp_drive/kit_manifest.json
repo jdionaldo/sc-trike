@@ -1,0 +1,263 @@
+{
+ "title": "Fugu suspension + drivetrain kit",
+ "profile": "../p2s_profile.config",
+ "out": "bambu",
+ "bed": [
+  256.0,
+  256.0
+ ],
+ "margin": 5,
+ "gap": 22,
+ "filament_slot": 4,
+ "supports": "easy_peel",
+ "plates": [
+  {
+   "name": "01_Front_suspension_and_steering",
+   "title": "Front suspension and steering (PETG)",
+   "parts": [
+    {
+     "stl": "stl/SU5L.stl",
+     "name": "SU5L",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU5R.stl",
+     "name": "SU5R",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU4L.stl",
+     "name": "SU4L",
+     "walls": 6,
+     "infill": "80%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU4R.stl",
+     "name": "SU4R",
+     "walls": 6,
+     "infill": "80%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU1.stl",
+     "name": "SU1",
+     "walls": 6,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU3L.stl",
+     "name": "SU3L",
+     "walls": 6,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU3R.stl",
+     "name": "SU3R",
+     "walls": 6,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST1.stl",
+     "name": "ST1",
+     "walls": 6,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST2.stl",
+     "name": "ST2",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU2L.stl",
+     "name": "SU2L",
+     "walls": 6,
+     "infill": "70%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU2R.stl",
+     "name": "SU2R",
+     "walls": 6,
+     "infill": "70%",
+     "support": "auto",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "02_Drivetrain_and_wheels",
+   "title": "Drivetrain and wheels (PETG)",
+   "parts": [
+    {
+     "stl": "stl/DT15.stl",
+     "name": "DT15",
+     "walls": 6,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT14.stl",
+     "name": "DT14",
+     "walls": 6,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH5.stl",
+     "name": "CH5",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT5.stl",
+     "name": "DT5",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT6.stl",
+     "name": "DT6",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT7.stl",
+     "name": "DT7",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT8.stl",
+     "name": "DT8",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT11.stl",
+     "name": "DT11",
+     "walls": 6,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT10.stl",
+     "name": "DT10",
+     "walls": 4,
+     "infill": "80%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT16L.stl",
+     "name": "DT16L",
+     "walls": 6,
+     "infill": "60%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT16R.stl",
+     "name": "DT16R",
+     "walls": 6,
+     "infill": "60%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT17.stl",
+     "name": "DT17",
+     "walls": 6,
+     "infill": "60%",
+     "support": "off",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "03_Stops",
+   "title": "Stops (TPU 95A)",
+   "parts": [
+    {
+     "stl": "stl/SU6L.stl",
+     "name": "SU6L",
+     "walls": 3,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU6R.stl",
+     "name": "SU6R",
+     "walls": 3,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU7.stl",
+     "name": "SU7",
+     "walls": 3,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "04_Options",
+   "title": "Options (PETG, print only if you take the printed path)",
+   "parts": [
+    {
+     "stl": "stl/ST3L.stl",
+     "name": "ST3L",
+     "walls": 6,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST3R.stl",
+     "name": "ST3R",
+     "walls": 6,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    }
+   ]
+  }
+ ]
+}

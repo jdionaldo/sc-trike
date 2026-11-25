@@ -1,0 +1,1141 @@
+[
+ {
+  "name": "CG1a",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 158151.8,
+  "overhang": 4001.0,
+  "floating": 81.78,
+  "extents": [
+   181.5,
+   163.1,
+   168.9
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CG1b",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 177626.7,
+  "overhang": 5513.5,
+  "floating": 0.16,
+  "extents": [
+   196.3,
+   125.9,
+   178.1
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CG1c",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 66167.1,
+  "overhang": 1490.0,
+  "floating": 0.0,
+  "extents": [
+   73.4,
+   79.2,
+   134.1
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CG2",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 5145.3,
+  "overhang": 60.4,
+  "floating": 0.0,
+  "extents": [
+   28.0,
+   14.0,
+   29.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CG3",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 24992.0,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   26.3,
+   128.0,
+   108.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CH1",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 94786.5,
+  "overhang": 658.1,
+  "floating": 0.0,
+  "extents": [
+   21.2,
+   155.7,
+   109.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CH2",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 98631.7,
+  "overhang": 1005.2,
+  "floating": 128.17,
+  "extents": [
+   91.5,
+   109.0,
+   129.2
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CH3",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 52265.6,
+  "overhang": 219.3,
+  "floating": 0.0,
+  "extents": [
+   65.3,
+   96.4,
+   88.6
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CH4",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 12494.4,
+  "overhang": 110.5,
+  "floating": 0.1,
+  "extents": [
+   80.0,
+   43.8,
+   42.8
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CH5",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 15499.7,
+  "overhang": 418.2,
+  "floating": 0.0,
+  "extents": [
+   46.4,
+   21.1,
+   60.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CH6",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 43938.4,
+  "overhang": 2113.1,
+  "floating": 0.0,
+  "extents": [
+   75.1,
+   56.0,
+   83.6
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CH7",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 11672.5,
+  "overhang": 595.9,
+  "floating": 0.0,
+  "extents": [
+   25.6,
+   50.6,
+   21.8
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "CH8",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 2339.3,
+  "overhang": 5.4,
+  "floating": 0.0,
+  "extents": [
+   5.9,
+   49.3,
+   19.4
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT1",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 93968.2,
+  "overhang": 686.5,
+  "floating": 0.0,
+  "extents": [
+   27.4,
+   79.3,
+   80.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT10",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 1437.2,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   22.0,
+   22.0,
+   9.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT11",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 133903.5,
+  "overhang": 8361.0,
+  "floating": 0.0,
+  "extents": [
+   78.8,
+   149.8,
+   90.4
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT14",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 1760.5,
+  "overhang": 68.2,
+  "floating": 0.0,
+  "extents": [
+   18.2,
+   18.2,
+   13.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT15",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 2174.8,
+  "overhang": 77.9,
+  "floating": 0.0,
+  "extents": [
+   20.7,
+   20.7,
+   13.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT16L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 23090.7,
+  "overhang": 869.0,
+  "floating": 146.88,
+  "extents": [
+   53.3,
+   53.3,
+   34.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT16R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 23090.7,
+  "overhang": 869.0,
+  "floating": 146.88,
+  "extents": [
+   53.3,
+   53.3,
+   34.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT17",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 30926.1,
+  "overhang": 1048.9,
+  "floating": 0.0,
+  "extents": [
+   60.9,
+   60.9,
+   46.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT2",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 83058.7,
+  "overhang": 686.5,
+  "floating": 0.0,
+  "extents": [
+   27.4,
+   79.3,
+   60.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT3",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 46671.5,
+  "overhang": 854.5,
+  "floating": 0.0,
+  "extents": [
+   26.2,
+   62.4,
+   52.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT4",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 71089.3,
+  "overhang": 1491.2,
+  "floating": 0.0,
+  "extents": [
+   52.1,
+   64.4,
+   77.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT5",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 8256.8,
+  "overhang": 128.5,
+  "floating": 0.0,
+  "extents": [
+   21.9,
+   15.4,
+   30.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT6",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 8256.8,
+  "overhang": 128.5,
+  "floating": 0.0,
+  "extents": [
+   21.9,
+   15.4,
+   30.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT7",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 34263.2,
+  "overhang": 676.5,
+  "floating": 0.0,
+  "extents": [
+   25.4,
+   65.5,
+   34.1
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT8",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 34263.2,
+  "overhang": 676.5,
+  "floating": 0.0,
+  "extents": [
+   25.4,
+   65.5,
+   34.1
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "DT9",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 1983.1,
+  "overhang": 179.9,
+  "floating": 0.0,
+  "extents": [
+   24.2,
+   24.0,
+   11.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "LT1",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 3006.1,
+  "overhang": 266.1,
+  "floating": 0.0,
+  "extents": [
+   114.7,
+   45.8,
+   24.7
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "LT2",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 1804.7,
+  "overhang": 260.5,
+  "floating": 0.0,
+  "extents": [
+   76.0,
+   21.0,
+   15.2
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SH1a",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 102697.7,
+  "overhang": 3263.9,
+  "floating": 15.7,
+  "extents": [
+   83.2,
+   185.8,
+   165.6
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SH1b1",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 40133.1,
+  "overhang": 6580.2,
+  "floating": 1.88,
+  "extents": [
+   130.3,
+   110.6,
+   37.2
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SH1b2",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 40133.5,
+  "overhang": 6582.5,
+  "floating": 1.88,
+  "extents": [
+   130.3,
+   110.6,
+   37.2
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SH1c1",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 54439.8,
+  "overhang": 25.8,
+  "floating": 0.0,
+  "extents": [
+   148.0,
+   46.9,
+   170.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SH1c2",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 54391.5,
+  "overhang": 25.6,
+  "floating": 0.0,
+  "extents": [
+   148.0,
+   46.9,
+   170.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SH2a",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 61165.6,
+  "overhang": 1429.9,
+  "floating": 0.15,
+  "extents": [
+   81.6,
+   179.6,
+   196.9
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SH2b",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 34943.6,
+  "overhang": 334.0,
+  "floating": 0.0,
+  "extents": [
+   63.9,
+   122.9,
+   139.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SH3",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 48067.1,
+  "overhang": 1477.4,
+  "floating": 0.0,
+  "extents": [
+   47.8,
+   92.8,
+   57.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SH4",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 10336.6,
+  "overhang": 156.0,
+  "floating": 0.0,
+  "extents": [
+   81.3,
+   24.6,
+   32.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST1",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 4045.7,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   24.2,
+   63.0,
+   15.8
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST1L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 7778.9,
+  "overhang": 56.9,
+  "floating": 0.0,
+  "extents": [
+   54.4,
+   18.0,
+   28.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST1R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 7778.9,
+  "overhang": 56.9,
+  "floating": 0.0,
+  "extents": [
+   54.4,
+   18.0,
+   28.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST2",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 9101.7,
+  "overhang": 540.9,
+  "floating": 0.0,
+  "extents": [
+   22.2,
+   54.8,
+   27.2
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST2L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 5729.6,
+  "overhang": 264.7,
+  "floating": 0.0,
+  "extents": [
+   43.0,
+   22.0,
+   26.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST2R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 5729.6,
+  "overhang": 264.7,
+  "floating": 0.0,
+  "extents": [
+   43.0,
+   22.0,
+   26.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST3L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 2585.3,
+  "overhang": 166.6,
+  "floating": 0.0,
+  "extents": [
+   73.4,
+   7.8,
+   7.8
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST3R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 2585.3,
+  "overhang": 166.6,
+  "floating": 0.0,
+  "extents": [
+   73.4,
+   7.8,
+   7.8
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST4L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 289.8,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   18.4,
+   8.2,
+   2.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "ST4R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 289.8,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   18.4,
+   8.2,
+   2.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU1",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 47001.8,
+  "overhang": 1742.6,
+  "floating": 384.18,
+  "extents": [
+   63.3,
+   47.7,
+   68.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU1L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 42985.7,
+  "overhang": 2210.6,
+  "floating": 68.5,
+  "extents": [
+   31.3,
+   116.2,
+   42.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU1R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 42985.7,
+  "overhang": 2210.6,
+  "floating": 68.5,
+  "extents": [
+   31.3,
+   116.2,
+   42.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU2L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 34630.5,
+  "overhang": 375.3,
+  "floating": 0.0,
+  "extents": [
+   89.0,
+   57.6,
+   38.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU2R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 34629.8,
+  "overhang": 375.3,
+  "floating": 0.0,
+  "extents": [
+   89.0,
+   57.6,
+   38.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU3L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 18753.2,
+  "overhang": 181.1,
+  "floating": 0.0,
+  "extents": [
+   88.2,
+   57.4,
+   12.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU3R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 18753.2,
+  "overhang": 181.1,
+  "floating": 0.0,
+  "extents": [
+   88.2,
+   57.4,
+   12.3
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU4",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 19443.2,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   68.0,
+   18.2,
+   34.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU4L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 17962.9,
+  "overhang": 924.0,
+  "floating": 0.0,
+  "extents": [
+   48.4,
+   46.0,
+   85.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU4R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 17980.0,
+  "overhang": 924.4,
+  "floating": 0.0,
+  "extents": [
+   48.4,
+   46.0,
+   85.5
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU5",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 2067.7,
+  "overhang": 42.1,
+  "floating": 0.0,
+  "extents": [
+   10.6,
+   23.0,
+   14.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU5L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 2030.2,
+  "overhang": 37.3,
+  "floating": 0.0,
+  "extents": [
+   10.4,
+   23.0,
+   14.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU5R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 2030.2,
+  "overhang": 37.0,
+  "floating": 0.0,
+  "extents": [
+   10.4,
+   23.0,
+   14.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU6",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 240.0,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   6.7,
+   10.0,
+   8.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU6L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 225.9,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   6.3,
+   10.0,
+   8.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU6R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 225.9,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   6.3,
+   10.0,
+   8.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU7",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 513.6,
+  "overhang": 0.0,
+  "floating": 0.0,
+  "extents": [
+   12.0,
+   12.0,
+   5.9
+  ],
+  "fits_bed": true
+ }
+]

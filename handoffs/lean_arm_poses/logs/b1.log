@@ -1,0 +1,84 @@
+Waiting for another build of this model to finish (the app or another terminal) ...
+flank regularization: {'pairs': 4, 'max_shift': 3.976, 'residual': 0.0} belt dw [(457, 0.0), (622, 3.98), (815, 3.04), (930, 0.0), (1082, 0.0)]
+canopy seat cutter leftover mm3: 0.0
+tail screws: M3 countersunk, axial length to insert bottom {-1: 12.2, 1: 12.2} tilt deg 32.9
+nose strip end faces closed: 0
+nose strip inner faces covered: 0
+hood plane cut side 1 removed mm3 1.0 cutter vol 9874.7
+cowl step shaved side 1 mm3 107.3
+hood plane cut side -1 removed mm3 1.1 cutter vol 9874.7
+cowl step shaved side -1 mm3 107.3
+Front shell flat-face merge tol 0.1 822 -> 781 valid False solids 1 dvol -503.6 rejected
+Front shell flat-face merge tol 0.05 822 -> 784 valid False solids 1 dvol -431.4 rejected
+Front shell flat-face merge tol 0.02 822 -> 790 valid False solids 1 dvol -559.5 rejected
+Front shell flat-face merge tol 0.01 822 -> 796 valid False solids 1 dvol 17.3 rejected
+Front shell flat-face merge tol 0.005 822 -> 798 valid False solids 1 dvol -13.5 rejected
+Front shell flat-face merge tol 0.001 822 -> 798 valid False solids 1 dvol -13.5 rejected
+hood/fender wedge added, mm3, face verts: 4 ;  975.0
+cowl groove filled side -1 mm3 36.6
+cowl groove side 1 fill would not join the shell (groove geometry changed), skipped
+Front shell symmetric rebuild: halves mm3 [141849.3, 141889.3] faces 828 -> 833 dvol 104.0 accepted
+nose strip end pocket side 1 solids 1 mm3 [5.9]
+nose strip end pocket side -1 solids 1 mm3 [5.9]
+nose strip rear groove plug side 1 solids 2 mm3 2229.7
+nose strip rear groove plug side -1 solids 2 mm3 2229.7
+stealth shell: Front shell faces 384 Canopy faces (open cockpit)
+rear deck walls added, mm3 17147.2
+tail deck walls added, mm3 6656.0
+deck insert pockets: 6
+servo side 1 tilt 4.289 raise mm 3.77
+tie rod knuckle trim side 1 removed mm3 322.2
+tie rod eye side 1 r 5.0 faces 4 valid True
+knuckle pocket side 1 removed mm3 -844.9
+tie rod straight side 1 turned 6.6 deg, ball to ball 124.0 mm, vol 2111.8 -> 7776.4
+servo side -1 tilt 4.289 raise mm 3.77
+tie rod knuckle trim side -1 removed mm3 322.2
+tie rod eye side -1 r 5.0 faces 4 valid True
+knuckle pocket side -1 removed mm3 -844.9
+tie rod straight side -1 turned 6.6 deg, ball to ball 124.0 mm, vol 2111.8 -> 7776.4
+deck corner gusset side 1 added mm3 201.0
+deck corner gusset side -1 added mm3 201.0
+deck recess for battery tray c removed mm3 300.6
+deck recess for w3 skid removed mm3 1273.7
+deck recess for w3 deck rear removed mm3 32.3
+rwd: front arm pivot (y, z) [-125.79, 62.84] rear shaft front end [21.0, -1.5, 71.6]
+rwd: pivot block side 1 mm3 6232 z 38.7 69.8
+rwd: pivot block side -1 mm3 6232 z 38.7 69.8
+rwd: motor plate seated on the deck, removed mm3 9436.5 z 46.4 92.7
+wheel relief around the carrier side 1 mm3 101.3
+front wheel side 1 centre x 144.0 y -225.5 z 55.9 wheel mm3 21371 tyre ring mm3 465169
+wheel relief around the carrier side -1 mm3 101.7
+front wheel side -1 centre x -144.0 y -225.5 z 55.9 wheel mm3 21371 tyre ring mm3 464924
+horn clean side 1 12 -> 6
+horn offset side 1 faces 12 offset ok
+tie rod slot side 1 removed mm3 100.7
+horn clean side -1 12 -> 6
+horn offset side -1 faces 12 offset ok
+tie rod slot side -1 removed mm3 100.7
+tie rod tube side 1 axis [100.3, -203.0, 31.5] -> [71.9, -113.0, 39.0] vol [7676, 5782]
+tie rod tube collar side 1 added mm3 104.8
+tie rod tube side -1 axis [-100.3, -203.0, 31.5] -> [-71.9, -113.0, 39.0] vol [7676, 5782]
+tie rod tube collar side -1 added mm3 104.8
+upper link side 1 hinges ref [68.5, -128.4, 113.2] [105.0, -228.3, 106.3]
+upper link side -1 hinges ref [68.5, -128.4, 113.2] [105.0, -228.3, 106.3]
+horn hw vs arm spline 1 local arm vol 0.0 bb [60.5, 70.0, -108.1, -102.1, 51.8, 57.8]
+horn hw vs arm horn screw 1 local arm vol 0.0 bb [69.5, 71.3, -107.9, -102.3, 52.0, 57.6]
+horn hw vs arm spline -1 local arm vol 0.0 bb [-70.0, -60.5, -108.1, -102.1, 51.8, 57.8]
+horn hw vs arm horn screw -1 local arm vol 0.0 bb [-71.3, -69.5, -107.9, -102.3, 52.0, 57.6]
+front shock side 1 base distance 44.2 eye offsets 5.17 6.0 lower base [66.2, -168.0, 90.5]
+front shock side -1 base distance 44.2 eye offsets 5.17 6.0 lower base [-66.2, -168.0, 90.5]
+rear belt centre distance 122.11 length 26/30 300.24 (2GT-300)
+rear wheel relief around the hub mm3 470.4
+cage belt line vertices (y, z): [(-215.0, 132.3), (-205.0, 133.8)]
+cage belt line (stealth): [(-215.0, 132.305267184464), (-205.0, 133.79290576171186), (-150.0, 140.6), (-50.0, 152.0), (38.0, 162.1), (60.0, 164.6)]
+cage nodes {'belt0': (82.9, -213.4, 132.7), 'roof0': (45.7, -109.6, 185.6), 'roof1': (45.1, -57.8, 205.8), 'roof2': (45.1, 17.7, 219.7), 'roofN': (51.4, 140.6, 185.4), 'belt930': (59.3, 34.3, 155.1)} supports []
+cage lower rear tube: shell underside profile (y, z) [(25.0, 142.0), (80.0, 135.8), (115.0, 138.2), (185.0, 158.5)] tail node (30.0, 200.0, 169.9)
+cage (open cockpit): upper belt nodes (y, z) [(-150.0, 138.2), (-48.0, 149.2), (38.0, 158.4)]
+cage (open cockpit): cowl corner (77.7, -193.9, 133.9) roof front (60.9, -86.9, 196.9) roof rear (45.9, 15.0, 219.9) tail anchor (38.6, 17.7, 214.7)
+boss at (-45.0, 38.0, 148.1) sx -1 reach 15.41 (default 3.0)
+boss at (45.0, 38.0, 148.1) sx 1 reach 15.41 (default 3.0)
+cage: 0 mid-span tube crossings
+lean bridge added to the cage, mm3 30857.2 pivot ref [0.0, -118.6, 87.8]
+E1 contact block Front trimmed mm3 0.0
+Build ok: 97 part(s), 693.2 s -> output/model.step
+Parameters: 38, all at the defaults from the code

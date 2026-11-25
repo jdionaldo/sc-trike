@@ -1,0 +1,29 @@
+--- a/model.py
++++ b/model.py
+@@ -585,15 +585,21 @@
+     # the bar pocket swept +-_tilt about the horizontal axis _n through the eye centre (5 cylinders, step < bar radius, so the fan is covered), and the eye
+     # pocket 1.2 mm taller above and below (the eye rim rises 5 sin 11 = 0.95 mm). Boss around the stud axis and a sleeve round the fan keep _wall all round
+     # (the bigger eye from 7db4bf3 had left 0.01 mm skins; idea from the printability review, 7919554), M3 stud hole through the boss.
+-    _tilt, _wall, _plen = 11.0, 1.6, 14.0
+-    _n = _d1.cross(cq.Vector(0, 0, 1)).normalized()
+-    _fan = lambda r: [cq.Solid.makeCylinder(r, _plen, _Ct, _d1).rotate(_Ct, _Ct + _n, a) for a in (-_tilt, -_tilt / 2, 0.0, _tilt / 2, _tilt)]
++    # The fan is one cone (r grows by tan(_tilt) per mm along the bar): the earlier five stepped cylinders left sliver wedges at the mouth (0.06 mm walls
++    # in the thickness check) and the rims of the untilted sleeve cylinders stood in the tilted bar's path 14 to 18 mm out. 20 mm long (was 14), so the mouth
++    # lies past the knuckle arm and the bar cannot reach the arm beside the pocket.
++    _tilt, _wall, _plen = 11.0, 1.6, 20.0
++    _grow = _plen * math.tan(math.radians(_tilt))
++    _fan = lambda r: [cq.Solid.makeCone(r, r + _grow, _plen, _Ct, _d1)]
+     _fuse = lambda parts: parts[0].fuse(*parts[1:]).clean()
+     _eph = _eye_h + 0.5 + 2 * 1.2
+-    _pk_t = cq.Solid.makeCylinder(_eye_r + 0.25, _eph, cq.Vector(_sx * _pk[0], _pk[1], _pk[2] - _eph / 2), cq.Vector(0, 0, 1))
++    # eye pocket radius: the eye (r 5, h 7) tilts up to 11.5 deg at +20 mm travel, its rim corner then reaches 5 cos + 3.5 sin = 5.6 mm from the stud axis
++    # (5.26 mm3 into the wall with r 5.25), so 0.85 mm clearance instead of 0.25
++    _eye_c = 0.85
++    _pk_t = cq.Solid.makeCylinder(_eye_r + _eye_c, _eph, cq.Vector(_sx * _pk[0], _pk[1], _pk[2] - _eph / 2), cq.Vector(0, 0, 1))
+     _pk_t = _fuse([_pk_t] + _fan(_bar_r + 0.25))
+     _kb_h = _eph + 2 * _wall
+-    _kb = cq.Solid.makeCylinder(_eye_r + 0.25 + _wall, _kb_h, cq.Vector(_sx * _pk[0], _pk[1], _pk[2] - _kb_h / 2), cq.Vector(0, 0, 1))
++    _kb = cq.Solid.makeCylinder(_eye_r + _eye_c + _wall, _kb_h, cq.Vector(_sx * _pk[0], _pk[1], _pk[2] - _kb_h / 2), cq.Vector(0, 0, 1))
+     _kb = _fuse([_kb] + _fan(_bar_r + 0.25 + _wall))
+     _pk_t = _pk_t.fuse(cq.Solid.makeCylinder(1.7, _kb_h + 2, cq.Vector(_sx * _pk[0], _pk[1], _pk[2] - _kb_h / 2 - 1), cq.Vector(0, 0, 1))).clean()
+     _kn_new = _ob0(_kn).fuse(_kb).clean().cut(_pk_t)

@@ -1,0 +1,34 @@
+{
+  "id": "b13ccda7-aa63-4d0b-a165-06cced72999c",
+  "name": "Project_Fugu",
+  "api_version": 1,
+  "app_version": "0.11.0",
+  "entry": "model.py",
+  "main_output": "output/model.step",
+  "created": "2026-11-10T19:11:01.143Z",
+  "skills": [
+    "design-workflow",
+    "cadquery",
+    "parametric",
+    "standard-parts",
+    "fem",
+    "drawings"
+  ],
+  "skills_on_demand": [
+    "cadquery-scripts",
+    "shell-environment",
+    "soma-app",
+    "3d-printing",
+    "resin-powder",
+    "cnc",
+    "laser",
+    "sheet-metal",
+    "plasma",
+    "tolerances",
+    "joints",
+    "strength",
+    "assemblies",
+    "analysis",
+    "animation"
+  ]
+}

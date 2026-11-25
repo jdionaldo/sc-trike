@@ -1,0 +1,456 @@
+{
+ "title": "Fugu reverse trike kit",
+ "profile": "../p2s_profile.config",
+ "out": "bambu",
+ "bed": [
+  330.0,
+  320.0
+ ],
+ "margin": 5,
+ "gap": 22,
+ "filament_slot": 3,
+ "supports": "easy_peel",
+ "plates": [
+  {
+   "name": "01_CH_PETG",
+   "title": "Chassis frame and decks (PETG)",
+   "parts": [
+    {
+     "stl": "stl/CH6.stl",
+     "name": "CH6",
+     "walls": 3,
+     "infill": "25%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH1.stl",
+     "name": "CH1",
+     "walls": 4,
+     "infill": "35%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH2.stl",
+     "name": "CH2",
+     "walls": 4,
+     "infill": "35%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH3.stl",
+     "name": "CH3",
+     "walls": 4,
+     "infill": "35%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH5.stl",
+     "name": "CH5",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CH4.stl",
+     "name": "CH4",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "02_SU_PETG",
+   "title": "Front suspension (PETG)",
+   "parts": [
+    {
+     "stl": "stl/SU1L.stl",
+     "name": "SU1L",
+     "walls": 5,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU1R.stl",
+     "name": "SU1R",
+     "walls": 5,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU6.stl",
+     "name": "SU6",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU7.stl",
+     "name": "SU7",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU4.stl",
+     "name": "SU4",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU5.stl",
+     "name": "SU5",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU3L.stl",
+     "name": "SU3L",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU3R.stl",
+     "name": "SU3R",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU2L.stl",
+     "name": "SU2L",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU2R.stl",
+     "name": "SU2R",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "03_ST_PETG",
+   "title": "Steering (PETG)",
+   "parts": [
+    {
+     "stl": "stl/ST1L.stl",
+     "name": "ST1L",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST1R.stl",
+     "name": "ST1R",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST2L.stl",
+     "name": "ST2L",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST2R.stl",
+     "name": "ST2R",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST4L.stl",
+     "name": "ST4L",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST4R.stl",
+     "name": "ST4R",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST3L.stl",
+     "name": "ST3L",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/ST3R.stl",
+     "name": "ST3R",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "04_DT_PETG",
+   "title": "Drivetrain housings and rear arm (PETG)",
+   "parts": [
+    {
+     "stl": "stl/DT3.stl",
+     "name": "DT3",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT4.stl",
+     "name": "DT4",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT9.stl",
+     "name": "DT9",
+     "walls": 4,
+     "infill": "80%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT1.stl",
+     "name": "DT1",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT2.stl",
+     "name": "DT2",
+     "walls": 4,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT5.stl",
+     "name": "DT5",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT6.stl",
+     "name": "DT6",
+     "walls": 4,
+     "infill": "60%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT7.stl",
+     "name": "DT7",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT8.stl",
+     "name": "DT8",
+     "walls": 4,
+     "infill": "50%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT11.stl",
+     "name": "DT11",
+     "walls": 5,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/DT10.stl",
+     "name": "DT10",
+     "walls": 4,
+     "infill": "80%",
+     "support": "auto",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "05_CG_PETG",
+   "title": "Cage (PETG)",
+   "parts": [
+    {
+     "stl": "stl/CG1a1.stl",
+     "name": "CG1a1",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4,
+     "brim": 3
+    },
+    {
+     "stl": "stl/CG1a2.stl",
+     "name": "CG1a2",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CG1b.stl",
+     "name": "CG1b",
+     "walls": 4,
+     "infill": "30%",
+     "support": "auto",
+     "slot": 4,
+     "brim": 3
+    },
+    {
+     "stl": "stl/CG2.stl",
+     "name": "CG2",
+     "walls": 3,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    },
+    {
+     "stl": "stl/CG3.stl",
+     "name": "CG3",
+     "walls": 3,
+     "infill": "40%",
+     "support": "auto",
+     "slot": 4
+    }
+   ]
+  },
+  {
+   "name": "06_SH_PLA",
+   "title": "Shell (PLA)",
+   "parts": [
+    {
+     "stl": "stl/SH2a.stl",
+     "name": "SH2a",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH2b.stl",
+     "name": "SH2b",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH1a.stl",
+     "name": "SH1a",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH1b1.stl",
+     "name": "SH1b1",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH1b2.stl",
+     "name": "SH1b2",
+     "walls": 3,
+     "infill": "10%",
+     "support": "auto",
+     "slot": 3,
+     "brim": 3
+    },
+    {
+     "stl": "stl/SH4.stl",
+     "name": "SH4",
+     "walls": 3,
+     "infill": "15%",
+     "support": "off",
+     "slot": 3
+    },
+    {
+     "stl": "stl/SH3.stl",
+     "name": "SH3",
+     "walls": 3,
+     "infill": "15%",
+     "support": "auto",
+     "slot": 3
+    }
+   ]
+  },
+  {
+   "name": "07_LT_PLA_translucent",
+   "title": "Lights (PLA-translucent)",
+   "parts": [
+    {
+     "stl": "stl/LT1.stl",
+     "name": "LT1",
+     "walls": 3,
+     "infill": "100%",
+     "support": "auto",
+     "slot": 3
+    },
+    {
+     "stl": "stl/LT2.stl",
+     "name": "LT2",
+     "walls": 3,
+     "infill": "100%",
+     "support": "auto",
+     "slot": 3
+    }
+   ]
+  }
+ ]
+}

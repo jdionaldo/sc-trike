@@ -1,0 +1,24 @@
+plate_01_CH_PLA.3mf  1 parts
+plate_01_CH_PETG.3mf  8 parts
+plate_02_SU_PETG.3mf  10 parts
+plate_03_ST_PETG.3mf  8 parts
+plate_04_DT_PETG.3mf  11 parts
+plate_05_CG_PETG_1.3mf  4 parts
+plate_05_CG_PETG_2.3mf  1 parts
+plate_06_SH_PLA_1.3mf  2 parts
+plate_06_SH_PLA_2.3mf  4 parts
+plate_06_SH_PLA_3.3mf  1 parts
+plate_07_LT_PLA_translucent.3mf  2 parts
+all_plates.3mf  11 plates  52 parts
+  slice plate_01_CH_PETG.3mf                 7.2 h  262.5 g  OK
+  slice plate_01_CH_PLA.3mf                  0.1 h    3.1 g  OK
+  slice plate_02_SU_PETG.3mf                 5.8 h  129.9 g  OK
+  slice plate_03_ST_PETG.3mf                 1.8 h   38.1 g  OK
+  slice plate_04_DT_PETG.3mf                12.5 h  441.9 g  OK
+  slice plate_05_CG_PETG_1.3mf              15.6 h  405.1 g  OK
+  slice plate_05_CG_PETG_2.3mf               2.4 h   60.6 g  OK
+  slice plate_06_SH_PLA_1.3mf                5.1 h  174.9 g  OK
+  slice plate_06_SH_PLA_2.3mf                5.7 h  197.8 g  OK
+  slice plate_06_SH_PLA_3.3mf                2.2 h   79.5 g  OK
+  slice plate_07_LT_PLA_translucent.3mf      0.8 h   11.0 g  OK
+Bambu Studio slice check: 0 problems; 59.3 h, 1804 g

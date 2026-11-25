@@ -1,0 +1,18 @@
+{
+  "front / rear": {
+    "intersection_mm3": 0.0,
+    "minimum_gap_mm": 0.29999999999999716
+  },
+  "front / canopy": {
+    "intersection_mm3": 0.0,
+    "minimum_gap_mm": 0.14999999999993416
+  },
+  "rear / canopy": {
+    "intersection_mm3": 0.0,
+    "minimum_gap_mm": 0.14999999999997335
+  },
+  "front / grille": {
+    "intersection_mm3": 0.0,
+    "minimum_gap_mm": 0.15000000000000568
+  }
+}

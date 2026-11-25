@@ -1,0 +1,1 @@
+54 parts; 0 flagged; overhang total 37676 mm2; floating on ['CG1a', 'DT11', 'LT1', 'SU1L', 'SU1R'] (needs supports or a new orientation)
