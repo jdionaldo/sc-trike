@@ -6,6 +6,7 @@ seam into a full-thickness half lap with four M3 screws (front deck on top, rear
 a stepped lap (lap_skid). Frame: whatever frame the given deck solids are in.
 """
 import cadquery as cq
+from parts.params import INSERT_M3_D
 
 V = cq.Vector
 
@@ -153,7 +154,7 @@ def lap_decks(front, rear):
         loc = cq.Location(cq.Plane(origin=(at(-LAP_SCREW_AHEAD) + nt * (t / 2) + V(x, 0, 0)).toTuple(), xDir=(1, 0, 0), normal=nt.toTuple()))
         boss = cq.Solid.makeCylinder(LAP_BOSS_D / 2, LAP_BOSS_H + 0.5, V(0, 0, -0.5), V(0, 0, 1)).moved(loc)
         f = f.fuse(boss).clean()
-        f = f.cut(HeatSetInsert(LAP_INSERT, at=(0, 0, LAP_BOSS_H)).hole().moved(loc))
+        f = f.cut(cq.Solid.makeCylinder(INSERT_M3_D / 2, 6.5, V(0, 0, LAP_BOSS_H - 6.0), V(0, 0, 1)).moved(loc))   # M3 x 4 insert (OD 4.2), 6 deep as before
         sc = Screw(LAP_SCREW[0], LAP_SCREW[1], at=(0, 0, -t), direction='+Z')
         assert t + 2.0 <= sc.length <= t + LAP_BOSS_H, 'lap screw length does not suit the insert'
         hole = sc.clearance_hole().moved(loc)

@@ -19,7 +19,14 @@ themselves were not matched by the mesher, the deck under the base tubes is not 
 loads on the eight rod bores."""
 from soma.fem import Study
 # held on the undersides of the base tubes, where the four M3 screws clamp them to the deck
-study = Study("Lean head, two-wheel landing: pivot rod loads of both sides (65 N up + 30 N in per wheel)", material="PETG", safety=2, mesh=2.0)
+import os
+_MESH = float(os.environ["FEM_MESH"]) if os.environ.get("FEM_MESH") else 2.0   # FEM_MESH: mesh size override for convergence runs
+# Load basis (NOTES, November 26): car 3.09 kg from the model (sliced kit 1866 g + bought parts), CG at y -41.4: 61.3 % front, 38.7 % rear;
+# landing 8.5 g (0.30 m drop stopped over the 35 mm wheel travel). The loads below were written for 2.6 kg / 60 %: K scales them.
+K = 1.216   # front wheel 79.0 N for 65 N: 3.09 kg x 0.613 / 2 x 9.81 x 8.5 / 65
+study = Study("Lean head, two-wheel landing: pivot rod loads of both sides (65 N up + 30 N in per wheel)", material="PETG", safety=2, mesh=_MESH)
+_force = study.force
+study.force = lambda part, N, **kw: _force(part, N=tuple(K * n for n in N), **kw)
 for sx in (1, -1):
     study.fix("Lean head", near=(sx * 16.0, -195.28, 19.0))
     study.fix("Lean head", near=(sx * 28.0, -159.04, 21.5))

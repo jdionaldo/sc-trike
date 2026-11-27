@@ -33,7 +33,15 @@ CAGE_RAIL_X = 45.0       # mm: side frames 9.5 mm inboard of deck edge (54.5 mm)
 CAGE_Z = 85.0            # mm: lower beam centre height, clearing center diff upper housing shelf (z <= 79.5 at x >= 40)
 FRONT_FOOT_Y = -195.0    # mm: front feet on the clear front deck (ahead of the battery tray at y -187); vertical front struts
 FRONT_FOOT_Z = 19.1 + 0.9      # mm: deck top at the front feet (y -195)
-RAIL_FEET = ((-127.0, 23.8), (-48.0, 29.3), (38.0, 35.4))    # (y, deck top z): mid-deck feet at y=-48 (clear between motor plate and center diff) and rear feet at y=+38
+RAIL_FEET = ((-127.0, 23.8), (-48.0, 29.3), (38.0, 35.4))
+# Front hoop legs (November 25): the cage's front brace is the upper arms' up stop (lean stop, TPU pad parts/stops.py); its 257 N bent the whole
+# front cage to safety 0.5 with the hoop hanging free. A leg from each hoop corner straight down to the front deck, ahead of the wishbones (their
+# front edge is at y -199 to -203 there) and inside the deck's chamfered front corner, takes the stop load to the deck. (y, deck top z), x below.
+TAIL_FOOT_TIE = True
+HOOP_FEET = ((-205.5, 18.3),)
+HOOP_FOOT_X = 38.0
+HOOP_KNEE_DZ = 12.0     # the foot rises straight up to a knee node this far above the foot end (the deck pocket stays square to it)
+HOOP_TIE_X = 20.0       # tie from the knee up to the hoop crossbar at this |x| (triangle leg / crossbar / tie at the hoop corner)    # (y, deck top z): mid-deck feet at y=-48 (clear between motor plate and center diff) and rear feet at y=+38
 LOWER_TAIL_BRACE = True   # lower rear tube following the rear quarter cover outline to the tail node (markup 10:15)
 TRUSS_Y = -48.0          # mm: central door-truss node on the lower rail (directly above the mid-deck foot at y=-48)
 RAIL_START_Y, RAIL_END_Y = -127.0, 38.0      # the rail starts on the front foot post, behind the tie rods (y -150)
@@ -43,7 +51,7 @@ FOOT_TAB_W = 10.0        # mm: tab width (stadium)
 RAIL_FOOT_X = 45.0       # mm: rail feet stand 9.5 mm inside the 54.5 mm deck edge (markup 13:41), straight vertical posts to CAGE_RAIL_X
 RAIL_FOOT_DY = 8.5       # mm: the foot screw sits behind (+y) the foot, like the front feet
 RAIL_HOLE_X = RAIL_FOOT_X
-INSERT_POCKET_D, INSERT_POCKET_DEPTH = 4.2, 5.0   # M3 heat-set insert pocket (screw comes up from the underside of the deck through a countersunk hole)
+INSERT_POCKET_D, INSERT_POCKET_DEPTH = INSERT_M3_D, 5.0   # M3 heat-set insert pocket (screw comes up from the underside of the deck through a countersunk hole)
 FRONT_TAB_DY = 8.5       # mm: front-foot screw sits behind the foot (+y)
 FRONT_TAB_Z = 19.5 + 0.9       # mm: deck top at the front foot (y -195) + 0.4 mm lift
 RAIL_TAB_LIFT = 0.4      # mm: same for the rail feet (the stand-in deck surface is a slightly sloped mesh)
@@ -84,6 +92,12 @@ def belt_profile(shells, y0, y1, x=CAGE_RAIL_X, z_above=90.0):
 PIN_FAN = 20.0           # mm: half spacing of the two overhead clevis nodes either side of the shock pin (keeps a 17 mm tool corridor along the pin axis)
 PIN_TIE_RISE = 14.0      # mm: tie tubes meet the shock clevis this far above the pin axis
 EAR_IN_X = 4.4           # mm: inner face of each shock clevis ear (8.8 mm slot for the 8 mm shock eye)
+BRACE_TOP_X = 12.5       # mm: the tail braces end on the overhead cross tubes here, at the clevis ear's outer face, so the shock force goes from the ear
+                         # straight down the braces (was 15.0: the cross tube between the ears bent, FEM at 273 N about 1.6); y_f / y_r are 20 mm off the pin axis, clear of the 17 mm tool corridor
+EAR_BRIDGES = True       # webs between the two clevis ears ahead of and behind the shock eye (cage rear attempt 2)
+EAR_ROOT_DROP = 6.0      # mm: the ear's lower edge drops this far under the front cross tube's rear corner (cage rear attempt 3: the ear root on the outer face
+                         # was the low spot, 1.24 / 1.16 at 273 N, the plate only 1.5 mm deep under the tube there)
+EAR_OUT_X = 12.0         # mm: outer face of each shock clevis ear plate, flush with the pin boss under the M6 head and nut (was 9.8: FEM at 237 N, safety 1.38 on the 5.4 mm plate)
 PIN_HEAD_CLEAR_X = 9.8   # mm: cage material beside the M6 shock pin head/nut stays inside this |x| (head and nut start at |x| 12), except the boss they bear on
 TUBE_SQUARE = True      # every _Frame member (cage, front arms, rear swingarm) is a chamfered square tube: flat faces print without support
 TUBE_K = 0.88           # square side = TUBE_K x the old round diameter: similar section area and the corner stays inside the old round tube
@@ -115,7 +129,22 @@ def _node_block(N, d):
     return blk
 
 
+NODE_SNAP = 0.35         # mm: fill corners nearer than this to the node hull's surface or to a corner are snapped onto it (SCX30 same-node rule)
+NODE_SNAP_MAX_Y = 100.0  # mm: nodes behind this y (tail joint, shock clevis) keep every fill corner: snapping there moved the governing cage FEM spots
+                         # (attempt 2, November 27: tail joint 1.14 / 1.23 in the envelope, one side only)
+NODE_FILL = True         # node hulls also take each tube's section at the node point (fills the outer corner). Tried False (SCX30 method, November 27):
+                         # faces < 0.1 mm2 38 -> 22, edges < 0.5 mm 122 -> 103, but the cage FEM dropped (envelope 1.51 / 1.45 -> 1.30 / 1.39 at the tail joint)
 NODE_E_CAP = 0.45        # share of a tube's length its end may be set back into a hull node
+BOSS_INSERT = True           # shell bosses take an M3 heat-set insert (the shell is screwed on with ISO 7380 M3, model.py) instead of an M2 pilot
+BOSS_INSERT_DEPTH = 5.0      # mm: insert pocket depth (Adafruit 4255 M3 x 4 + 1 mm)
+from parts.params import INSERT_M3_D as INSERT_M3_POCKET_D
+BOSS_LOG = []                # (x, y, z, sx, reach) of every boss with an insert, filled by the cage build, read by model.py
+BOSS_AS_TUBE = False         # tried True (shell bosses as square members in the node hull): FEM unchanged but edges < 0.5 mm 123 -> 133, faces < 0.1 mm2
+                             # 34 -> 38 (a 12 mm member among 10 and 7 mm tubes in one hull adds facets at the B-pillar foot): round bosses kept
+TAIL_ANCHOR_ON_ROOF = False  # tried True (tail anchor moved onto the roof rear node B, November 27): edges < 0.5 mm 123 -> 59, but the tail frame re-aims
+                             # (volume +6 %, 1 all-pairs overlap) and the cage FEM dropped (shock 1.40, envelope 1.22 at the tail joint): roof peak not converted, load path
+NODE_MERGE_FREE_CABIN = 0.0   # tried 4.0 (merge the roof rear node and the tail anchor, 9.4 mm apart, into one hull): edges < 0.5 mm 123 -> 87 but cage volume +3.6 %. Was: (roof rear node and tail anchor,
+                              # 9.4 mm apart: two hulls with a short 7 mm stub made 19 edges under 0.5 mm per side)
 NODE_MERGE_FREE = 1.0    # mm: two hull nodes whose joining tube has less free length than this become one node
 
 
@@ -298,9 +327,27 @@ class _Frame:
                 if ch < 1e-3: break
             for (i, k), ee in zip(group, e): set_back[(i, k)] = ee
             pts = [q for (u, L, d), ee in zip(dirs, e) for q in _section_points(N + u * ee, u, d)]     # tube end faces: exact, shared
-            for u, L, d in dirs:                                 # fill: each section at the node itself (keeps the outer corner full)
-                for q in _section_points(N, u, d):
+            if NODE_FILL and N.y > NODE_SNAP_MAX_Y:   # tail and shock clevis nodes: every fill corner, as before (they carry the governing FEM spots)
+                for q in [q for u, L, d in dirs for q in _section_points(N, u, d)]:
                     if all(sum((qa - pa) ** 2 for qa, pa in zip(q, p_)) > 0.5 ** 2 for p_ in pts): pts.append(q)
+            elif NODE_FILL:          # fill: each section at the node itself (keeps the outer corner full)
+                # a fill corner is taken only where it adds real corner material: at least NODE_SNAP outside the hull of the points taken so far
+                # and NODE_SNAP from every point. One closer to the hull surface or a corner is snapped onto it (the corner moves by under
+                # NODE_SNAP); one inside the hull adds nothing. Barely-proud fill corners were what made the cage's hairline facets.
+                import numpy as _np
+                from scipy.spatial import ConvexHull as _CH
+                cand = [q for u, L, d in dirs for q in _section_points(N, u, d)]
+                P = _np.array(pts, float)
+                while cand:
+                    try: eq = _CH(P).equations
+                    except Exception: break
+                    out = [(float(_np.max(eq[:, :3] @ _np.array(q) + eq[:, 3])), q) for q in cand]
+                    out.sort(key=lambda t: (-round(t[0], 4), round(abs(t[1][0]), 3), round(t[1][1], 3), round(t[1][2], 3)))   # mirror-symmetric order
+                    d_out, q = out[0]
+                    if d_out < NODE_SNAP: break                    # every remaining fill corner is inside or within NODE_SNAP of the hull
+                    cand = [c for _, c in out[1:]]
+                    if _np.min(_np.linalg.norm(P - _np.array(q), axis=1)) < NODE_SNAP: continue
+                    P = _np.vstack([P, q]); pts.append(q)
             nodes.append((N, pts))
         # Nodes joined by a tube with less than NODE_MERGE_FREE of free length between its two set-backs become one hull: two convex
         # hulls with a stub between them leave a re-entrant slot (tail joint at y 165, clevis tie nodes at x 7.4 / 15).
@@ -314,7 +361,7 @@ class _Frame:
             ka, kb = key(a), key(b)
             if ka in idx and kb in idx and ka != kb:
                 free = (V(*kb) - V(*ka)).Length - set_back.get((i, 0), 0.0) - set_back.get((i, 1), 0.0)
-                if free < NODE_MERGE_FREE:
+                if free < NODE_MERGE_FREE or (free < NODE_MERGE_FREE_CABIN and max(V(*ka).y, V(*kb).y) <= NODE_SNAP_MAX_Y):
                     merged.add(i); parent[find(idx[ka])] = find(idx[kb])
         groups = {}
         for k, (N, pts) in enumerate(nodes): groups.setdefault(find(k), []).append((N, pts))
@@ -406,11 +453,22 @@ class _Frame:
         """Mounting boss on a pillar node: a short stub towards the shell with a pilot hole."""
         x, y, z = p
         reach = _reach_to_shell(x, y, z, sx, reach)
+        if BOSS_AS_TUBE and y <= NODE_SNAP_MAX_Y:   # (tail supports keep their round bosses: load path, not touched) SCX30 joint method (November 27): the boss is a short chamfered-square member from the node, so it joins the node hull like a tube
+            # (same axis and pilot hole; the round stub and cone root overlapped the hull as a second solid and left short edges at the B-pillar foot)
+            self.tube((x, y, z), (round(x + sx * reach, 1), y, z), BOSS_D / TUBE_K)
+            self.holes.append(cq.Solid.makeCylinder(BOSS_HOLE / 2, reach + 1.0, cq.Vector(x, y, z), cq.Vector(sx, 0, 0)))
+            return
         stub = cq.Solid.makeCylinder(BOSS_D / 2, reach, cq.Vector(x, y, z), cq.Vector(sx, 0, 0))
         if reach > 6.0:      # a long stub gets a conical root: the plain cylinder met the joint at a sharp inner edge (FEM: a singular spot at the B-pillar foot boss)
             stub = stub.fuse(cq.Solid.makeCone(BOSS_D / 2 + 3.0, BOSS_D / 2, 6.0, cq.Vector(x + sx * 2.0, y, z), cq.Vector(sx, 0, 0)))
         self.solids.append(stub)
-        self.holes.append(cq.Solid.makeCylinder(BOSS_HOLE / 2, reach + 1.0, cq.Vector(x, y, z), cq.Vector(sx, 0, 0)))
+        if BOSS_INSERT and y <= NODE_SNAP_MAX_Y:   # shell fixing (November 27): M3 heat-set insert pocket at the boss face (Adafruit 4255, as the kit's other
+            # M3 inserts: D3.8 pocket, 5 mm = insert + 1 mm); the screw comes in through the Front shell (model.py, shell fixing)
+            face = cq.Vector(x + sx * reach, y, z)
+            self.holes.append(cq.Solid.makeCylinder(INSERT_M3_POCKET_D / 2, BOSS_INSERT_DEPTH, face, cq.Vector(-sx, 0, 0)))
+            BOSS_LOG.append((x, y, z, sx, reach))
+        else:
+            self.holes.append(cq.Solid.makeCylinder(BOSS_HOLE / 2, reach + 1.0, cq.Vector(x, y, z), cq.Vector(sx, 0, 0)))
     def foot_tab(self, p0, p1, z):
         """Flat stadium tab from the post/ball at p0=(x,y) to the screw at p1=(x,y), on the deck at height z, with an open M3 hole at p1."""
         a, b = cq.Vector(p0[0], p0[1], z), cq.Vector(p1[0], p1[1], z)
@@ -526,6 +584,7 @@ def cabin_nodes(cabin):
 
 def make_cage(front_y, rear_y, belt=None, nodes=None, supports=None, tie=None, tower_foot_z=None, tail=None, tail_screws=None, cabin=None):
     """cabin: None = closed canopy (cabin tubes under the canopy, as before); a dict from model.py = open cockpit (exposed cabin frame)."""
+    BOSS_LOG.clear()
     F = _Frame(hull_nodes=True)
     fb, _, zf = make_connector(front_y, 200.0, 'Front', FRONT_LEG_X, FRONT_FOOT_Z, legs=False)
     rb, _, zr = make_connector(rear_y, 200.0, 'Rear', REAR_LEG_X, CAGE_Z, legs=False)
@@ -549,6 +608,13 @@ def make_cage(front_y, rear_y, belt=None, nodes=None, supports=None, tie=None, t
         # --- front hoop and outriggers (matching reference image1.jpg.png, zero mid-span crossings)
         # Wishbone front end (November 22): the old front feet at y -195 stood in the middle of the new arms. The front hoop now hangs from the
         # upper belt start and the cowl corner; the frame stands on a third pair of rail feet at y -135, behind the tie rods (RAIL_FEET).
+        for y, zr_top in HOOP_FEET:      # front hoop leg: hoop corner straight down to a foot in the front deck (stop load path, HOOP_FEET)
+            zb = round(zr_top + RAIL_TAB_LIFT - FOOT_SEAT, 2); hx = sx * HOOP_FOOT_X
+            knee = (hx, y, round(zb + HOOP_KNEE_DZ, 1))
+            F.tube((hx, y, zb), knee, CAGE_BEAM)                                            # foot, square in its deck pocket
+            F.tube(knee, (fx, front_y, round(zft, 1)), CAGE_BEAM)                           # leg to the hoop corner
+            F.tube(knee, (sx * HOOP_TIE_X, front_y, round(zft, 1)), CAGE_BEAM)              # tie to the hoop crossbar
+            F.holes.append(cq.Solid.makeCylinder(INSERT_POCKET_D / 2, INSERT_POCKET_DEPTH + 0.5, cq.Vector(hx, y, zb - 0.5), cq.Vector(0, 0, 1)))
         for a, b in [((fx, front_y, round(zft, 1)), (fx, y_bump, round(zft, 1))),                  # upper forward outrigger
                      ((fx, front_y, round(zft, 1)), (px, RAIL_START_Y, zs))]:                      # front hoop top to upper belt start
             F.tube(a, b, CAGE_BEAM)
@@ -599,6 +665,8 @@ def make_cage(front_y, rear_y, belt=None, nodes=None, supports=None, tie=None, t
             # Open cockpit: b1 (traced roof node, PILLAR_IN inboard) stays the anchor of the tail frame, so the tail tubes, the shock clevis
             # nodes and the tail housing fit are unchanged; the cabin frame is new, on the old canopy outline, and ties into b1.
             K, A, B = cabin_nodes(cabin)
+            if TAIL_ANCHOR_ON_ROOF:   # roof peak, SCX30 one-node rule (November 27): the tail anchor sat 9.4 mm from the roof rear node B on a short 7 mm stub
+                b1 = B                # (two busy hulls: 19 edges < 0.5 mm per side); the tail tubes now start at B, which does not move
             print('cage (open cockpit): cowl corner', K, 'roof front', A, 'roof rear', B, 'tail anchor', b1)
         else:
             # Short roof spine from B-pillar header crossbar to the flush rear magnet boss under the Canopy roof
@@ -656,6 +724,10 @@ def make_cage(front_y, rear_y, belt=None, nodes=None, supports=None, tie=None, t
                     F.tube(f(n_tip), f(end), PILLAR_D)
                     # 4. Internal diagonal strut from n_cov up to mid_q (markup 12:24)
                     F.tube(f(n_cov), f(mid_q), QD)
+                    # 5. Tail-to-foot tie (November 26): the rear shock's 135 N reached the feet only round the cabin (FEM, shock alone: 1.42 at the roof
+                    # corner and the B-pillar foot); from the rear quarter's bottom rear node down and forward to the rail end node over the y 38 foot
+                    if TAIL_FOOT_TIE:
+                        F.tube(f(n_tip), f((CAGE_RAIL_X, RAIL_END_Y, CAGE_Z)), PILLAR_D)
                 else:
                     F.tube(f(b_in),f(start),PILLAR_D)
                     F.tube(f(start),f(end),PILLAR_D)
@@ -670,29 +742,43 @@ def make_cage(front_y, rear_y, belt=None, nodes=None, supports=None, tie=None, t
                     p_mid = at_y(mid_q, end, ty) if LOWER_TAIL_BRACE else at_y(start, end, ty)
                     # Overhead ladder bridge at the upper tail rail plane (z ~ 187..192 mm, above the shock eye at tz = 180.2 mm)
                     # so the lateral corridor along the shock pin axis (y = ty, z = tz) is 100% open on both sides for bolt/nut access.
-                    # Diagonal brace from the lower tail rail (p_mid) up to the front/rear overhead cross-tubes (outboard at x = 15.0 so it clears the pin axis)
+                    # Diagonal brace from the lower tail rail (p_mid) up to the front/rear overhead cross-tubes (at x = BRACE_TOP_X, on the ear outer face, clear of the pin axis)
                     # each brace stands in its own plane y = y_f / y_r (nodes straight under the overhead nodes), so nothing crosses the pin corridor
                     _lo = mid_q if LOWER_TAIL_BRACE else start
-                    F.tube(f(at_y(_lo, end, y_f)), f((15.0, p_f[1], p_f[2])), PILLAR_D)
-                    F.tube(f(at_y(_lo, end, y_r)), f((15.0, p_r[1], p_r[2])), PILLAR_D)
+                    F.tube(f(at_y(_lo, end, y_f)), f((BRACE_TOP_X, p_f[1], p_f[2])), PILLAR_D)
+                    F.tube(f(at_y(_lo, end, y_r)), f((BRACE_TOP_X, p_r[1], p_r[2])), PILLAR_D)
                     if LOWER_TAIL_BRACE:   # web under the front brace: middle tail rail down to the lower tail rail, so the brace does not bend the middle rail
                         F.tube(f(at_y(mid_q, end, y_f)), f(at_y(n_tip, end, y_f)), PILLAR_D)
-                    # Clevis ear: one plate per side, |x| 4.4 .. PIN_HEAD_CLEAR_X, a convex hull from the pin lug up into the two overhead cross tubes
+                        # diagonal of the bay before the web (November 26): rear quarter bottom node up to the web top, so the brace's lift goes
+                        # straight to n_tip and the tail-to-foot tie instead of bending the lower tail rail (FEM, shock alone: 2.04 there without it)
+                        if TAIL_FOOT_TIE:
+                            F.tube(f(n_tip), f(at_y(mid_q, end, y_f)), PILLAR_D)
+                    # Clevis ear: one plate per side, |x| 4.4 .. EAR_OUT_X, a convex hull from the pin lug up into the two overhead cross tubes
                     # (it ends on their centre lines, full tube height). It replaces a tube between the cross tubes at x 7.4 that was wider than the
                     # ear on both sides and had to be shaved by the eye slot and by a head clearance box: those cuts left feather edges of 0.2 to
                     # 0.5 mm on the tube and nicked the upper tail tube. Only the pin boss (r 6.8 to |x| 12, under the M6 head and the nut)
                     # stands outboard of the plate; a 17 mm tool cylinder on the pin axis is free out to |x| 27.7, where the tail tube joint begins
                     # (a corridor cut out to |x| 30, square or round, leaves feather edges on the tail tubes).
-                    x0, x1 = sorted((sx * EAR_IN_X, sx * PIN_HEAD_CLEAR_X))
+                    x0, x1 = sorted((sx * EAR_IN_X, sx * EAR_OUT_X))
                     hh = _half(PILLAR_D)
                     ear_cyl = cq.Solid.makeCylinder(9.0, x1 - x0, cq.Vector(x0, ty, tz), cq.Vector(1, 0, 0))
                     ear_boss = cq.Solid.makeCylinder(6.8, 12.0 - EAR_IN_X, cq.Vector(min(sx * EAR_IN_X, sx * 12.0), ty, tz), cq.Vector(1, 0, 0))
                     ear_web = hull([(x, y, z) for x in (x0, x1) for y, z in (
-                        (ty - 9.0, tz), (ty + 9.0, tz), (p_f[1], p_f[2] - hh), (p_f[1], p_f[2] + hh), (p_r[1], p_r[2] - hh), (p_r[1], p_r[2] + hh))])
+                        (ty - 9.0, tz), (ty + 9.0, tz), (p_f[1] + hh, p_f[2] - hh - EAR_ROOT_DROP), (p_f[1], p_f[2] - hh), (p_f[1], p_f[2] + hh), (p_r[1], p_r[2] - hh), (p_r[1], p_r[2] + hh))])
                     F.solids.append(ear_cyl.fuse(ear_boss).fuse(ear_web))
                     if sx == 1:
                         F.tube((-p_f[0], p_f[1], p_f[2]), (p_f[0], p_f[1], p_f[2]), PILLAR_D)
                         F.tube((-p_r[0], p_r[1], p_r[2]), (p_r[0], p_r[1], p_r[2]), PILLAR_D)
+                        if EAR_BRIDGES:   # cage rear attempt 2 (November 26): the two ears joined across the slot, ahead of and behind the shock eye
+                            # (FEM at 273 N: ear root 1.39..1.63 and the rear cross tube between the ears 1.62 bent as two loose plates). Each web is the
+                            # hull of the cross tube's centre section and a chord 9.5 mm from the pin, so the eye (r 7) turns free and the damper body
+                            # (r 9, from 10.5 mm under the eye, down and aft) stays clear; every point lies inside the ear outline (no step at the ear face).
+                            import math
+                            for (py, pz), up, lo in ((p_f[1:], 4.0, -3.0), (p_r[1:], 4.5, 1.0)):
+                                dy, dz = py - ty, pz - tz; L = math.hypot(dy, dz); dy, dz = dy / L, dz / L
+                                ny, nz = (-dz, dy) if dy > 0 else (dz, -dy)       # normal pointing up
+                                pts = [(ty + 9.5 * dy + k * ny, tz + 9.5 * dz + k * nz) for k in (lo, up)] + [(py, pz - hh), (py, pz + hh)]
+                                F.solids.append(hull([(x, y, z) for x in (-EAR_IN_X - 1.0, EAR_IN_X + 1.0) for y, z in pts]))
                         # Through-bore (D6.4 mm) all the way through both clevis ears and outer hardware bosses
                         F.holes.append(cq.Solid.makeCylinder(3.2, 40.0, cq.Vector(-20.0, ty, tz), cq.Vector(1, 0, 0)))
             # supports under the rear shell hump, above the rear tire

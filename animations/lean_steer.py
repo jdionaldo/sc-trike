@@ -1,6 +1,6 @@
-"""Lean steer in action: the double-wishbone front end after the reference build video (parts/wishbone.py, lean_front.py)."""
+"""Lean steer in action: the double-wishbone front end after the reference build video (parts/wishbone.py, parts/lean_anim.py)."""
 from soma.anim import Animation
-import lean_front as lf
+from parts import lean_anim as lf
 
 a = Animation("Lean steer")
 pose = lf.build(a)

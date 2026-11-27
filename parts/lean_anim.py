@@ -1,4 +1,5 @@
 """Lean-steer animation of the double-wishbone front end (parts/wishbone.py), shared by animations/lean_steer.py and animations/lean_steer_front.py.
+(Moved here from the project root as lean_front.py on 2026-11-26: `soma anim build` kept three stale errors filed under the root module.)
 
 The body (everything on the head) rolls about the ground line. The wheels lean with the body (parallelogram) and stay on the ground, so the arms turn by
 solve_psi(); the knuckles follow the arms and steer about the kingpin; the tie rods follow the horn and the knuckles, the heave shock the two rockers."""
@@ -13,7 +14,7 @@ V = cq.Vector
 
 
 def _names():
-    here = os.path.dirname(__file__)
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))     # project root (this module lives in parts/)
     return [q["name"] for q in json.load(open(os.path.join(here, ".soma", "model.map.json")))["parts"]]
 
 

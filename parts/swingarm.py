@@ -32,13 +32,17 @@ ARCH_D = 12.0                     # twin over-tire arch tube diameter
 SHOCK_EYE_YZ = (150.0, 114.0)     # shock lower eye pin axis (arm frame)
 EYE_W = 8.0                       # shock eye width
 EAR_GAP = EYE_W + 0.8             # 8.8 mm clear slot between the ears (0.4 mm clearance per side)
-EAR_T = 6.0                       # reinforced ear thickness (x = ±4.4..10.4 mm)
+EAR_T = 8.4                       # ear thickness (x = ±4.4..12.8 mm; was 6.0: FEM at the 237 N shock force, safety 1.53 on the ear's outer face)
 EAR_R = 8.5                       # ear end radius around the pin
 KNEE_LIFT = 34.0                  # front knee node above the pin axis (keeps the pin axis free for the bolt head and nut)
 KNEE_LIFT_R = 24.0                # rear knee node: lower, so the arm clears the cage tail rail at full bump (35 mm travel at 34 mm lift)
 PIN_BORE = 6.4                    # M6 pin
 PIN_CORRIDOR_D = 15.0             # free corridor along the pin axis for the M6 head, the nut and their tools
 PIN_CORRIDOR_FLAT = 6.5           # half width of the corridor's flat sides where it runs out of the bridge tubes' top and bottom faces
+KEEL_DROP_F = 6.0                 # front keel: shallower, it passes over the rear bearing carrier (w3 rbc upper) at full droop (1.4 mm clear at -15)
+KEEL_DROP = 10.0                  # keel under each shock bridge tube, depth under the tube at the inner plate (tapers to the ear lug's bottom)
+PIN_SLOT_L = 25.2                 # length of the corridor's flat-sided slot from the ear face (ends at x 38.0, 3.7 mm short of the root rail)
+CORR_CH = 1.0                     # 45 deg chamfer of material in the corner where the pin corridor leaves the ear face
 WEB_X = 22.0                      # the web behind the pin corridor runs from the +x ear out along the rear bridge tube to here
 AXLE_CAP_X = 78.8                 # end of the axle bore in the outer plate: a 1.2 mm cap closes it (the axle ends at x 76)
 
@@ -108,7 +112,7 @@ def make_rear_arm():
         F.tube((xi, q0[0], q0[1]), (xo, q1[0], q1[1]), STRUT_D - 1.0)
         if LOW_X: F.tube((xo, q0[0], q0[1]), (xi, q1[0], q1[1]), STRUT_D - 1.0)
     # Cross tubes at the root and mid top nodes (above the belt) and one diagonal
-    for q, d_ in ((U0, CROSS_D), (Tn[1], CROSS_D), (Tn[2], 8.0)):   # the mid node is slim: the belt's upper strand passes just under it
+    for q, d_ in ((U0, CROSS_D), (Tn[1], CROSS_D), (Tn[2], CROSS_D)):   # mid node at 12 mm like the others (it was 8: its section met the 12 mm chord faces with 0.005 mm edges)
         F.tube((xi, q[0], q[1]), (xo, q[0], q[1]), d_)
     F.tube((xi, U0[0], U0[1]), (xo, Tn[1][0], Tn[1][1]), STRUT_D - 1.0)
     F.tube((xo, Tn[1][0], Tn[1][1]), (xi, Tn[2][0], Tn[2][1]), STRUT_D - 1.0)
@@ -129,6 +133,13 @@ def make_rear_arm():
     for y_, y_e in ((YF, AF[0] - 4.0), (YR, AR[0] + 6.0)):
         F.tube((xi, y_, ZB), (xc, y_e, ZB), CHORD_D)
     F.tube((xi, YF, ZB), (xi, YR, ZB), CHORD_D)         # root rail on the inner plate
+    # Keels under the two bridge tubes (chord pass 1, November 26): the bridge is a frame in the plane z = 114 and the 273 N shock force is
+    # vertical, so its tubes bend out of that plane as a cantilever from the inner plate (FEM: safety 1.09 to 1.30 at the root on the inner plate).
+    # A 6 mm blade under each tube makes it a T, KEEL_DROP deeper at the plate and down to the ear lug's bottom at the ear (the tire stays 12 mm clear).
+    # (the front keel's root sits 2 mm forward so it ends inside the riser from the upper chord root, which leans forward there)
+    for y_, y_e, y0, kd in ((YF, AF[0] - 4.0, -2.0, KEEL_DROP_F), (YR, AR[0] + 6.0, 0.0, KEEL_DROP)):
+        F.solids.append(hull([(x_, yy + dy, z_) for x_, yy, zb in ((xi, y_ + y0, ZB - CHORD_D * 0.44 - kd), (xc, y_e, ZB - EAR_R + 1.0))
+                               for dy in (-3.0, 3.0) for z_ in (ZB, zb)]))
     F.tube((xi, U0[0], U0[1]), (xi, YF, ZB), CHORD_D)             # risers from the inner upper chord
     F.tube((xi, Tn[1][0], Tn[1][1]), (xi, YR, ZB), CHORD_D)
     F.tube((xi, Tn[1][0], Tn[1][1]), (xi, YF, ZB), STRUT_D)
@@ -146,11 +157,21 @@ def make_rear_arm():
     F.holes.append(_boss(-EAR_GAP / 2, EAR_GAP / 2, AR, 21.0))
     # Tool corridor for the M6 head and nut, D15 on the pin axis. Above and below it has flat sides (a slot through z): the round corridor left the
     # rear bridge tube's top and bottom faces at 45 degrees, a feather edge 17 mm long.
-    for x0 in (arch_out, -arch_out - 24.0):
-        F.holes.append(_boss(x0, x0 + 24.0, AR, PIN_CORRIDOR_D))
-        # the flat sides run 6 mm further than the round corridor, to where they leave the rear bridge tube's side face (no step in its chamfer)
-        xb = x0 if x0 > 0 else x0 - 6.0
-        F.holes.append(cq.Solid.makeBox(30.0, 2 * PIN_CORRIDOR_FLAT, 2 * CHORD_D, _v(xb, AR[0] - PIN_CORRIDOR_FLAT, AR[1] - CHORD_D)))
+    # Where the corridor and its slot leave the ear face, the inside corner keeps a CORR_CH x 45 deg chamfer of material (chord pass 2): the sharp
+    # corner was the low spot of the arm (FEM 1.71 / 1.47 / 1.34 at meshes 2.0 / 1.8 / 1.5, not settling). The face keeps r 6.5 free (M6 head and nut r 5.8).
+    c_ = CORR_CH
+    for sg in (1, -1):
+        xf = sg * arch_out                                  # ear face
+        x0 = xf + sg * c_
+        F.holes.append(_boss(min(x0, x0 + sg * (24.0 - c_)), max(x0, x0 + sg * (24.0 - c_)), AR, PIN_CORRIDOR_D))
+        F.holes.append(cq.Solid.makeCone(PIN_CORRIDOR_D / 2 - c_, PIN_CORRIDOR_D / 2, c_, _v(xf, AR[0], AR[1]), _v(sg, 0, 0)))
+        # the flat sides run to where they leave the rear bridge tube's front face (x 36.9) plus 1.1 mm, no further: at 30 mm (to x 42.8) they
+        # notched the root rail's inboard face (x 41.7) 1.1 mm deep next to the bridge crotch, the arm's low spot (chord pass 3)
+        xb0, xb1 = sorted((x0, x0 + sg * (PIN_SLOT_L - c_)))
+        F.holes.append(cq.Solid.makeBox(xb1 - xb0, 2 * PIN_CORRIDOR_FLAT, 2 * CHORD_D, _v(xb0, AR[0] - PIN_CORRIDOR_FLAT, AR[1] - CHORD_D)))
+        w_ = PIN_CORRIDOR_FLAT
+        F.holes.append(cq.Workplane('XY').polyline([(xf, AR[0] - w_ + c_), (x0, AR[0] - w_), (x0, AR[0] + w_), (xf, AR[0] + w_ - c_)]).close()
+                       .extrude(2 * CHORD_D).translate((0, 0, AR[1] - CHORD_D)).val())
 
     # Web behind the corridor where the rear bridge tube meets the +x ear: the corridor leaves only a 5 mm band of the tube against the ear face, and
     # the shock force turns from the ear into the bridge through it (FEM: 12.0 MPa, safety 1.66 at the corridor's edge on the ear face). The web
@@ -158,8 +179,10 @@ def make_rear_arm():
     yb = lambda x_: YR + (AR[0] + 6.0 - YR) * (xi - x_) / (xi - xc)    # rear bridge tube centre line at x_
     from parts.cage import TUBE_K
     hb = CHORD_D * TUBE_K / 2.0
+    hi_ = hb - 2.0   # the web's far end lies inside the tube's octagon at the top and sides and 1 mm under it at the bottom, inside the keel: its square corners on the
+                     # chamfers left 0.007 mm edges (mesh failure)
     F.solids.append(hull([(xc, AR[0] + 4.0, ZB - EAR_R + 2.0), (xc, AR[0] + 4.0, ZB + EAR_R - 0.5), (xc, yb(xc) + hb + 3.0, ZB - hb), (xc, yb(xc) + hb + 3.0, ZB + EAR_R - 1.5),
-                          (WEB_X, yb(WEB_X) - hb, ZB - hb), (WEB_X, yb(WEB_X) - hb, ZB + hb), (WEB_X, yb(WEB_X) + hb, ZB - hb), (WEB_X, yb(WEB_X) + hb, ZB + hb)]))
+                          (WEB_X, yb(WEB_X) - 2.0, ZB - hb - 1.0), (WEB_X, yb(WEB_X) - hi_, ZB + hi_), (WEB_X, yb(WEB_X) + 2.0, ZB - hb - 1.0), (WEB_X, yb(WEB_X) + hi_, ZB + hi_)]))
 
     # Second pivot plate on the far side of the rear drive block, webbed to the front barrel
     XP = INNER_PIVOT_X
@@ -168,8 +191,8 @@ def make_rear_arm():
     F.solids.append(hull([
         (XP - 3.5, P[0], P[1] + 9.0), (XP + 3.5, P[0], P[1] + 9.0),
         (XP - 3.5, P[0] + 6.0, P[1] - 9.0), (XP + 3.5, P[0] + 6.0, P[1] - 9.0),
-        (XP - 3.5, AF[0] - 4.0, AF[1] + 6.0), (XP + 3.5, AF[0] - 4.0, AF[1] + 6.0),
-        (XP - 3.5, AF[0] - 4.0, AF[1] - 6.0), (XP + 3.5, AF[0] - 4.0, AF[1] - 6.0)]))
+        (XP - 3.5, AF[0] - 4.0, AF[1] + 5.0), (XP + 3.5, AF[0] - 4.0, AF[1] + 5.0),
+        (XP - 3.5, AF[0] - 4.0, AF[1] - 5.0), (XP + 3.5, AF[0] - 4.0, AF[1] - 5.0)]))   # web ends 6.4 mm from the barrel axis, inside its r 7 (at 6.0 it stood 0.2 mm out: a 0.013 mm2 sliver face that broke the FEM mesh)
     F.tube((XP, P[0], P[1] + 4.0), (XP, AF[0], AF[1] - 2.0), CHORD_D)
     arm = F.build()
     # The square chords (CHORD_D x TUBE_K = 10.56 mm) were 0.28 mm wider than the 10 mm bosses: clip them flush with the boss faces near the

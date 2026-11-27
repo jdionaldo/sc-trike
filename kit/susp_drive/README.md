@@ -1,14 +1,14 @@
 # Fugu suspension + drivetrain kit (Version 1, wishbone front end)
 
-Front wishbone suspension, lean head, knuckles, steering, stops, rear swing arm, belt drive, motor plate, bearings, axles, wheels and tyres. 28 printed files on 6 plates, 19.2 h and 604 g by the Bambu Studio slice check (0 problems; the options plate, printed tie rods ST3L/R, is included: skip it on the steel path). Bought parts 506.47 USD as listed on 2026-11-24 (11 rows VERIFIED, 18 ASSUMED, 7 UNKNOWN). Nothing bought.
+Front wishbone suspension, lean head, knuckles, steering, stops, rear swing arm, belt drive, motor plate, bearings, axles, wheels and tyres. 30 printed files on 6 plates, 19.6 h and 616 g by the Bambu Studio slice check (0 problems; the options plate, printed tie rods ST3L/R, is included: skip it on the steel path). Bought parts 467.68 USD as listed on 2026-11-24 (13 rows VERIFIED, 19 ASSUMED, 7 UNKNOWN). Nothing bought.
 
 ## Stated openly
 
 - Cage boss spots at safety 1.48 (target 2): OPEN, outside this kit but the cage carries the rear shock top.
 - No lean stop: lean turns both arms at once, so a stop on one arm cannot sense it; it needs a lean link or a balance beam (owner decision).
 - Rear travel: now pose-checked by `tools/rear_check.py` from -15 mm droop to +20 mm bump at the axle (arm -7.1 to +9.4 deg): 0 overlaps; the arm comes within 0.05 mm of the tail deck at -15 mm (it would act as the droop stop, not designed as one). The shock changes length -6.5 / +5.9 mm over that range; the chosen rear shock's stroke is not read from its listing.
+- Steering horn: the bought aluminium 25T arm (Hot Racing SH25TH01) carries the spline; its M3 holes are listed at 16 and 20 mm, read as radii from the spline centre (ASSUMED until measured): the T bar ST1 has slots of +-1 mm. The old fully printed horn (printed spline, safety about 0.6 at stall) is in kit/do_not_print: do not print it.
 - Not printed: nothing in this kit has been printed, fitted or driven. Every fit above comes from the model.
-- Wishbone pivot shoulder screws: the M5 end has no designed nut seat; an M5 into the printed front post would break the no-printed-threads-below-M6 rule.
 - Heave shock: the chosen RC4WD 70 mm is discontinued, 4.5 mm longer than the model's 68 mm, has a 3.0 mm eye (model pin hole D4.1) and no stated spring rate (about 30 N/mm needed).
 - Ring and pinion: the model's ring stand-in (25.6 mm OD) is smaller than a 30T SCX10 ring: check the carrier cavity against the real ring before printing DT7/DT8.
 - Rear hub: no 12 mm hex hub with an 8 mm bore was found.
@@ -23,17 +23,20 @@ Quantities are counted from the model (`Where` names its stand-in parts). Total 
 |---|---|---|---|---|---|---|---|---|
 | Heave shock 70 mm (one shock between the upper wishbones) | 1 | Heave shock pins in the forks of SU2 (model: 68 mm eye to eye, about 10 mm stroke, about 250 N at full bump) | RC4WD Ultimate Scale Shock 70 mm RC4Z-D0004, Hobby ETC https://store.hobbyetc.com/parts/view/29506 (alt. RC4WD King 70 mm RC4ZD0037, AMain) | 20.99 (2) | 1 | 20.99 | VERIFIED | listing: 72.5 mm extended / 55.1 compressed, stroke 17.4 mm, eye bore 3.0 mm, body 8.8 mm; DISCONTINUED, not oil filled, very soft spring: no listing gives a spring rate (30 N/mm needed); 4.5 mm longer than the model's 68 mm, eye bore 3.0 against the model's 4.1 mm pin hole |
 | Heave shock pin: M3 x 20 socket screw + M3 nylock (eye bore 3.0 of the chosen shock) | 2 | shock eyes in the forks of SU2 (model hole D4.1 for an M4 pin) | generic ISO 4762 M3 x 20 + DIN 985 M3 | 0.30 (1) | 2 | 0.60 | ASSUMED | est. price; with an M3 pin the fork hole D4.1 is 1.1 mm loose: sleeve 4 x 3 mm or shrink the hole when the shock is chosen |
-| Wishbone pivot: shoulder screw ISO 7379, D6 x 45 shoulder, M5 thread | 4 | Pivot rod upper/lower x 2 sides through the lean head SU1 and the arms SU2/SU3 (model rod D6 x 48.7) | Zoro ZR1846-303H (6 x 45, M5, 18-8 SS) https://www.zoro.com/ampg-smooth-hd-skt-shld-scrw-6m5x45-18-8ss-zr1846-303h/i/G0819452 | 15.39 (1) | 4 | 61.56 | ASSUMED | page refused automated fetch (price from the search result); FIXING OPEN: the M5 end would thread into the printed front post (no printed threads below M6): an M5 nylock in front of the post needs about 6 mm of free space that is not checked |
+| Wishbone pivot: shoulder screw ISO 7379, D6 x 35 shoulder, M5 x 9.75 thread, head D10 x 4.4 | 4 | Pivot rod upper/lower x 2 sides through the lean head SU1 and the arms SU2/SU3 | GWR Fasteners 94656 (6 mm M5 x 35, ISO 7379, 12.9 steel) https://www.gwr-fasteners.co.uk/6mm-m5-x-35mm-socket-shoulder-bolts-iso-7379---high-tensile-steel-129-self-colour-94656-p.asp | 1.08 (1) | 4 | 4.32 | VERIFIED | listing opened 2026-11-25: GBP 0.85 each (about USD 1.08; VAT basis and shipping not stated), 20 in stock, head D10 x 4.4, thread 9.75. The 6 x 45 listed before would have pushed the thread out through the front post into the skid |
+| Self-tapping screw M2 x 8 pan head (ISO 7049 ST2.2 x 8) | 2 | Up stop pads SU8 L/R into the cage front brace (pilot D1.6) | generic | 0.05 (1) | 2 | 0.10 | ASSUMED | est.; head sunk 1.3 mm into the TPU pad; glue the pad as well |
+| M5 heat-set insert, brass, 5.7 mm long | 4 | lean head SU1 front post (pocket D6.4 from the rear face, insert top 1.16 mm inside = the shoulder seat) | McMaster-Carr 94459A774 https://www.mcmaster.com/94459A774/ | 7.27 (25) | 1 | 7.27 | VERIFIED | listing opened 2026-11-25: hole 6.4, length 5.7, min material 6.5; OD not stated |
 | Ball joint: M3 rod end with its own 6.8 mm steel ball (matched pair), the ball held by an M3 screw | 4 | Ball stud upper/lower x 2 (ball on the knuckle plate) + Rod end upper/lower x 2 (cup on the wishbone tips) | Gmade GMA20216 M3 Rod End w/ 6.8mm Steel Ball (10), Hobby Recreation Products https://www.hobbyrecreationproducts.com/collections/gmade-komodo-kit/products/gma20216-m3-rod-end-w-6-8mm-steel-ball | 12.00 (10) | 1 | 12.00 | VERIFIED | listing opened 2026-11-25: M3 rod end and 6.8 mm steel ball sold together (OUT OF STOCK); one pack covers all 8 joints (4 arm, 4 steering). Replaces the separate stud + cup rows (the cups found earlier took 6.92 mm balls). Alt.: Xray 352659 6.8 mm M3 studs with Xray 352664 / 352665 6.8 mm composite ball joints, both VERIFIED on xray / redrc pages, but those cups are M4: arm tips and tie rods would need M4 |
 | M3 x 16 socket screw (through the hollow 6.8 mm ball into the knuckle insert) | 4 | Ball stud upper/lower x 2 | generic ISO 4762 | 0.10 (1) | 4 | 0.40 | ASSUMED | est.; length to suit the ball height (not stated on the listing): thread 8-12 mm into the insert set 7.5 mm behind the plate face |
 | M3 threaded rod 25 mm (or M3 x 25 set screw) for the arm tip cups | 4 | apex boss of each wishbone SU2/SU3 | generic | 0.20 (1) | 4 | 0.80 | ASSUMED | est. |
-| Heat-set insert M3, OD 4.6 x 4 mm | 16 | knuckles 2 x 2 (arm studs, set from the back), arm tips 4, lean head base 4, droop stops 2 x 2 | Adafruit 4255 M3 x 4 brass (OD 4.2), 50 pack https://www.adafruit.com/products/4255 | 5.95 (50) | 1 | 5.95 | VERIFIED | listing OD 4.2 mm: the model pockets are D4.2 for OD 4.6 inserts, so with this insert shrink the pockets to D3.8 or buy OD 4.6 (RS PRO 204-0616, not opened); arm tip bores are D4.1 |
+| Heat-set insert M3, OD 4.2 x 4 mm | 16 | knuckles 2 x 2 (arm studs, set from the back), arm tips 4, lean head base 4, droop stops 2 x 2 | Adafruit 4255 M3 x 4 brass (OD 4.2), 50 pack https://www.adafruit.com/products/4255 | 5.95 (50) | 1 | 5.95 | VERIFIED | listing OD 4.2 mm; every M3 insert pocket in the model is D3.8 x 5 (parts/params.py INSERT_M3_D, OD - 0.4, ASSUMED: print the coupon first) |
 | Countersunk screw M3 x 10 (ISO 10642) | 8 | lean head SU1 to the front deck 4, droop stops SU5 to the deck 2 x 2, all from below into inserts | generic | 0.10 (1) | 8 | 0.80 | ASSUMED | est. |
 | Front wheel bearing 6x12x4 (MR126) | 4 | Wheel bearing inner/outer x 2 in the printed front wheels DT16 (seats D12.1 x 4) | MR126-2RS 10 pack, Hobby ETC https://store.hobbyetc.com/parts/view/131896 | 10.99 (10) | 1 | 10.99 | VERIFIED | rubber sealed |
 | Shim 6 x 8 x 0.5 mm (inner race only) | 4 | Axle shim inner/outer x 2: knuckle boss face and under the axle nut | generic RC shim 6 x 8 | 0.25 (1) | 4 | 1.00 | UNKNOWN | est.; no listing found |
 | Front stub axle: M6 x 60 hex bolt ISO 4014 (18 mm thread) cut to 48 mm + M6 nylock DIN 985 | 2 | Axle pin x 2: x 118.6..166 in the knuckle boss SU4, the bearings on the shank | generic | 0.60 (1) | 2 | 1.20 | ASSUMED | est.; room for the bolt head inboard of the knuckle boss is not checked; snug the nylock only until the wheel turns freely with no play |
 | Low-profile steering servo 40.8 x 20.2 x 26.5 mm, 25T | 1 | Steer servo in ST2 | AGFRC B44BLS V2, Amazon B07L83M8SM | 44.95 (1) | 1 | 44.95 | ASSUMED | page not opened today (503/429): price and backorder from the search result; size VERIFIED on 2026-11-18 |
-| Servo horn screw (with the servo) | 1 | ST1 on the servo shaft | supplied with the servo | 0.00 (1) | 1 | 0.00 | ASSUMED | HORN_METAL option (metal 25T horn) is prepared in the model, off |
+| Aluminium 25T servo arm, M3 holes at 16 / 20 mm | 1 | Steer horn metal: on the servo spline under ST1 | Hot Racing SH25TH01 https://store.hobbyetc.com/parts/view/30918 | 10.88 (1) | 1 | 10.88 | ASSUMED | listing opened 2026-11-25: 25T, M3 holes 'Distance A 16 mm, B 20 mm', 5 mm offset (VERIFIED); hole distances read as radii from the spline centre, hub and arm size ASSUMED; stock not stated. The printed 25T spline (HORN_METAL False) shears at stall |
+| Servo horn screw (with the servo) + M3 x 12 socket screws x 2 (T bar to the metal arm) | 1 | Steer horn metal centre; ST1 through its spacer into the arm | screw supplied with the servo; M3 x 12 generic ISO 4762 | 0.20 (1) | 1 | 0.20 | ASSUMED | est. |
 | Ball joint for the steering (in the same Gmade GMA20216 pack as the arm joints) + M3 x 20 screw through the ball, nylock | 4 | Steer stud knuckle x 2, Steer stud horn x 2 | Gmade GMA20216 (pack counted in the SU row); M3 x 20 ISO 4762 | 0.10 (1) | 4 | 0.40 | ASSUMED | screw est.; the 6.8 mm ball sits on the steering arm / horn, the screw passes through (D3.3) and takes the nylock |
 | M3 nylock nut DIN 985 | 4 | Steer stud nut knuckle x 2, Steer stud nut horn x 2 | generic | 0.05 (1) | 4 | 0.20 | ASSUMED | est. |
 | Tie rod M3 turnbuckle with two ball cups, 93 mm ball to ball | 2 | Tie rod x 2, horn to knuckle | generic M3 turnbuckle 1/10 RC | 3.00 (1) | 2 | 6.00 | UNKNOWN | est.; no listing opened |
@@ -52,12 +55,12 @@ Quantities are counted from the model (`Where` names its stand-in parts). Total 
 | GT2 closed-loop belt 2GT-300, 6 mm wide (150 teeth) | 1 | b gt2 belt r: pivot pulley DT14 26T to axle pulley DT15 30T | generic 2GT-300-6 | 7.50 (1) | 1 | 7.50 | ASSUMED | est.; listing 404; centre distance 122.1 gives 300.2 mm: no slack |
 | Grub screw M3 x 4 | 2 | one in each printed pulley hub DT14, DT15 | generic ISO 4029 | 0.10 (1) | 2 | 0.20 | ASSUMED | est. |
 | Rear shock 100 mm class, oil | 1 | Rear shock between the cage clevis and the arm bridge | Integy C26651RED (pair) https://integy.shop/products/rock-crawlers-hop-up-parts-c26651red | 36.99 (2) | 1 | 36.99 | ASSUMED | page refused (429): price from search; eye-to-eye, stroke and eye bore not read; model eye bore M6 |
-| Shock bolt M6 + M6 nylock: M6 x 30 (lower), M6 x 35 (upper) | 2 | M6 shock pin (lower), M6 shock pin | generic ISO 4762 + DIN 985 | 0.50 (1) | 2 | 1.00 | ASSUMED | est.; lengths from the model clevis spans 20.8 / 24.0 mm |
+| Shock bolt M6 + M6 nylock: M6 x 35 (lower), M6 x 35 (upper) | 2 | M6 shock pin (lower), M6 shock pin | generic ISO 4762 + DIN 985 | 0.50 (1) | 2 | 1.00 | ASSUMED | est.; lengths from the model clevis spans 25.6 / 24.0 mm |
 | Socket screw M3 x 6 (motor face) and M3 x 10 (plate to deck) | 4 | 2 into the motor on a 25 mm pattern, 2 through the plate gussets into the deck | generic | 0.10 (1) | 4 | 0.40 | ASSUMED | est. |
 | Screws for the pillow block and bearing carrier halves | ? | DT5/DT6 and DT7/DT8 to the decks | generic M3 | 0.10 (1) | 0 | 0.00 | UNKNOWN | count not taken from the traced carrier meshes |
 | Front tyre 1.9 in, about 112 mm OD | 2 | mock tire x 2 on the printed wheels DT16 (bead seat 48.3) | Pro-Line Toyo Open Country R/T G8 1.9 PRO1021114 (pair) https://www.axialadventure.com/product/1-10-toyo-open-country-r-t-g8-f-r-1.9-rock-crawling-tires-2/PRO1021114.html | 24.99 (2) | 1 | 24.99 | VERIFIED | 113 x 38 mm; DISCONTINUED; alt. RC4WD Scrambler RC4ZT0144 104 x 43 (backorder); the model's tyre envelope is 62 mm wide |
 | Rear tyre 2.2 in, about 140 mm OD | 1 | Rear tire on the printed wheel DT17 (bead seat 55.9) | RC4WD Mud Slinger 2 XL 2.2 RC4ZT0122 (pair, with foams) https://www.amainhobbies.com/rc4wd-mud-slinger-2-xl-2.2-scale-crawler-tires-2-rc4zt0122/p-qtqrtarqbc2xactz | 29.99 (2) | 1 | 29.99 | VERIFIED | 139.7 x 53.5 mm, ID 55.5 (0.4 mm tight on the bead seat); backorder; the model's tyre envelope is 62 mm wide |
-| **Total** | | | | | | **506.47** | | |
+| **Total** | | | | | | **467.68** | | |
 
 ## 2. Printed parts
 
@@ -75,10 +78,12 @@ Every file is oriented and packed: do not auto-orient in Bambu Studio. L/R parts
 | SU1 | Lean head | PETG | 6 | 60% | auto | model +x down | 63 x 48 x 68 | Front suspension and steering (PETG) |
 | SU3L | Lower wishbone (L) | PETG | 6 | 60% | auto | model +z down | 88 x 57 x 12 | Front suspension and steering (PETG) |
 | SU3R | Lower wishbone (R) | PETG | 6 | 60% | auto | model +z down | 88 x 57 x 12 | Front suspension and steering (PETG) |
-| ST1 | Steering horn | PETG | 6 | 100% | off | model +z down | 24 x 63 x 16 | Front suspension and steering (PETG) |
+| ST1 | Steering horn T bar | PETG | 6 | 100% | off | model +z down | 24 x 62 x 11 | Front suspension and steering (PETG) |
 | ST2 | Steering servo mount | PETG | 4 | 30% | auto | model -x down | 22 x 55 x 27 | Front suspension and steering (PETG) |
 | ST3L | Tie rod, printed (option) (L) | PETG | 6 | 100% | off | model +z down | 73 x 8 x 8 | Options (PETG, print only if you take the printed path) |
-| ST3R | Tie rod, printed (option) (R) | PETG | 6 | 100% | off | model +z down | 73 x 8 x 8 | Options (PETG, print only if you take the printed path) |
+| ST3R | Tie rod, printed (option) (R) | PETG | 6 | 100% | off | model -z down | 73 x 8 x 8 | Options (PETG, print only if you take the printed path) |
+| SU8L | Up stop pad (lean stop) (L) | TPU 95A | 3 | 100% | off | model +x down | 10 x 12 x 12 | Stops (TPU 95A) |
+| SU8R | Up stop pad (lean stop) (R) | TPU 95A | 3 | 100% | off | model -x down | 10 x 12 x 12 | Stops (TPU 95A) |
 | SU2L | Upper wishbone (L) | PETG | 6 | 70% | auto | model -z down | 89 x 58 x 38 | Front suspension and steering (PETG) |
 | SU2R | Upper wishbone (R) | PETG | 6 | 70% | auto | model -z down | 89 x 58 x 38 | Front suspension and steering (PETG) |
 | DT15 | Rear axle pulley 30T GT2 (6 mm belt) | PETG | 6 | 100% | off | model -x down | 21 x 21 x 13 | Drivetrain and wheels (PETG) |
@@ -88,7 +93,7 @@ Every file is oriented and packed: do not auto-orient in Bambu Studio. L/R parts
 | DT6 | Pillow block upper | PETG | 4 | 60% | auto | model -x down | 22 x 15 x 30 | Drivetrain and wheels (PETG) |
 | DT7 | Rear bearing carrier lower | PETG | 4 | 50% | auto | model -x down | 25 x 66 x 34 | Drivetrain and wheels (PETG) |
 | DT8 | Rear bearing carrier upper | PETG | 4 | 50% | auto | model -x down | 25 x 66 x 34 | Drivetrain and wheels (PETG) |
-| DT11 | Rear swing arm | PETG | 6 | 60% | auto | model +x down | 79 x 150 x 90 | Drivetrain and wheels (PETG) |
+| DT11 | Rear swing arm | PETG | 6 | 60% | auto | model +x down | 79 x 150 x 93 | Drivetrain and wheels (PETG) |
 | DT10 | Rear ring hub | PETG | 4 | 80% | auto | model +x down | 22 x 22 x 9 | Drivetrain and wheels (PETG) |
 | DT16L | Front wheel 1.9 in, 6-spoke (L) | PETG | 6 | 60% | off | model +x down | 53 x 53 x 34 | Drivetrain and wheels (PETG) |
 | DT16R | Front wheel 1.9 in, 6-spoke (R) | PETG | 6 | 60% | off | model -x down | 53 x 53 x 34 | Drivetrain and wheels (PETG) |
@@ -103,13 +108,13 @@ Open `bambu/all_plates.3mf` or one plate file. PETG in AMS slot 4; the TPU plate
 
 | Plate file | Time | Grams | Slice check |
 |---|---|---|---|
-| plate_01_Front_suspension_and_steering_1.3mf | 7.2 h | 232 | OK |
+| plate_01_Front_suspension_and_steering_1.3mf | 7.4 h | 238 | OK |
 | plate_01_Front_suspension_and_steering_2.3mf | 0.1 h | 2 | OK |
-| plate_02_Drivetrain_and_wheels_1.3mf | 10.4 h | 323 | OK |
+| plate_02_Drivetrain_and_wheels_1.3mf | 10.5 h | 328 | OK |
 | plate_02_Drivetrain_and_wheels_2.3mf | 1.3 h | 39 | OK |
-| plate_03_Stops.3mf | 0.1 h | 1 | OK |
+| plate_03_Stops.3mf | 0.1 h | 2 | OK |
 | plate_04_Options.3mf | 0.2 h | 6 | OK |
-| **Total** | **19.2 h** | **604** | 0 problems |
+| **Total** | **19.6 h** | **616** | 0 problems |
 
 ## 4. Tools
 
@@ -146,11 +151,11 @@ Check: head sits flat, no rocking.
 
 ### 2. Wishbones
 
-Ream the arm pivot bores (D6.2) of SU2 L/R and SU3 L/R with a 6 mm drill by hand until a 6 mm shoulder screw slides through without play. Push the four shoulder screws in from the rear through the head's rear post, the arm barrel and the front post. Insert M3 inserts in the arm tips (D4.1 bore: heat the insert slowly) and screw the M3 rods and ball cups on.
+Ream the arm pivot bores (D6.2) of SU2 L/R and SU3 L/R with a 6 mm drill by hand until a 6 mm shoulder screw slides through without play. First measure the M5 inserts (McMaster 94459A774): the listing gives the hole (6.4) and length (5.7) but not the OD; the pockets in the front post are D6.4 x 7.4 from its rear face. If the knurl OD is over 7.2 mm, stop and report (the wall around the pocket is 2.8 mm at r 6). Press one M5 insert into each pocket from the rear face of the front post until its top sits 1.16 mm below that face (a 6 mm shoulder screw used as a depth stop: the shoulder must bottom on the insert with the head in its counterbore). Push the four ISO 7379 6 x 35 shoulder screws in from the rear through the head's rear post (head into the 2.4 mm counterbore), the arm barrel and the front post, and tighten into the inserts. Press the M3 inserts into the arm tips (D3.8 pocket: heat the insert slowly) and screw the M3 rods and ball cups on.
 
-Hardware: 4 x shoulder screw 6 x 45 M5, 4 x M3 insert, 4 x M3 rod 25, 4 x ball cup.
+Hardware: 4 x shoulder screw ISO 7379 6 x 35 M5, 4 x M5 insert, 4 x M3 insert, 4 x M3 rod 25, 4 x ball cup.
 
-Check: each arm swings 10 deg up and down by its own weight. OPEN: the M5 end of the shoulder screw has no designed nut seat (see open items).
+Check: each arm swings 10 deg up and down by its own weight, with no axial play.
 
 ### 3. Knuckles
 
@@ -170,7 +175,7 @@ Check: wheel spins 3 s or more from a flick; no axial play.
 
 ### 5. Heave shock and stops
 
-Push the TPU bump stop SU7 over the heave shock shaft onto the eye neck. Mount the shock between the forks of SU2 with M3 x 20 + nylock (snug, the eye must turn). Glue the TPU pads SU6 L/R into the droop stops SU5 L/R (CA for TPU or contact cement), press 2 inserts in each stop and screw them under the lower arm roots from below.
+Push the TPU bump stop SU7 over the heave shock shaft onto the eye neck. Mount the shock between the forks of SU2 with M3 x 20 + nylock (snug, the eye must turn). Up stops (lean stops): put the TPU pads SU8 L/R under the cage's front brace where the pilot hole is (the upper arm's post diagonal meets them at 10 deg lean + 12 mm bump), a drop of CA, then one M2 x 8 self-tapping screw each, snug (do not crush the TPU). Glue the TPU pads SU6 L/R into the droop stops SU5 L/R (CA for TPU or contact cement), press 2 inserts in each stop and screw them under the lower arm roots from below.
 
 Hardware: 1 heave shock, 2 x M3 x 20 + nylock, 4 x M3 insert, 4 x M3 x 10.
 
@@ -178,7 +183,7 @@ Check: push one wheel up 12 mm with the body leaned 10 deg: the bump stop meets 
 
 ### 6. Steering
 
-Screw the servo mount ST2 to the deck, stand the servo in it (4 x M2.5 self tapping into the pillars), centre the servo (1500 us) and fit the horn ST1 straight across. Put the ball studs through the horn ends (from below, nylock on top) and through the knuckle steering arms (from below, nylock under). Tie rods, steel path (default): Secraft SEC349 M3 turnbuckle 80 mm with a ball cup on each end; printed path: tie rod ST3L / ST3R from the options plate, one M3 insert pressed into each end collar, a ball cup screwed into each insert. Set both to 93 mm ball to ball and snap them on.
+Screw the servo mount ST2 to the deck, stand the servo in it (4 x M2.5 self tapping into the pillars), centre the servo (1500 us), press the aluminium 25T arm (Hot Racing SH25TH01) on the spline pointing forward and fit its centre screw, then bolt the T bar ST1 on it with 2 x M3 x 12 through the slots (the slots take +-1 mm if the arm's holes are not at 16 / 20 mm: measure them first, the radii are ASSUMED). Do not print or use the old fully printed horn in kit/do_not_print: its printed spline shears at the servo's stall torque. Put the ball studs through the horn ends (from below, nylock on top) and through the knuckle steering arms (from below, nylock under). Tie rods, steel path (default): Secraft SEC349 M3 turnbuckle 80 mm with a ball cup on each end; printed path: tie rod ST3L / ST3R from the options plate, one M3 insert pressed into each end collar, a ball cup screwed into each insert. Set both to 93 mm ball to ball and snap them on.
 
 Hardware: 1 servo, 4 x M2.5 x 10, 4 x ball stud, 4 x M3 nylock, 2 x tie rod.
 

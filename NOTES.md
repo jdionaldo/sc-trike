@@ -1197,3 +1197,489 @@ case uses a two-wheel landing.
   needed: for example the rim block and gusset as one sloped body that runs from the boss top up the plate front to the upper stud boss (no
   vertical faces meeting at the block top), or the axle boss carried by a web behind the axle line (y > -208) instead of the forward block.
   That is a redesign of the knuckle's rim side, not tried.
+
+### Weak-part register (V1, November 25, Version 1 orchestrator)
+Owner (standing order, 2026-11-25): "keep going autonomously until production ready. make sure all weak joints, seams, parts are reinforced".
+Rule: every printed load-carrying part and joint needs a settled safety of 2.0 or more (PETG across the layers 20 MPa; shear 10 MPa ASSUMED).
+- Methods:
+  - **away**: FEM maximum more than 2 element sizes (at least 2 mm) from the held and loaded faces (`tools/fem_away.py`), at two meshes, within 10 %.
+  - **global**: FEM global maximum at one mesh (not settled).
+  - **hand**: section check by hand.
+- Status words: OK; LOW (under 2); OPEN (no settled case yet).
+
+Parts:
+
+| Part (kit ID) | Case | Safety | Method | Status / next |
+|---|---|---|---|---|
+| Knuckle (SU4) | `analyses/wishbone_knuckle.py` x K 1.216 (load basis, November 26): 79 N landing + 36.5 N in, through the axle bore | 2.05 at mesh 1.5 / 2.05 at 1.2 (settled; 1.92 at 1.8, 2.16 at 2.5), at the corner chamfer's top edge (112.5, -207.4, 60.6) | away, two meshes | OK (rim-side redesign, November 26) |
+| Upper arm (SU2) | `wishbone_upper_arm.py` x K 1.216: 79 N up + 32.2 N in at the ball, shock 310 N | 1.94 at mesh 1.3 / 1.84 at 1.1 as built (settled, 5 %), front stub top edge at the barrel's trimmed end (20.5, -188.8, 76): a 0.8 mm step; next 2.09 | away, two meshes, as built | CLOSED, owner-accepted below 2.0 in PETG (2026-11-26, "Accept") |
+| Lower arm (SU3) | `wishbone_lower_arm.py` x K 1.216: 111.5 N along the arm | 2.57 by scaling the settled 3.12 (mesh 1.5 / 2.0) | away, scaled | OK |
+| Lean head (SU1) | `wishbone_head.py` x K 1.216 | 3.51 at mesh 1.2 / 3.79 at 1.5 as built (read > 4 mm from supports and loads, 8 % apart), lower cross bar at the front post (±5.7, -191.6, 48.7) | away, two meshes, as built | OK (November 26) |
+| Rear swing arm (DT11) | `rear_arm.py`: 99.8 N + 35.7 N at the axle, shock 273 N (load basis) | 1.58 at mesh 1.5 / 1.45 at 1.2 (8 % apart, as built with the edge breaks), riser to the shock bridge on the inner plate (44, 156, 84) and (43, 166, 95); pivot plate web 1.57 | away, two meshes | CLOSED, owner-accepted below 2.0 in PETG (2026-11-26, "Keep PETG") |
+| Cage, envelope | `cage.py`: roof landing 95.2 N + 35.7 N side, rear shock 273 N, bumper 47.6 N (load basis) | 1.45 at mesh 1.5 / 1.51 at 1.8 (settled), clevis ear outer face at the front cross tube (±12, 128.1, 180.9) | away, two meshes | CLOSED, owner-accepted below 2.0 in PETG (2026-11-26, "Keep PETG") |
+| Cage, rear shock alone (governing single load of the envelope) | `FEM_CAGE_LOADS=shock`: 273 N along the shock axis | 1.52 at mesh 1.5 / 1.56 at 1.8 (settled), same ear spot; tail joint 1.64, cross tubes 1.73 | away, two meshes | CLOSED, owner-accepted below 2.0 in PETG (2026-11-26) |
+| Cage, roof + side alone | `FEM_CAGE_LOADS=roof,side` x 1.19 | 2.57 by scaling 3.06 | away, one mesh, scaled | OK |
+| Cage, up stop (lean stop) | `cage_upstop.py`: 257 N up (margin case; the real stop load is now 143 x 1.216 = 174 N: safety about 3.1) on the front brace at the pad, one side | 2.09 at mesh 1.8 (2.11 at 1.5, 0.6 % apart), hoop corner node (51.9, -205.8, 107.0), with the front hoop legs; without them 0.50 | away, 3 mm round the pilot axes left out | OK: the cage must not be the lean stop without the hoop legs |
+| Lean stop: up stop pad (SU8) + droop stops | lean limit by the stops | 14.0 deg body lean at 1.55 mm heave (pure lean ends at the droop stop at about 13.4 deg) | kinematics | OK; pad keyed by one M2 x 8 screw + CA |
+| Upper arm at the up stop | `wishbone_upper_arm_stop.py`: stop load + one-wheel landing at the ball (x K 1.216) | 2.43 at mesh 1.3 / 2.34 at 1.1 as built (settled), apex leg top (79.2, -206.8, 77) | away, two meshes, as built | OK (November 26) |
+| Steering horn, printed (ST1) | servo stall 1.52 N m = 29.8 N at 51 mm | bar root 12.4 x 2.5 mm, in-plane Z 64 mm3: 20.7 MPa, safety 0.97. Printed 25T spline D5.1 x 4.3 engaged, half the teeth in shear: 17 MPa, safety about 0.6 | hand | FIXED: aluminium 25T arm Hot Racing SH25TH01 on the spline (HORN_METAL True), printed T bar 3.5 mm (was 2.5) on a 12 mm wide spacer, 2 x M3 x 12 in radial slots +-1 mm. Bar at stall 2.78 at the inner bolt, 2.47 at the outer bolt, 3.96 beyond the arm; bolt bearing 46 N on 3 x 11.1 mm = 1.4 MPa (14) |
+| Steering servo mount (ST2) | stall reaction 1.52 N m as a couple on the two pillars (y +-24) + 29.8 N horn force 59 mm up | pillar 27.2 x 6.5 mm, Z 801 mm3: 1.5 + 1.1 = 2.6 MPa, safety 7.7 | hand | OK |
+| Printed tie rod (ST3, option) | 29.8 N (101 N old case) | 8.1 buckling, 17 tension | hand | OK (fits untested) |
+| Droop stops (SU5) | wheel group dropping onto the pad, 3 g x 1.2 N = 3.6 N (ASSUMED) | base in compression on 3.0 x 23 mm, under 0.1 MPa | hand | OK |
+| Rear bearing carriers, pillow block, ring hub (DT5-DT10, traced) | none | - | - | OPEN: case to add (rear axle loads of `rear_arm.py`) |
+| Pulleys 26T / 30T (DT14 / DT15) | motor torque through the belt | - | - | OPEN: hub on the shaft (grub / flat), hand check |
+| Wheels (DT16 / DT17) | wheel load 105 N radial + 30 N side on the bearing seats / hex | - | - | OPEN: hand check |
+| Motor plate (CH5) | motor torque reaction + belt / gear mesh force | - | - | OPEN: hand check |
+| Decks + half lap | chassis bending between the axles | - | - | OPEN: hand check (lap screws in shear) |
+
+Joints:
+
+| Joint | Load | Check | Safety | Status |
+|---|---|---|---|---|
+| M3 insert pockets (all) | - | bought Adafruit 4255 OD 4.2: pockets were D4.2 / D4.1 / D4.0 (sized for OD 4.6) with no grip | - | FIXED: every pocket D3.8 (parts/params.py INSERT_M3_D, OD - 0.4, ASSUMED until the coupon): knuckle, arm tips, printed tie rod, lean head and servo mount bores, droop stops, cage feet, deck half lap, tray, rear pivot blocks, tail light stubs. The rod end stand-in shank is now the M3 thread (D2.9, was D3.9) |
+| Insert pull-out | plastic shear on pi x 4.2 x 4 = 52.8 mm2 x 10 MPa = 528 N | arm tip, 91.7 N along the cup shank | 5.8 | hand |
+| Knuckle stud inserts | 65 + 24 N across the stud | bearing 69 / (4.2 x 4) = 4.1 MPa | 4.9 | hand |
+| Lean head base inserts (4) | arm reactions through the head, about 60 N per screw (ASSUMED) | pull-out 528 N | 8.8 | hand |
+| Cage feet (6) in the deck pockets | cage case, about 60 N per foot (ASSUMED) | insert pull-out 528 N; foot in its socket takes the side load | 8.8 | hand; foot bearing OPEN |
+| Lean head pivots, M5 thread of the 6 mm shoulder screws | clamp + vibration | was: 6 x 45 screw (thread 6.8 mm out through the front post into the skid), M5 in a D6.1 bore with nothing to grip | - | FIXED: ISO 7379 6 x 35 (GWR 94656, head D10 x 4.4 in a 2.4 mm counterbore, boss r7.5 on the rear post), M5 insert McMaster 94459A774 in the front post (boss r6), its top 1.16 mm inside = the shoulder seat; thread ends 0.5 mm inside the front face |
+| Lean stop | 257 N at the pad | TPU pad SU8 under the cage front brace, one M2 x 8 self-tapping screw (pilot D1.6 in the cage) + CA; front hoop legs to the deck carry it | see the cage rows | FIXED (cage 2.09); arm row LOW |
+| Front hoop leg feet (2) | leg in tension, all 257 N on one foot (on the safe side) | M3 insert in the foot, pull-out 528 N: 2.05; countersunk head on the deck 9.5 MPa; M3 screw about 4 kN | 2.05 | hand |
+| Shell mounts, tail screws | panel weight + handling | - | - | OPEN |
+- Pocket fix checked: build ok 103 parts, collide 0, all-pairs 0 real, front_check 0 (rest, poses, +12 / -8, printed tie rods), swept 0 to look
+  at, rear_check 0. Knuckle FEM supports moved onto the D3.8 pocket walls (z 71.9 / 43.9). Kit, slice check and drawings: rebuilt at the end
+  of queue item 1.
+- Steering horn reinforced: the printed 25T spline is gone (safety about 0.6 at stall); the bought aluminium arm carries the spline, the printed bar
+  is bolted to it (hole radii 16 / 20 mm ASSUMED from the listing's "Distance A / B": slots +-1 mm). Old horn kept as kit/do_not_print (nothing
+  deleted); print_or_buy.md, assembly step 6 and the README open list updated. Build ok 104 parts, collide 0, all-pairs 0 real, front_check 0
+  (rest, poses, +12 / -8, printed tie rods), swept 0 to look at, rear_check 0.
+- Pivot screws (attempt 1 of 2: the 4.4 mm head standing proud hit the horn's ball discs and the tie rods in poses, 0.3-8.4 mm3; attempt 2:
+  head counterbored 2.4 mm into a r7.5 boss, so it stands 2.0 mm proud as before): build ok, collide 0, all-pairs 0 real, front_check 0 (rest,
+  poses, +12 / -8, printed tie rods), swept 0 to look at, rear_check 0. FEM (away, two meshes): head 1.71 (LOW), lower arm 3.12, upper arm 2.39.
+
+### Lean stop and cage front legs (November 26, Version 1 orchestrator)
+- The cage's front brace is the upper arms' hard up stop today: the arm's front leg came 1.13 mm from it at lean 10 deg + 12 mm bump. The owner's
+  approved option was a stop on the head: its lever is about 7 mm (over 1000 N), so the stop went under the brace (lever 33 mm, 257 N).
+- Cage under 257 N (`analyses/cage_upstop.py`) with the front hoop hanging free: the whole front cage bent, safety 0.50-0.71 at the front upright
+  above the front rail foot. A deck-mounted stop tower was checked and cannot fit: where the arm rises (x 45-60) the brace is 2-4 mm above it at
+  the engagement angle, so an overhang under it has about 4 mm of depth (over 50 MPa); a block between the two arms only fits next to the
+  pivot (lever 9 mm, about 930 N); the post tops lie inside the arm's y range.
+- Fix (cage method): a leg from each front hoop corner (45, -215, 102.5) to a foot in the front deck at (+-38, -205.5), square in its pocket,
+  with a knee 12 mm up and a tie from the knee to the hoop crossbar at x +-20 (HOOP_FEET, HOOP_FOOT_X, HOOP_KNEE_DZ, HOOP_TIE_X in
+  parts/cage.py). Attempt 1 (leg only, foot at (40, -204)): stop case 1.42 / 1.67, the sloped foot end stood out of its pocket (52 mm3 in the
+  deck), lower arm 0.79 mm from the leg. Attempt 2 (knee, foot moved, tie): stop case 2.09 (1.8) / 2.11 (1.5) away from the bc and 3 mm round
+  the pilot axes: settled. The pilot spot (D1.6, 57 MPa at mesh 2.5) is mesh noise: the envelope case, with nothing on the pad, reads 39 MPa there.
+- Pad: TPU 95A saddle under the brace, its contact face the arm at the end pose (+0.05 mm), 2.5 mm deep (0.8 mm at the contact itself: the
+  leg's node hull brought the brace to 0.83 mm), keyed by one M2 x 8 self-tapping screw in its thickest spot (3.1 mm, head sunk 1.3 mm) + CA.
+- Lean limit: up stop psi 23.68 deg, droop stop 20.55: 14.0 deg body lean at 1.55 mm heave. front_check at that pose (FRONT_LEAN=14.01
+  FRONT_BUMP=1.55): 0 overlaps; under 1 mm: both pads at their designed end pose (0.03 / 0.05 mm), upper arm 0.83 mm from the brace behind the
+  pad (its end pose), lower arm 0.97 mm from the front deck edge (named, not resolved). The other runs: 0 overlaps, 0 to look at, except upper arm
+  0.83 mm from the brace at lean 10 + 12 mm, the pad's end pose.
+- Upper arm at the stop (`analyses/wishbone_upper_arm_stop.py`, 257 N + the landing load at the ball, no shock): 1.68 settled at the rear stub
+  by the barrel. The arm's own balance needs 143 N at the pad (6110 N mm / 42.7 mm); at 257 N the supports take the rest. OPEN: which load.
+- Lean head: corner wedge 12 mm / D9: 2.24 settled (was 1.71).
+- Build ok 106 parts, collide 0, all-pairs 0 real, front_check 0 overlaps (rest, poses, +12 / -8, printed tie rods), rear_check 0.
+  Shell and hood: unchanged order; the legs stand inside the hoop under the nose (collide 0). The cage still prints as one piece upright
+  (the legs are near vertical, the tie at about 70 deg).
+
+### Stop force, deck edge, knuckle, animations (November 26, Version 1 orchestrator)
+- Stop force, one free body: the knuckle is a parallelogram link, so the wheel load reaches the head through both arms. Pure 65 N bump at the
+  contact (x 144, z -15.6): moment about the upper pivot 65 x 129 = 8385 N mm; the lower arm takes an axial force L = 38 x 65 / 28 = 88 N (moments
+  about the upper ball), 88 x 28 = 2464 N mm of it; the upper arm keeps 5921 N mm. With the 30 N side force of the load cases L = 3.5 N
+  (98 N mm), and the side force takes 30 x 85.6 = 2568 N mm off: the upper arm keeps 5915-6110 N mm. At the stop's lever normal to the pad
+  (42.7 mm) that is 143 N on the pad, about 136 N vertical on the brace. The 257 N of the cage case is 8385 / 32.6 (the whole wheel moment,
+  horizontal lever): kept as the cage's margin, nothing thinned. Upper arm at 143 N: 2.05 settled.
+- Front deck edge relieved under the lower arms (model.py DECK_RELIEF_DEG 3: the deck is cut by the arm turned 3 deg past its droop stop,
+  9.3 mm3 a side): lower arm to deck 1.56 mm at the droop stop (was 0.97), 1.28 mm 0.5 deg past it.
+- Knuckle (target 2.3, baseline 2.00): convex hull over the block-to-plate corner 1.51 / 1.43 (a new peak where its top met the plate front at
+  z 57.6); plate thickened 5 mm forward between the cups, flat underside 0.73 / 0.91 (a notch where it met the block face above the lower cup's
+  round-off), sloped underside 1.09 / 1.52. Back at the 2.00 geometry (KNUCKLE_HULL False, KNUCKLE_FWD None). Every face added at that joint makes
+  its own peak; the margin needs a rim-side redesign (the axle boss carried from behind the axle line), not another add-on.
+- Animations: `soma anim build` failed on three stale errors that it files under the module lean_front.py (old part names from before the
+  wishbone front end); they are dropped only once that path no longer exists. lean_front.py moved to parts/lean_anim.py (nothing deleted),
+  the two animations import it from there: soma anim build rc 0, both animations ok, 0 errors.
+- tools/seam_audit.py (new): seam, sliver and ledge audit of the outer skin of the shell parts, for queue item 2.
+- Build ok 106 parts, collide 0, all-pairs 0 real, front_check 0 overlaps (rest, poses, +12 / -8, printed tie rods, lean 14 at 1.55 mm),
+  rear_check 0.
+
+### Seam and facet audit, baseline (November 26, Version 1 orchestrator; queue item 2)
+- Reference (owner: "seamlesly blended like the shoulder to door skin of the shell"): the edge SHOULDER (88, -228, 134.2) to WEDGE (90, -208,
+  134.2) on the front shell. In measurable terms: (1) the two facets share one straight edge (20.1 mm), no face between them; (2) one angle
+  step there, 58.2 deg between the hood's rear plane (813 mm2) and the flank face below it (89 mm2); (3) no ledge (no face under 1.5 mm wide
+  between near-parallel faces); (4) no sliver (no face under 0.2 mm2 or under 0.2 mm wide); (5) the wall continues across at 3.0 mm, one solid.
+  A joint passes when it meets all five; two faces within 3 deg of each other over more than 2 mm count as a patch line (SEAM) unless the
+  facet plan has them as one plane.
+- Tool: `python -I tools/seam_audit.py output/model.step [part ...]` (outer skin only: faces that see out and lie within 4 mm of the part's
+  convex hull; `--all` adds trim pockets and the cockpit's inner wall).
+- Baseline on 245f001:
+  - Front shell: 301 skin faces. SEAM 24, SLIVER 92, LEDGE 33.
+    - Seams: 0.19 deg patch lines of about 50 mm on both flanks at (+-78, -42, 137) and (+-63, 63, 148), and 1.6 deg lines of 25-118 mm over
+      the hood at (+-30..43, -266..-288, 113..125) and (+-72, -244, 126).
+    - Slivers: many 0.00-0.01 mm2 faces, at the nose (+-42, -307, 107), the shoulders (+-89.8, -206.7, 134.4), the flank at (+-89.4, -160.2,
+      106.9), the centre line at (+-1.5, -204.2, 139.5) and the tail (+-49.9, 115.5, 170.9).
+    - Ledges from 0.22 mm wide at (+-67, -20.7, 155.4), (+-38, -307, 107).
+  - Tail light housing: 28 skin faces, 0 / 0 / 0. Grille insert: 10 skin faces, 0 / 0 / 0.
+  - Inside the cockpit and in the trim pockets (`--all`) there are 300+ more, mostly the faceted pockets cut around the chassis parts.
+- Next: find which operation leaves each sliver and seam (liners, arch side panels, arm tunnels, hood plane cut, symmetric rebuild) and fix it
+  at the source, so facets continue across the joint.
+
+### Cage shock path: tail-to-foot tie and rear quarter diagonal; shock force by hand (November 26, Version 1 orchestrator)
+- Shock force, by hand (it was 135 N from the old `tools/arm_fea.py`, never derived):
+  - Rear wheel landing load 55 N up at the axle (y 236.43, z 54.70); the arm pivot is at (y 114.65, z 63.68), lever 121.8 mm: 6699 N mm.
+  - Shock axis from the lower eye (y 154.6, z 103.6) to the upper eye (y 145.3, z 180.2), direction (y -0.121, z 0.993); its lever about the
+    pivot is 39.95 x 0.993 + 39.92 x 0.121 = 44.5 mm.
+  - Shock force = 6699 / 44.5 = **150 N**; motion ratio (wheel force / shock force) 0.365. The 135 N was 10 % low. `analyses/cage.py` and
+    `analyses/rear_arm.py` now use 150 N along the shock axis.
+- Cage (by the cage method, mirrored, `parts/cage.py` TAIL_FOOT_TIE):
+  - Attempt 1: tie from the rear quarter's bottom rear node n_tip (35.5, 82.4, 130.5) down and forward to the rail end node over the y 38 foot
+    (45, 38, 85). The shock had reached the feet only round the cabin (shock alone 1.42 at the roof corner and the B-pillar foot boss, 1.61 at
+    (47.3, 42.6, 140.5)); with the tie these went above 3.7, but the lower tail rail then bent at the web landing (31, 118.8, 147.4): 2.04 / 2.18
+    at 135 N, about 1.84 at 150 N.
+  - Attempt 2: diagonal from n_tip up to the web top (33.5, 125.3, 167.8), which triangulates the bay in front of the web (22.5 deg to the
+    rail, no mid-span crossings). Shock alone 2.19 / 2.37, envelope 2.28 / 2.11, both at the clevis ear by the bore; the tail rail is at 7.3.
+  - Checks: build ok, 0 mid-span crossings, collide 0, all-pairs 0 real, front_check 0 in all four runs, rear_check 0 over the full swing arm
+    travel (0.051 mm arm to deck tail, as before). The tubes sit inside the tail shell, which goes on and off as before.
+  - The point (+-16, 203, 174.4) reads 50 to 900 MPa and changes several times over between meshes: mesh-singular, as in every cage read
+    since November 25, left out.
+- Rear arm at 150 N: 2.67 at mesh 1.5 (2.94 at 2.0), by the shock mount.
+- Rear landing load by hand (orchestrator, November 26): the 55 N was not derived and did not match the front cases. Basis: car 2.6 kg
+  (ASSUMED, as `analyses/front_arm.py`), 40 % on the rear wheel (ASSUMED, 60/40 front/rear), and the front cases' 8.5 g (65 N on 0.78 kg per
+  front wheel). Rear wheel: 1.04 kg x 9.81 x 8.5 = **86.6 N**; shock 86.6 x 121.8 / 44.5 = **237 N** (motion ratio 0.365, as above). Where 8.5 g
+  comes from: a 0.30 m drop stopped over the 35 mm wheel travel at constant deceleration, 300 / 35 = 8.6 g. Both analyses now use 86.6 N / 237 N.
+- At 237 N (attempt 2's cage): shock alone 1.38 / 1.49 at the clevis ear, envelope 1.43 / 1.47; rear arm 1.53 / 1.55 on the ear's outer face.
+- Cage attempt 3 (the last for this fix): clevis ear plate outer face from |x| 9.8 to 12.0 (EAR_OUT_X, flush with the pin boss under the M6 head
+  and nut; the 17 mm tool corridor starts at |x| 12 and is unchanged). Ear 1.38 -> 1.95 to 1.98; now the rear overhead cross tube mid-span
+  (1.83 to 1.96) and the tail joint (28.6, 170.3, 164.6) (1.54 to 1.90, not settled) are as low. Cage stays UNDER 2 at 237 N: next would be a
+  second rear overhead cross tube or a larger CAGE_BEAM on the tail frame (the owner's 10 mm tube size), not tried.
+- Rear arm attempt 1: ear EAR_T 6.0 -> 8.4 mm (|x| 4.4 .. 12.8); the lower M6 pin stand-in now follows EAR_T (M6 x 35, was x 30 in the
+  hardware list). Ear 1.53 -> 1.75, but the arm is at 1.9 in several places at this load (sections sized for 55 N): UNDER 2, needs a pass on
+  the chord sections.
+- Checks: build ok, collide 0, all-pairs 0 real (the thicker arm ear first overlapped the old pin stand-in; fixed), front_check 0 in four runs,
+  rear_check 0 (0.051 mm arm to deck tail, as before), 0 mid-span crossings.
+
+### Load basis: vehicle mass and CG from the model (November 26, Version 1 orchestrator)
+- Asked by the main orchestrator: every landing load hung on an assumed 2.6 kg with 60 / 40 front / rear.
+- Mass (scratch script over output/model.step, part volumes and centres of mass):
+  - Printed parts: 1866 g, the sliced full kit (0668112), shared over the printed parts by volume (1678 cm3).
+  - Bought parts, listing masses (2026-11-26): motor + ESC Hobbywing Fusion SE 201 g (VERIFIED), servo AGFRC B44BLS V2 44 g (VERIFIED, retailer),
+    rear tyre RC4WD Mud Slinger 2 XL 147 g with foam (VERIFIED), heave shock RC4WD 70 mm 11 g (VERIFIED), front tyres 120 g each (ASSUMED),
+    rear shock 40 g (ASSUMED), 3S 1300 battery 125 g (ASSUMED, comparable packs 114 to 147 g), ring and pinion 45 g, spur 14 g, hub 6 g (ASSUMED).
+  - Small steel parts by volume x 7.85 g/cm3: 230 g (shafts, pins, bolts, bearings, ball studs, gears not listed).
+  - Total 3033 g in the model, plus about 60 g of screws, inserts, wires and LEDs not modelled (ASSUMED): **3.09 kg**.
+  - CG (3.7, -41.4, 79.1) mm; front axle y -216.6, rear y 236.4 (wheelbase 453): **61.3 % front, 38.7 % rear**.
+- Landing factor 8.5 g: a 0.30 m drop stopped over the 35 mm wheel travel at constant deceleration (300 / 35 = 8.6 g).
+- Loads now: front wheel 3.09 x 0.613 / 2 x 9.81 x 8.5 = 79.0 N (was 65 N: K 1.216, also on the stop load 143 -> 174 N and the side force);
+  rear wheel 3.09 x 0.387 x 9.81 x 8.5 = 99.8 N (was 86.6 N: K 1.153), shock 273 N (was 237 N); roof landing 95.2 N, side 35.7 N, bumper 47.6 N
+  (mass ratio 1.19). The front analyses scale their forces with K (a wrapper on study.force); cage.py and rear_arm.py carry the new numbers.
+- Register re-read: linear FEM, so a settled safety divides by K; FEM rerun for the parts landing between 1.8 and 2.2 (upper arm, lean head).
+  - FEM runs need FUGU_FEM_NO_CHAMFER for the upper arm (with the edge breaks the mesh fails at 1.1 and 1.3), as in the November 25 reads.
+  - Now LOW: knuckle 1.64, upper arm 1.81, upper arm at the stop 1.69, lean head 1.92, rear arm 1.52 (one mesh), cage about 1.60.
+    OK: lower arm 2.57, cage roof + side 2.57, cage up stop about 3.1 at the real 174 N, the hand-checked steering parts (servo-stall loads).
+
+### Cage rear: three fresh attempts at 273 N (November 26)
+
+Target 2.0, shock alone and envelope, two meshes. Start (10b7fa1, scaled): about 1.60 (cross tube mid-span between the ears, clevis ear, tail joint).
+
+| Attempt | Change | Shock alone 1.8 / 1.5 | Envelope 1.8 / 1.5 | Low spot |
+|---|---|---|---|---|
+| 1 | tail brace tops x 15 -> 12.5 (`BRACE_TOP_X`), on the ear's outer face | 1.56 / 1.39 | 1.31 / 1.44 | ear root, tail joint 1.31, cross tube mid-span 1.62 |
+| 2 | + webs joining the ears ahead of and behind the eye (`EAR_BRIDGES`, 9.5 mm off the pin, inside the ear outline) | 1.24 / 1.16 | 1.24 / 1.16 | ear outer face (±12, 129.6, 182.5); mid-span gone, tail joint 1.81 |
+| 3 | + ear lower edge 6 mm deeper under the front cross tube (`EAR_ROOT_DROP`) | 1.56 / 1.52 | 1.51 / 1.45 | ear outer face (±12, 128.1, 180.9); tail 1.64, cross tubes 1.73 |
+
+- Kept: attempt 3 (settled, 4 to 4.5 % between meshes; every other spot at 1.64 or more). Checks: build ok, collide 0, all-pairs 0 real, front_check 0 (4 runs), rear_check 0, 0 mid-span crossings.
+- PETG cannot reach 2.0 within the envelope: the clevis is boxed in by the 17 mm tool corridor on the pin axis (outboard of |x| 12), the 8.8 mm eye slot and the damper body (r 9) under the eye.
+- Owner decision, material option for the cage rear (or the whole cage, it is one print): Bambu PETG-CF, across-layer (Z) tensile 38 +- 3 MPa, X-Y 59 +- 4 MPa (Bambu PETG-CF technical data sheet V2.0, ISO 527; https://cdn.shopify.com/s/files/1/0380/5149/files/Bambu_PETG-CF_Technical_Data_Sheet.pdf). The 38 MPa is the TDS value on dry ISO 527 specimens. Derating (ASSUMED): the same knock-down as the PETG basis, 20 MPa against PETG HF's TDS Z 23 +- 4 MPa = x 0.87 (about the mean minus one sigma), so PETG-CF 33 MPa and safety about 2.4 at the ear (1.45 x 33 / 20). The printed part is weaker than a TDS bar (walls 4, 30 % infill, humidity), which the same knock-down is taken to cover, as it does for PETG. Minimum scope: CG1c only (the tail piece behind the y 89.6 cut: clevis, tail braces, tail joint, all the low spots), CA-glued on pins to CG1b (that glue joint is not analysed, ASSUMED to carry as for PETG); it needs its own plate (hardened nozzle). CG3 roof plate, the SU8 TPU pads and the shell (M2 screws) stay as they are. Needs a hardened nozzle. PETG-based, so it stays inside the indoor filament rule (PLA/PETG, no ABS/ASA/PC/PA-CF). PAHT-CF (Z 47 +- 5 MPa) is stronger but is a nylon, outside that rule.
+
+### Rear arm: slivers out, chord pass at 273 N (November 26)
+
+- Slivers that broke the mesh (1 distorted element at 1.8, arm frame): the inner pivot plate web stood 0.2 mm out of the front barrel (0.013 mm2 face,
+  points now 6.4 mm from the barrel axis), the 8 mm mid cross tube met the 12 mm chords with 0.005 mm edges (now 12 mm, belt still clear in the
+  rear_check sweep), the web behind the corridor ended with square corners on the bridge tube's chamfers (0.007 mm edges; it now ends inside the tube
+  and 1 mm under it in the keel). After: smallest face 0.087 mm2, no edge under 0.3 mm; the arm meshes as built at 2.0, 1.8, 1.5 and 1.2.
+- As built (edge breaks on), before the chord pass: 1.30 / 1.23 / 1.09 at meshes 2.0 / 1.8 / 1.5 (bridge root on the inner plate, ear face).
+
+| Attempt | Change | 1.8 | 1.5 | 1.2 | Low spot |
+|---|---|---|---|---|---|
+| 1 | keels under both bridge tubes (6 mm blade, 10 mm under the tube at the plate, tapering to the ear lug) | 1.47 | 1.34 | - | ear face at the corridor rim; root 1.49 (front keel hit the rear bearing carrier at -15: 0.25 mm, now `KEEL_DROP_F` 6) |
+| 2 | + 1 x 45 deg chamfer of material where the corridor and its slot leave the ear face (`CORR_CH`) | 1.33 | 1.36 | - | slot end notching the root rail (1.1 mm deep at x 41.7); ear 1.74 at 1.5 (2.0 reads 1.05: chamfer under the mesh size) |
+| 3 | + slot ends at x 38.0 (`PIN_SLOT_L` 25.2, was 30 to x 42.8) | 1.34 (ear, coarse mesh) | 1.58 | 1.45 | riser on the inner plate; pivot plate web 1.57 |
+
+- Settled on the 1.5 / 1.2 pair (8 %); 1.8 is too coarse for the 1 mm chamfer. Checks: build ok, collide 0, all-pairs 0 real, front_check 0, rear_check 0.
+- Still under 2 in PETG; the same PETG-CF option as the cage tail (CG1c): Z 38 MPa TDS, derated x 0.87 = 33 MPa (ASSUMED), safety about 2.4. The arm is
+  one print on its own plate, nothing bonded to it.
+
+### Owner decision: keep PETG (2026-11-26)
+- Owner, via the main orchestrator: "Keep PETG". The cage rear (CG1c: shock alone 1.56 / 1.52, envelope 1.51 / 1.45) and the rear arm (DT11: 1.58 / 1.45
+  at meshes 1.5 / 1.2) stay PETG as built and are closed as owner-accepted below 2.0. No PETG-CF, no BOM or kit change; their geometry is not reopened.
+- The acceptance covers only these two parts. Knuckle, upper arm and lean head still aim for 2.0.
+
+### Knuckle rim side: three attempts at 79 N (November 26)
+
+Start: 1.64 (settled 2.00 at 65 N scaled by K 1.216), peak in the 3D corner of block top, block inboard face and plate front (112.8, -208.1, 52.7).
+
+| Attempt | Change | 2.5 | 1.8 | 1.5 | 1.2 | Peak |
+|---|---|---|---|---|---|---|
+| 1 | one convex fill (`KNUCKLE_CORNER`): block inboard face slanted back to the plate front (x 110 at y0, x 112.5 at y -212.6, 7.6 mm off the kingpin, outside the 7.3 cup sweep), block top sloped up into the gusset | 2.03 | 1.70 | 1.44 | - | gusset top against the plate's outboard end face (112.2, -207.8, 57.6), not settling |
+| 2 | + fill top run up the plate end face to z 63 | 0.89 | 0.97 | 0.85 | - | hull tip on the plate end face near the upper stud: reverted |
+| 3 | attempt 1 + 3 mm x 45 deg prism along that edge, y0 .. y0 + 6 (`KNUCKLE_CORNER_CH`) | 2.16 | 1.92 | 2.05 | 2.05 | prism top edge (112.5, -207.4, 60.6) |
+
+- Kept attempt 3: settled 2.05 at meshes 1.5 / 1.2 (0.2 % apart; 1.8 is coarse for the 3 mm prism). +27 mm3 over attempt 1, +0.2 g at 100 %.
+- Checks: build ok, collide 0, all-pairs 0 real, front_check 0 (rest, poses, +12 / -8, printed tie rods; swept 0 new to look at), rear_check 0.
+  The fill stays inside the rim radius 24 outboard of x 113 (prism far edge 22.3 mm from the axle, as the gusset).
+
+### Upper arm: meshes as built, three attempts (November 26)
+
+- As built (edge breaks on) the FEM mesh failed (5 / 4 distorted elements at 1.1 / 1.3): the 2 to 4 mm edges at the apex nose, broken by the 0.6 mm
+  edge break, left 0.0018 mm edges. model.py: the upper arm's edge break skips edges under 4 mm (`min_len` 4.0). It now meshes as built.
+- As built before the attempts: landing 1.92 / 1.85, stop 1.65 / 1.70 (meshes 1.3 / 1.1).
+
+| Attempt | Change | Landing 1.3 / 1.1 | Stop 1.3 / 1.1 | Low spot |
+|---|---|---|---|---|
+| 1 | apex: full-section prism over the leg node's nose, tapered to the r 6 end face (`ARM_APEX_TAPER`; the round boss stepped down from the 14 mm square) | 1.92 / 1.94 | 1.77 / 1.76 | apex spot gone; stop: post base 0.5 mm proud of the front leg's face (27.1, -190.5, 76) |
+| 2 | + front stub flush with the barrel end (`STUB_IN_F` 0.4), slim post foot d 15 flared to 18 (`POST_FOOT_D`) | 1.64 / 1.63 | 2.36 / 2.15 | the slim foot bends under the shock; swept clearance to the head under 1 mm: both reverted |
+| 3 | attempt 1 + the post's d 18 section down through the arm with square corners, ramped into the octagon over 4 mm (`POST_DOWN`; its 45 deg corner crossed the leg's face at 16 deg) | 1.94 / 1.84 | 2.43 / 2.34 | landing: front stub top edge at the barrel's trimmed end (0.8 mm step) |
+
+- Kept attempt 3. Stop case OK. Landing still under 2 (settled 1.84 to 1.94): the step between the barrel's trimmed end (guard plane y -188.76) and the
+  front stub's flank (1.2 mm inside the barrel end) sits 3 mm from the pivot bore; making it flush (attempt 2) took the swept clearance to the head
+  under 1 mm. Checks (attempt 3): build ok, collide 0, all-pairs 0 real, front_check 0 (swept: 0 / 2 / 0 / 0 to look at, as before), rear_check 0.
+- Owner question (via the main orchestrator): accept 1.84 to 1.94 for the landing case in PETG, or another option.
+
+### Lean head: meshes as built (November 26)
+
+- As built the mesh failed at 1.5 (1 distorted element): the corner wedge under the upper cross bar (12 mm legs, D9) was narrower than the D13
+  post and bar, and after the edge break it left 0.0033 mm2 faces and 0.014 mm edges at the post / bar corner (without the wedge: none).
+  Swept offline: legs 12 left them at D9, D11 and D13; legs 14 clean at D9 and D13. Now 14 mm x D13 (`HEAD_WEDGE`, `HEAD_WEDGE_D`), flush with the frame.
+- FEM as built: 3.51 at mesh 1.2, 3.79 at 1.5 (8 % apart), read more than 4 mm from the supports and loads; the old peak at the wedge's end on
+  the bar (1.92) is gone. Mesh 1.5 has a one-node spike 3.1 mm from the rear pivot's load face at (±18.6, -154.0, 73.8 / 66.2), absent at 1.2.
+- Checks: build ok, collide 0, all-pairs 0 real, front_check 0 (swept 0 / 2 / 0 / 0 to look at, as before), rear_check 0.
+
+### Kit rebuild after the LOW-parts pass (November 26)
+- From 1f1df43 (cage rear, rear arm, knuckle, upper arm, lean head changes): 51 printed files, mesh audit 69 parts 0 flagged; full kit 13 plates,
+  Bambu slice check 0 problems, 63.2 h, 1872 g (was 63.1 h, 1866 g); suspension + drivetrain 6 plates, 0 problems, 19.6 h, 616 g, 467.68 USD
+  (was 19.5 h, 609 g). Docs, drawings, STEP exports, soma anim build and sc/Project_Fugu.sc (solidcraft eval: no error) regenerated.
+
+### Shoulder seam region: where the slivers come from (November 26, V1 orchestrator, after c3396e0)
+- CORRECTION: everything below in this section is about the TRACED shell (`make_shell`, kept only as the cage's reference, `_traced`), not the printed
+  Front shell: with `STEALTH = True` the printed Front shell is `parts/stealth_shell.py`. The printed shoulder slivers are the ones of the seam audit
+  baseline (±89.8, -206.7, 134.4), at the end of the reference edge; they are traced in the stealth pipeline (next section).
+- Not the pitch transform: an exact affine rebuild of the faceted front shell (each planar face re-made from its mapped vertices, sewn) gives
+  the same volume (351107.4 mm3), the same 797 faces and the same 111 shoulder slivers as `transformGeometry(_pitch)`.
+- Not the relief cuts: the 13 relief tools, scoops, deck trim and nose cut only remove some (111 -> 67 after `scaled()`).
+- Source, raw (pre-pitch) frame cheek box |x| 48..62, y -105..-80, z 40..70 (final: the shoulder above the front wheel, |x| 84..97,
+  y -180..-223, z 90..135): `make_shell()` alone 70 slivers; after `shell.cut(canopy_seat_tool(canopy))` (model.py line 15) 122; grille seat 122.
+  make_shell fuses thick facet panels (side skin, quarter wing, hood cheek intersected with hood_outer_limits(), hood stations, cowl): the
+  slivers sit where these panels overlap. Next: audit each panel's junction and make two skins meet on one fold line.
+
+### Shoulder seam region, printed Front shell (stealth), three attempts (November 26)
+- Region: |x| >= 60, y -245 .. -170, z >= 100 (the reference edge SHOULDER (88, -228) to WEDGE (90, -208) at z 134.2 and its surroundings).
+  Counts from the full audit (`tools/seam_audit.py` without its 12-per-kind print limit). Before (c3396e0): region SEAM 2 / SLIVER 16 / LEDGE 4;
+  whole part 24 / 94 / 35 (301 skin faces).
+- Source, by checkpoints in model.py: the first wheel-well liner fuse (line ~866 loop) adds the slivers at both ends of the reference edge; the
+  arch side panels and arm tunnel frames add none there. The 2 hood seams (1.61 deg at (±71.7, -243.9, 126.3)) and the ledges at (±80.6, -240.1)
+  are older.
+- 1: liners clipped half a wall inside the skin (`LINER_INSET` 1.5, `stealth_shell.outer_solid(inset=)`): the WEDGE-end slivers went, but with
+  the open cockpit the liner top is seen in the rim: 20 more ledges (4 on the shoulder edge, 14 at the arch top). Reverted (`LINER_INSET` 0).
+- 2: one flat-face merge after the last liner fuse (`_unify_flat`, accepted at 0.01 mm: 861 -> 845 faces, volume -51 mm3 of 351000): KEPT.
+- 3: plus the liner kept out of a 2.5 mm ball at the SHOULDER vertex (`LINER_CORNER_R`): the corner slivers moved to the ball's edge, ledges
+  35 -> 43. Reverted (`LINER_CORNER_R` 0).
+- After (kept 2): region SEAM 2 / SLIVER 14 / LEDGE 4; whole part 24 / 92 / 35 (297 skin faces). The two 0.00 mm2 slivers at the WEDGE end are gone.
+  Still open in the region: 12 slivers of 0.01 to 0.57 mm2 at the SHOULDER vertex (±87.8, -228, 134.2), where the hood, cheek and flank planes and
+  their 0.5 mm bevels meet the liner's clip planes; 2 at the arch top (±77.1, -226.7, 102.0); the 2 hood seams; the 4 ledges at (±80.6, -240.1).
+- Checks: build ok, collide 0, all-pairs 0 real, front_check 0 (swept 0 / 2 / 0 / 0 to look at, as before), rear_check 0. Wall unchanged (3.0 skin).
+
+### Liner rebuild on the skin's fold lines: theory (November 26, before coding; probe: liner vs skin faces within 3 mm)
+1. The skin (`fuselage()` -> `block(..., bevel=True)`) is 43 outer planes plus 12 bevel planes (0.5 mm x 45 deg) on its outside edges. Seven planes meet at
+   SHOULDER (four hood planes n_z 0.99 / 0.98 / 0.93 / 0.92, flank (0.99, -0.10, 0.08), cheek (0.87, -0.42, -0.27), cheek top (0.45, -0.05, 0.89)), and two bevels
+   (0.69, -0.56, 0.47) 67 mm2 and (0.83, -0.08, 0.56) 18 mm2 cut that corner: the skin stays 0.35 mm and more off the vertex.
+2. The liner is clipped by `outer_solid()`: the same 43 planes WITHOUT the 12 bevels. Its corner reaches the sharp vertex (distance 0.00) and carries faces of
+   0.02, 0.02, 0.05 and 0.16 mm2 on the four hood planes; its edges cross both bevel faces. Fused, these pieces and the bevel remnants between them are the 12
+   slivers of 0.01 to 0.57 mm2 at (±87.8, -228, 134.2).
+3. (±80.6, -240.1, 129.9): no liner face within 3 mm. The 0.73 mm ledge is the skin's own: a narrow hood facet between two hood planes 1.4 deg apart
+   ((0.084, -0.355, 0.931) and (0.102, -0.373, 0.922)), present before the liner fuse. It is a skin facet, not a liner crossing: it goes with the hood region (with its 1.61 deg seams).
+4. For zero crossings the liner's outer boundary must be the skin's own outer boundary: clip it with the 43 planes plus the same 12 `_bevel()` planes
+   (`outer_solid(bevel=True)`), so every liner face that reaches the outside lies in a skin facet or bevel plane and ends on their fold lines.
+5. Expected: the liner corner stays 0.35 mm off SHOULDER like the skin; region SLIVER 12 -> 0 at the vertex (the 2 at the arch top (±77.1, -226.7, 102) to be checked
+   the same way); LEDGE unchanged at (±80.6, -240) until the hood facets are merged.
+
+### Owner decision: upper arm landing accepted (2026-11-26)
+- Owner, via the main orchestrator: "Accept". The upper arm's landing case stays PETG as built at 1.84 / 1.94 (meshes 1.1 / 1.3), closed as owner-accepted
+  below 2.0; its stop case is OK at 2.34 / 2.43. No material, BOM or kit change; not reopened. This closes the V1 weak-part register.
+
+### Liner rebuild on the skin's fold lines: result (November 27)
+- Kept attempt 1: the wheel-well liners are clipped by the skin's own bevelled outer boundary (`stealth_shell.outer_solid(bevel=True)`: the 43 outer planes
+  plus the same 12 `_bevel()` planes as `block(bevel=True)`, `LINER_BEVEL_CLIP`). Probe at SHOULDER: the liner's faces there now lie on the skin's bevel and side
+  planes at the skin's own distances (0.35 / 0.38 / 0.50 / 0.72 mm off the vertex); the 0.02 to 0.16 mm2 corner faces are gone. The flat-face merge after the
+  liner fuses is now accepted at 0.1 mm (849 -> 760 faces, volume +88 mm3 of 351000).
+- Attempt 2 (merge held to 0.01 mm): the same region flags, whole part worse (SEAM 24, LEDGE 41): reverted (default merge).
+- Counts (full audit), before d2119f8 -> after: shoulder region SEAM 2 -> 2, SLIVER 14 -> 2, LEDGE 4 -> 10; whole part SEAM 24 -> 18, SLIVER 92 -> 80,
+  LEDGE 35 -> 35; skin faces 297 -> 280. Side effects: flanks SEAM 14 -> 8, LEDGE 4 -> 2; nose SEAM 3 -> 2, LEDGE 9 -> 8; tail LEDGE 8 -> 6; sills LEDGE 8 -> 7;
+  hood SEAM 4 -> 5.
+- Region flags left, none a liner crossing (probe: no liner face reaches them):
+  - 4 LEDGE (±88.9, -217.0, 134.1): the reference edge's own 0.5 mm bevel (18.4 mm2, 0.9 mm across). Its WEDGE end touches two flank facets 7.4 deg apart
+    ((0.992, -0.099, 0.083) and the door skin (0.991, 0.024, 0.133)), so the audit reads the bevel as a strip between near-parallel faces. The real issue is that
+    7.4 deg fold between the front flank and the door skin (under the 12 deg rule): a skin facet question for the flank region.
+  - 6 LEDGE (±80.7, -239.9, 129.9): a 0.71 mm hood facet between hood planes 1.4 deg apart: hood region.
+  - 2 SLIVER (±77.1, -226.7, 102.0), 0.13 mm2: the upper-arm tunnel frame (front face at y -226.6) meeting the arch's slanted face: arm tunnel / arch.
+  - 2 SEAM 1.61 deg (±71.7, -243.9, 126.3): hood region.
+- Exit condition not met for LEDGE (10) and SLIVER (2) in the region; the causes are the skin facets and the tunnel frame above, not the liner.
+- Checks: build ok, collide 0, all-pairs 0 real, front_check 0 (swept 0 / 2 / 0 / 0 to look at, as before: wheel and steering clearances unchanged),
+  rear_check 0. Wall: skin unchanged (3.0 mm, the liner only changes where it meets the skin).
+
+### Hood region: front hood facets merged (November 27)
+- Orchestrator: option A, limit raised to 0.5 mm for this merge. `parts/stealth_shell.py`: RIDGE_MID and NOSE_TOP are lifted by the smallest equal amount that
+  puts both on one plane through RIDGE_NOSE and SHOULDER (`HOOD_MERGE`, solved from the points: `HOOD_LIFT` 0.474 mm). SHOULDER is still set from the unlifted
+  kink (`RIDGE_MID_0`), so the shoulder and the reference edge do not move. Hull: P1 and P11 are now one plane P38 (0.093, -0.364, 0.927) through NOSE_TOP,
+  RIDGE_MID, RIDGE_NOSE and SHOULDER; built solid: one face per side (3726.6 mm2, was 1742.8 + 1984.1). The nose box reuses these points, so it follows.
+- Audit (`tools/seam_audit.py`): inner walls seen through an opening are no longer skin (one wall plus 0.3 mm behind the face, against its normal, lies outside
+  the hull: `INNER_PROBE`). On 6deedce that removed 9 SEAM, 10 SLIVER and 9 LEDGE flags, all inner walls (hood underside through the open belly, including the
+  inner copy of the 1.6 deg fold and the 2.26 deg pair; nose underside; flank inner wall at (±91, -129)).
+- The post-liner flat-face merge is pinned at 0.01 mm (`max_tol`): at 0.1 it flipped between accepted (+88 mm3 on 6deedce) and a -1867 mm3 collapse here, and on
+  6deedce it hid older flags. With it pinned, baseline flags from 245f001 show again: flank 0.19 deg seams (±79, -42.7), ledges (±67, -20.7), (±68, 82.5), (±65, -56.4).
+- Counts, same audit rule, 6deedce -> now: hood SEAM 1 -> 1, SLIVER 8, LEDGE 1; nose SEAM 2 -> 0, LEDGE 2; shoulder SLIVER 2, LEDGE 10 -> 6; flanks SEAM 5 -> 8,
+  LEDGE 2 -> 6; tail SEAM 1 -> 2, LEDGE 6 -> 8; whole part SEAM 9 -> 11, SLIVER 70 -> 70, LEDGE 26 -> 28 (skin faces 220). The rises are the unmasked baseline flags.
+- Left in the shoulder region: the 4 bevel ledges at the WEDGE fold (item 3) and 2 ledges at (±80.7, -239.9) (0.70 mm, still there after the merge: next probe).
+- Fits: Grille insert 10336.6 -> 10449.4 mm3 (nose opening 0.47 mm taller), Nose light strip -1.7, Front light contact block +3.0; collide 0, all-pairs 0.
+  Clearances only grew: lean head 36.19 -> 36.26 mm, cage 0.51 mm (unchanged, elsewhere). Wall: exact by construction (inner planes = outer planes - 3.0 mm).
+- Kit files for the next rebuild: SH1 front shell pieces, SH4 grille insert, the nose light strip, the front light contact block.
+- Checks: build ok, collide 0, all-pairs 0 real, front_check 0 (swept 0 / 2 / 0 / 0, as before), rear_check 0.
+
+### Cage joints to the SCX30 method: three attempts (November 27; owner: "apply what you learn to your cages")
+- Comparison (parts/cage.py `_Frame(hull_nodes=True)` vs SCX30): same shared "up" (Z off the axis, X near vertical); tubes ending on a side are split into a node;
+  no edge breaks on the cage. Different: tube ends sit at a set-back solved so each end section is an exact node-hull face (SCX30: at the node point); the node
+  hull also takes "fill" sections at the node point (the outer corner material); clevis ear plates, ear bridges, shell bosses and foot sockets are separate solids
+  overlapping node hulls; one clean() after the union and after the holes; nodes with under 1.0 mm free tube merge (SCX30 0.35 mm).
+- As built (e186116): 2856 faces, 38 faces < 0.1 mm2 (10 < 0.02), 124 edges < 0.5 mm, volume 446500 mm3. Cage FEM: shock 1.56 / 1.52, envelope 1.51 / 1.45 (1.8 / 1.5).
+- 1: node hulls from the end sections only (`NODE_FILL` False): 22 / 2 / 105, volume -3.3 %, but FEM envelope 1.30 / 1.39 (tail joint, ear root): stopped, not kept.
+- 2: fill kept; a fill corner is taken only if it stands `NODE_SNAP` 0.35 mm or more outside the hull of the points taken so far and 0.35 mm from every point
+  (closer ones snapped onto the hull: under 0.35 mm of corner material): 26 / 6 / 121, but the tail joint fell to 1.14 / 1.23 on one side (the snap order differed
+  between the mirror sides): not kept.
+- 3 (KEPT): as 2 with a mirror-symmetric order, and nodes behind y 100 (`NODE_SNAP_MAX_Y`: tail joint, shock clevis) keep every fill corner as before:
+  2738 faces, 34 faces < 0.1 mm2 (8 < 0.02), 123 edges < 0.5 mm, volume 446273 mm3 (-0.05 %). FEM: shock 1.56 / 1.52 (as before), envelope 1.46 / 1.56
+  (lowest 1.46, inside the accepted 1.45-1.56); tail joint 1.76 / 1.81.
+- Not converted (no attempts left): the roof peak (±40, 20, 220), 19 edges < 0.5 mm per side (was 17): 7 mm cabin tubes and 10 mm tubes in one hull, plus the
+  roof plate seat; the tail (±30, 180, 160), 8 per side: kept as before for the FEM, and the clevis ear plates / bridges overlap its hull; B-pillar foot (±40, 40, 160)
+  3 per side and the front (±60, -160, 140) 4 per side: shell bosses on the pillar nodes. These would need the add-ons folded into the node hulls.
+- Checks: build ok, collide 0, all-pairs 0 real, front_check 0 (swept 0 / 2 / 0 / 0), rear_check 0, 0 mid-span crossings. Kit: the cage pieces CG1a/b/c and the
+  drawings change in the next kit rebuild.
+
+### Cage add-ons, roof peak: attempt 1 (November 27)
+- Cause found: the roof rear node B (45.9, 15.0, 219.9: roof rail, B pillar, door diagonal) and the tail frame anchor b1 (38.6, 17.7, 214.7) are 9.4 mm apart,
+  joined by a short 7 mm tube; two busy hulls with a short stub between them make the 19 edges < 0.5 mm per side. There is no separate seat solid on the cage:
+  the roof plate is its own part, placed on the frame.
+- Attempt 1: merge node pairs ahead of y 100 whose joining tube has under 4 mm free length into one hull (`NODE_MERGE_FREE_CABIN`): cage edges < 0.5 mm
+  123 -> 87, faces < 0.1 mm2 34 -> 26, but the merged hulls fill the space between the nodes: volume +3.6 % (446273 -> 462577 mm3; it also merged a front pair at
+  (±45, -229 / -215, 102.5)). Over the 0.5 % limit: not kept (`NODE_MERGE_FREE_CABIN` 0).
+- Without moving a node the roof peak keeps its short stub; folding B and b1 into one node point would move the roof rail end or the tail anchor by 9.4 mm.
+
+### Arm tunnel frame at the arch top (November 27)
+- `parts/relief.py` `arm_tunnels`: the frame is clipped by the skin's own bevelled outer boundary (`outer_solid(bevel=True)`, `TUNNEL_FRAME_FLUSH`), as the
+  liners; clipped 1 mm inside the outer face, its inset plane met the cheek's lower facet and the arch top in the 0.13 mm2 slivers at (±77, -227, 102).
+- Counts (full audit, inner walls excluded), e186116 / 37784ce shell -> now: shoulder SLIVER 2 -> 0, LEDGE 6; whole part SEAM 11 -> 11, SLIVER 70 -> 68,
+  LEDGE 28 -> 29 (one 0.60 mm ledge at (-65.2, 5.9, 28.0) on one side only, on the rocker far from the tunnel: a baseline spot that flips with the merge).
+- Checks: build ok, collide 0, all-pairs 0 real, front_check 0 (swept 0 / 2 / 0 / 0, arm travel through the tunnel unchanged), rear_check 0.
+- Roof peak attempt 2 (orchestrator's decision: tail anchor b1 moved onto the roof rear node B, `TAIL_ANCHOR_ON_ROOF`): cage edges < 0.5 mm 123 -> 59, faces
+  < 0.1 mm2 34 -> 16, the roof-peak cluster gone; but b1 also anchors the rear quarter, the upper tail rail and the shock clevis cross tubes, which re-aimed:
+  volume +6 % (446273 -> 473674 mm3), 1 all-pairs overlap, cage FEM shock 1.40 / 1.40 (was 1.56 / 1.52), envelope 1.38 / 1.22 (tail joint). Reverted
+  (switch False). Roof peak: NOT CONVERTED, reason: load path (the anchor carries the tail frame and the shock clevis).
+- Bosses, attempt 3 (orchestrator: bosses may move along their tube; there is one shell boss per side in the open cockpit, on the B upright at (45, 38,
+  belt - 14); the "front" cluster (±60, -160, 140) is the hoop-to-cowl brace landing mid-span, a tube joint, not a boss). The round boss (D12, cone root D18) is
+  larger than the 7 / 10 mm tubes it sits on, so it cannot land on one flat tube face; built instead as a square member in the node hull (`BOSS_AS_TUBE`, same
+  axis, reach and pilot hole): FEM unchanged (shock 1.61 / 1.55, envelope 1.56 / 1.47, tail 1.76), but edges < 0.5 mm 123 -> 133 and faces < 0.1 mm2 34 -> 38
+  (a 12 mm member among 10 and 7 mm tubes in one hull). Reverted (False).
+- Note: the stealth Front shell has no screw holes for these bosses (kit/hardware.py lists 6 x M2 x 6 "shell to cage bosses", ASSUMED); nothing to move.
+- Add-on series closed after three attempts: nothing kept beyond 37784ce. Not converted: roof peak (load path: the tail anchor carries the tail frame and the
+  clevis), B-pillar foot bosses (a boss larger than its tubes adds facets either way), the hoop-to-cowl brace landing (±60, -160, 140) (tube joint, not tried),
+  tail (±30, 180, 160) (not touched: load path). Cage as built stays at 34 faces < 0.1 mm2, 123 edges < 0.5 mm.
+
+### WEDGE fold probe and the ledge rule (November 27)
+- Probe: the front flank strip under the reference edge (0.992, -0.099, 0.083; 79 mm2) and the door skin (0.991, 0.024, 0.133; 3278 mm2) share their fold edge
+  directly (one 3.41 mm edge): step 0.00 mm. Five stations along the fold line, 6 mm apart: the plane offset 1 mm off the fold is 0.132 mm at every station, which
+  is the 7.4 deg angle, not a step. Under 0.3 mm: an audit pairing artefact, geometry not moved.
+- The flag: the reference edge's 0.5 mm bevel (18.4 mm2) has the flank strip on its long side (19.8 mm) and the door skin only on a 1.71 mm end; the ledge test
+  paired them. `tools/seam_audit.py`: a ledge's near-parallel neighbours must each share at least `LEDGE_SIDE` 3 mm of edge with it (its long sides), as a real
+  step strip does. Checked four other ledges the rule drops: all are 45 deg bevel strips with both long sides 29 to 45 deg off ((±80.7, -239.9) the hood/cheek
+  crease bevel, (±68, 82.5) and (±20.5, -306.8) and (±65.2, 5.9) bevels).
+- Counts (same shell as e35937a, audit only): whole part SEAM 11, SLIVER 68, LEDGE 29 -> 5. Shoulder region: SEAM 0, SLIVER 0, LEDGE 0 (closed). Left: flanks
+  SEAM 8 / SLIVER 25 / LEDGE 4, hood SEAM 1 / SLIVER 8 / LEDGE 1, nose SLIVER 1, sills SLIVER 26, tail SEAM 2 / SLIVER 8.
+
+### The 24 ledges the 3 mm long-side rule drops (745738b), each checked (strip width, long-side neighbours as (shared mm, angle to strip deg))
+- 1 x 0.81 mm at (-20.5, -306.8, 109.8): long sides [(37.1, 34.3), (4.6, 69.9), (41.9, 34.3)], ends 5: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 1 x 0.81 mm at (20.5, -306.8, 109.8): long sides [(41.9, 34.3), (37.1, 34.3), (4.6, 69.9)], ends 5: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 1 x 0.65 mm at (-45.9, -262.6, 59.3): long sides [(18.3, 39.2), (17.9, 50.8)], ends 6: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 1 x 0.65 mm at (45.9, -262.6, 59.3): long sides [(18.3, 39.2), (17.9, 50.8)], ends 6: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 1 x 0.70 mm at (-80.7, -239.9, 130.0): long sides [(29.3, 45.4), (28.5, 45.4)], ends 4: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 1 x 0.70 mm at (80.7, -239.9, 130.0): long sides [(28.5, 45.4), (29.3, 45.4)], ends 4: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 2 x 0.92 mm at (-88.9, -217.0, 134.1): long sides [(20.0, 29.1), (19.8, 29.1)], ends 6: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 2 x 0.92 mm at (88.9, -217.0, 134.1): long sides [(19.8, 29.1), (20.0, 29.1)], ends 6: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 1 x 0.22 mm at (-67.0, -20.7, 155.4): long sides [(239.2, 27.8), (86.4, 27.8), (325.6, 4.4)], ends 2: NOT a bevel: a 0.22 mm x ~325 mm facet along the belt rim folded 4.4 deg off its big neighbour; no step (no near-parallel pair on its long sides), but a real near-flat crease: kept on the flanks list
+- 1 x 0.22 mm at (67.0, -20.7, 155.4): long sides [(239.2, 27.8), (86.4, 27.8), (325.6, 4.4)], ends 2: NOT a bevel: a 0.22 mm x ~325 mm facet along the belt rim folded 4.4 deg off its big neighbour; no step (no near-parallel pair on its long sides), but a real near-flat crease: kept on the flanks list
+- 2 x 0.60 mm at (-65.2, 5.9, 28.0): long sides [(18.4, 56.8), (17.8, 33.2)], ends 7: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 2 x 0.60 mm at (65.2, 5.9, 28.0): long sides [(17.8, 33.2), (18.4, 56.8)], ends 7: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 4 x 0.87 mm at (-68.0, 82.5, 144.2): long sides [(89.4, 29.7), (91.1, 29.7)], ends 11: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- 4 x 0.87 mm at (68.0, 82.5, 144.2): long sides [(91.1, 29.7), (89.4, 29.7)], ends 11: 45 deg bevel strip (deliberate 0.5 mm edge break)
+- Total: 22 bevel strips (11 per side) and 2 belt-rim strips (one per side). None hides a step.
+
+### Shell fixing: Front shell screwed to the cage's two shell bosses (November 27)
+- Inventory (before): two cage shell bosses only, (±45, 38, 148.1) on the B upright, axis ±x, D12, M2 pilot; facing the Front shell flank (2031 mm2 facet,
+  31.4 deg to the axis), gap 4.4 mm on the axis, wall 3.58 mm along it, no hole, pad or counterbore. kit/hardware.py had 6 x M2 x 6 "shell to cage bosses",
+  ASSUMED. Nothing held the Front shell: it sat on the deck plane and over the cage and lifted off. Roof plate CG3: laid on the frame, no fixing. Grille SH4:
+  CA glue. Tail housing SH3: 2 x M3 countersunk into cage stubs (modelled). Shell to deck: no fixing.
+- Now: cage bosses take an M3 heat-set insert (Adafruit 4255 M3 x 4, pocket D3.8 x 5 at the boss face; `BOSS_INSERT`; boss wall around it 3.9 mm). The
+  Front shell gets, per boss, a D14 pad on the inner skin out to 0.2 mm off the boss face, the ISO 7380 clearance hole on the boss axis and a counterbore
+  (head D + 0.6) whose floor puts the head top 0.2 mm below the skin all round the rim (skin across the rim x 66.5 .. 70.3: the recess is 1.9 mm deep on its low
+  side, 5.7 mm on its high side, from the 31 deg slant). Screw ISO 7380 M3 x 8 (`soma.fasteners`, length by pick_length: grip 4.2 mm, 3.8 mm into the
+  4 mm insert); material under the head 4.0 mm (skin + pad). Parts 'Shell screw 1/2' (hardware).
+- The counterbore touches two outer flank facets 0.2 deg apart ((0.853, 0.049, 0.519) and (0.854, 0.046, 0.518)): the flank's 0.19 deg patch line, not a
+  real fold; it goes when the flank facets are merged (flanks region).
+- Insert hole D3.8 stays ASSUMED (as every M3 pocket in the kit) until the coupon test. kit/hardware.py: M2 x 6 line replaced by ISO 7380 M3 x 8 (2) and
+  2 more inserts; bom.md and the manual's step 6 regenerated.
+- Counts: whole part SEAM 11, SLIVER 68, LEDGE 5 (unchanged); checks: build ok (108 parts), collide 0, all-pairs 0 real, front_check 0, rear_check 0.
+- Kit files for the next rebuild: SH1 front shell pieces, CG1a/b/c (insert pockets), drawings; BOM and manual already regenerated.
+- Still open (options to the orchestrator first): front retention of the Front shell, roof plate fixing, shell-to-deck location.
+
+### Front shell: sill fixings from under the deck (November 27)
+- Orchestrator's pick (b). Deck room scanned in the edge band (x 44..58, from the deck top up 14 mm and 25 mm under it) every 10 mm from y -100 to 40: free
+  at y -100..-80 (front deck, 6 mm, solid) and y -30..20 (rear deck); the cage feet sit at y -50 / -40 and 30; no moving part passes there.
+- The shell's lower edge: at y -80 the arch side panel ends 1.4 mm above the deck top; from y -60 back the sill hangs below the deck top, outboard of its
+  edge. Positions: +x at y -80 and -20, -x at y -20 only: on the -x side the receiver box fills the deck margin from y -120.5 to -69.9 (x to -52.7, 1.8 mm
+  from the deck edge), and the next free place, y -60, is the deck lap (first build put a screw into the receiver box: 27 mm3, all-pairs caught it).
+- Per fixing: a tab on the shell's inner skin (x 46 to the skin, 12 mm long in y, 7 mm high, 0.1 mm off the deck top, inside the skin by 1 mm), an M3 x 4
+  insert pocket D3.8 x 5 from below; in the deck an ISO 10642 M3 x 10 clearance hole with its countersink in the underside (head flush); 3.9 mm into
+  the insert. Hidden: nothing shows from above or the side.
+- Fixings of the Front shell now: 2 x ISO 7380 at the B-upright bosses (y 38), 3 x ISO 10642 at the sills. BOM and manual step 6 regenerated.
+- Checks: build ok (111 parts), collide 0, all-pairs 0 real, front_check 0, rear_check 0; audit unchanged (SEAM 11, SLIVER 68, LEDGE 5).
+- Kit files: SH1 front shell pieces (tabs), CH1 front deck and CH2 rear deck (holes), drawings.
+
+### Front shell nose: supported only, checked by hand (November 27)
+- Section of the Front shell from the model every 10 mm (slab I about the horizontal centroid axis): 0.8-1.3 x 10^6 mm4 behind y -130, 14-69 x 10^3 mm4 over the
+  arches and the cowl (weakest 14,200 mm4 at y -200, the cabin opening's front), up to 4.7 x 10^5 mm4 at the nose box.
+- Nose lift with 30 N up at the nose tip (y -307), the shell a cantilever from the forward fixing: from y -80 (+x sill screw) 0.64 mm in PETG (E 2100 MPa),
+  0.38 mm in PLA (E 3500, the shell's print material); from y -20 (-x) 0.68 / 0.41 mm. Bending stress at y -200: 3210 N mm x about 20 mm / 14,200 mm4 = 4.5 MPa.
+  Under the 1.5 mm limit: the nose stays supported on the cage (no tongue); the hoop top bar had no place with 1 mm clearance in every pose anyway.
+
+### Kit materials by group (kit/registry.py, November 27) and the FEM basis
+- PETG (structural / impact / drive): CH1-CH5 chassis and decks, CG1 cage, CG2 light contact, CG3 roof plate (load none), DT5-DT17 drivetrain and wheels,
+  ST1-ST3 steering, SU1-SU5 suspension (lean head, upper and lower arms, knuckles, droop stops). The FEM register's basis (PETG, 20 MPa across the layers)
+  matches all of them.
+- TPU 95A (impact, elastic by design): SU6 droop stop pads, SU7 heave bump stop, SU8 up stop pads. Not on the PETG basis; sized by deflection, not strength.
+- PLA (load "none" in the registry): SH1 front shell, SH2 canopy / rear quarter, SH3 tail light housing, SH4 grille insert; LT1 / LT2 light strips in
+  translucent PLA.
+- Nothing load-carrying is PLA. Since the shell fixings (250ae96, ee8b7bd) the Front shell carries its own retention: at the 91 N lift-off case about
+  1.4 MPa under each screw head and 4.5 MPa bending at y -200: small against PLA, but the registry still says load "none" for SH1; its wall / infill profile
+  should be checked at the next kit rebuild (the fixing tabs and pads are solid features inside the 3 mm skin).
+- My earlier "shell as a 3 mm PETG channel" nose figure is the conservative one (0.64-0.68 mm); in the kit's PLA it is 0.38-0.41 mm.
+- Correction (November 27): the open-cockpit roof frame has front and rear headers and a roof X (parts/cage.py: (m(A), A), (m(B), B), A-X0-B', A'-X0-B; X0 at
+  (0, -36, 208.4)); my report that it had none was wrong, and the owner's "flush between rails" was decided on that. Options re-sent to the orchestrator
+  (four flush triangular panels; one flush plate with the X removed; one plate on top with hooks and one rear screw). Roof plate not changed.
+
+### Arch rims: exact 45 deg chamfer per skin facet (November 27, attempt 1 kept)
+- Orchestrator's pick (iii). `parts/stealth_shell.py exact_arch_chamfer`: the real arch outline (lines and splines of `_arch_solid`, sampled every 0.5 mm; the
+  stepped version grew a straight-sided stand-in, so it was not even concentric with the rim at the spline corners) grown by 0.5 mm on each outer plane that faces
+  the arch's side, ruled down to the outline itself 0.5 mm deeper; each cutter clipped to the region nearer its plane than any other outer plane, so two facets'
+  cutters meet on their fold. Applied to the finished Front shell after the liner fuses (`EXACT_ARCH_CHAMFER`; the liners reach the rim and would refill it);
+  the stepped `chamfer_rims` call for the arches is off. 14 facet cutters.
+- Counts (full audit), before -> after: whole part SEAM 11 -> 11, SLIVER 68 -> 43, LEDGE 5 -> 5; flanks SLIVER 25 -> 16, sills 26 -> 10. Terrace slivers (0.17 mm)
+  0. Skin faces 219 -> 474: the chamfer is faceted along the 0.5 mm outline samples (each facet about 0.5 x 0.7 mm, above the sliver limits).
+- Left on the flanks / sills (per side): 3 + 2 small faces where the arch rim crosses the chine fold ((90..93, -160, 103..107), (91, -92, 95): the rim's top
+  runs within about 1 mm of the chine there), 3 at the arch's rear line y -77 (lower arch panel return), 3 on the bottom trim of the sills, 2 at the nose box rear.
+- Checks: build ok, collide 0, all-pairs 0 real, front_check 0 (swept 0 / 2 / 0 / 0: wheel and steering clearances unchanged), rear_check 0. Rim position
+  unchanged (same outline); wall untouched (the chamfer only removes the outer 0.5 mm at the rim).

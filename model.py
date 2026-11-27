@@ -230,11 +230,12 @@ for _sx in (1,-1):
     _pre=_shells['Front shell']; _shells['Front shell']=_pre.cut(_cutc).clean()
     print('cowl step shaved side',_sx,'mm3',round(_pre.Volume()-_shells['Front shell'].Volume(),1))
 _shells['Front shell']=checked(strip_dust(_shells['Front shell'],min_volume=0.001).fix(),'Front shell')
-def _unify_flat(shape,name,volume_tol=0.005):
+def _unify_flat(shape,name,volume_tol=0.005,max_tol=1.0):
     """Merge faces that lie in one plane (also B-spline faces that are numerically planar) across the whole part.
     Loosest tolerance first; accepted only if valid, one solid and the volume moves by under 0.5 %."""
     from OCP.ShapeUpgrade import ShapeUpgrade_UnifySameDomain
     for lt,at in ((0.1,0.015),(0.05,0.01),(0.02,0.005),(0.01,0.003),(0.005,0.002),(1e-3,1e-3)):
+        if lt>max_tol: continue   # max_tol: skip the looser merges (they can move a face by that much)
         u=ShapeUpgrade_UnifySameDomain(shape.wrapped,True,True,True); u.SetLinearTolerance(lt); u.SetAngularTolerance(at); u.Build()
         g=cq.Shape.cast(u.Shape()).fix()
         ok=g.isValid() and len(g.Solids())==1 and abs(g.Volume()-shape.Volume())<volume_tol*shape.Volume()
@@ -311,6 +312,7 @@ assert _shells['Rear shell'].distance(_tail_strip)>=STRIP_FIT*0.8, 'Tail lens cl
 # in printed coordinates from a few convex faceted blocks with an exact wall, then gets the same wheel-arch, deck and
 # suspension-travel cuts. The traced shell above is still built because the tail housing and the light strips come from it.
 STEALTH = True
+EXACT_ARCH_CHAMFER = True   # arch rims: exact 45 deg chamfer per skin facet (parts/stealth_shell.py exact_arch_chamfer), not the stepped chamfer_rims
 # Open cockpit (Yeti style): the Canopy is not built into the model, the stealth Front shell is the lower body up to the belt line and the cage's
 # cabin tubes (parts/cage.py) are the visible cabin. False restores the closed stealth canopy.
 OPEN_COCKPIT = param(True, 'Open cockpit: no canopy, the cage forms the visible cabin', group='Cage')
@@ -324,7 +326,7 @@ if STEALTH:
         _sc = _sc.cut(_t)
     # 0.5 mm break on the outside edge of the wheel arches (stepped, the arch outline is curved). The bottom trim line and, with the open cockpit, the
     # cabin opening (the visible belt rim) get theirs as an exact facet further down, where those rims are squared off (square_cuts).
-    _sf = _ss.chamfer_rims(_sf, [lambda g: _ss.arch_cut(grow=g)[:2]])
+    if not EXACT_ARCH_CHAMFER: _sf = _ss.chamfer_rims(_sf, [lambda g: _ss.arch_cut(grow=g)[:2]])   # stepped (3 terraces of 0.17 mm): replaced by the exact chamfer after the liners
     _shells['Front shell'] = checked(strip_dust(_sf.clean(), min_volume=50.0), 'Front shell')
     if OPEN_COCKPIT: _shells.pop('Canopy')     # the traced canopy (in _traced) stays: the cage tail tubes follow its rear quarter
     else: _shells['Canopy'] = checked(strip_dust(_sc.clean(), min_volume=50.0), 'Canopy')
@@ -383,10 +385,14 @@ assert _shells['Front shell'].isValid() and len(_shells['Front shell'].Solids())
 # follow after the cage is built, where the Front shell is registered.
 LINER_CAGE_GAP = 1.0
 LINER_RIM = 1.5
+LINER_BEVEL_CLIP = True   # liners clipped by the skin's own bevelled boundary (without the bevels their corner poked through them at SHOULDER)
+LINER_CORNER_R = 0.0   # tried 2.5 (liners kept out of a ball at the outer hood corner): the corner slivers moved to the ball edge, ledges 35 -> 43
+LINER_INSET = 0.0   # tried 1.5 (liners half a wall inside the skin): the 2 shoulder slivers went, but the liner top showed as a step in the open
+                    # cockpit's rim: 20 more ledges (4 on the shoulder edge at (89, -217, 134), 14 at the arch top y -160)
 _liners = {}
 if STEALTH:
     from parts.relief import wheel_well_liners
-    _lo_body = _ss.outer_solid()
+    _lo_body = _ss.outer_solid(inset=LINER_INSET, bevel=LINER_BEVEL_CLIP)
     for _sx, _w in wheel_well_liners().items():
         _w = _w.intersect(_lo_body)
         for _t in _ss.arch_cut() + [_deck_trim] + _tools:
@@ -429,10 +435,10 @@ for _dn in _ch.objects.values():
         _dv = _dn.obj.val() if isinstance(_dn.obj, cq.Workplane) else _dn.obj
         _dn.obj = _dv.translate(cq.Vector(0, 0, DECK_FRONT_RAISE))
 
-# Deck mounting for the cage feet: M3 screws come from the top, so the decks get heat-set insert pockets (M3 x 4 mm insert, pocket D4.2 x 5 deep).
+# Deck mounting for the cage feet: M3 screws come from the top, so the decks get heat-set insert pockets (M3 x 4 mm insert, pocket D3.8 x 5 deep for the OD 4.2 insert).
 # The rail feet are outboard of the deck edge (x 54.5): a small ear (5 mm wide, 14 long, 6 thick) carries the pocket there.
 from parts.cage import RAIL_FEET, RAIL_FOOT_X, RAIL_FOOT_DY, FRONT_LEG_X as _FLX, FRONT_FOOT_Y as _FFY, FRONT_TAB_DY as _FTD
-from parts.cage import FRONT_TAB_Z as _FTZ, RAIL_TAB_LIFT as _RTL, FOOT_SEAT as _FSEAT
+from parts.cage import FRONT_TAB_Z as _FTZ, RAIL_TAB_LIFT as _RTL, FOOT_SEAT as _FSEAT, HOOP_FEET as _HOOPF, HOOP_FOOT_X as _HOOPX
 from parts import foot_sockets as _fsock
 DECK_SCREWS = []   # (deck node, world x, world y, ear) for the hardware list
 FRONT_FOOT_SITES = []   # cage feet on the front deck: made again on the flat front deck further down (parts/flat_deck.py replaces the old plate)
@@ -450,7 +456,7 @@ def _foot_site(deck, X, y, rail):
     deck = deck.cut(cq.Solid.makeCone(3.15 + 1.0, 1.7, 1.45 + 1.0, cq.Vector(X, yr, zb - 1.0), cq.Vector(0, 0, 1)))
     assert deck.isValid() and len(deck.Solids()) == 1, 'deck screw hole broke the deck at x %.1f y %.1f' % (X, y)
     # pocket under the foot and the socket it slots into (parts/foot_sockets.py)
-    _zf = [z for yy, z in RAIL_FEET if abs(yy - y) < 1.0][0] + _RTL - _FSEAT - CHASSIS_Z
+    _zf = [z for yy, z in tuple(RAIL_FEET) + tuple(_HOOPF) if abs(yy - y) < 1.0][0] + _RTL - _FSEAT - CHASSIS_Z
     _add, _cut = _fsock.socket(X, yr, zt, _zf, rail)
     deck = deck.fuse(_add).clean().cut(_cut).clean()
     assert deck.isValid() and len(deck.Solids()) == 1, 'foot socket broke the deck at x %.1f y %.1f' % (X, y)
@@ -465,6 +471,8 @@ def _deck_pockets(assembly):
         else:
             node.obj = _foot_site(node.obj.val() if isinstance(node.obj, cq.Workplane) else node.obj, X, y, True)
         DECK_SCREWS.append((node.name, X, y, False))
+    for X, y in [(sx * _HOOPX, y) for y, _ in _HOOPF for sx in (-1, 1)]:   # front hoop legs: on the front deck (made on the flat deck further down)
+        FRONT_FOOT_SITES.append((X, y)); DECK_SCREWS.append((nodes['w3 deck front'].name, X, y, False))
     print('deck insert pockets:', len(DECK_SCREWS))
 # Clean up deck plates: plug unused leftover holes from the old layout, widen rear cage foot margin (markup 13:41),
 # and extend w3 deck tail to y_ref = 139.0 to fully support w3 rbc lower and its rear slots (markup 13:42).
@@ -636,14 +644,14 @@ for _n, _s, _g, _c in _wb.all_parts():
             for _sx in (1, -1):
                 for _hx, _hw in _wb.SERVO_SCREWS:   # M3 heat-set insert bore in the pillar, M3 clearance hole through the deck
                     _hy = _wb.servo_pillar_y(_hw)
-                    _s = _s.cut(cq.Solid.makeCylinder(2.1, 36.0, cq.Vector(_sx * _hx, _hy, 0.0), cq.Vector(0, 0, 1)))
+                    _s = _s.cut(cq.Solid.makeCylinder(_wb.INSERT_POCKET_D / 2, 36.0, cq.Vector(_sx * _hx, _hy, 0.0), cq.Vector(0, 0, 1)))
                     _flat = _flat.cut(cq.Solid.makeCylinder(1.7, 60.0, cq.Vector(_sx * _hx, _hy, -10.0) - _off, cq.Vector(0, 0, 1)))
         if _n == 'Lean head':
             # the front frame's upper corners reach the inside of the nose skin: trimmed 1 mm clear of it
             _s = _big(_s.cut(_shells['Front shell']).cut(_shells['Front shell'].translate(cq.Vector(0, 1.0, 0)))).clean()
             for _sx in (1, -1):
                 for _hx, _hy in _wb.HEAD_SCREWS:   # M3 heat-set insert bore in the rail, M3 clearance hole through the deck
-                    _s = _s.cut(cq.Solid.makeCylinder(2.1, 32.0, cq.Vector(_sx * _hx, _hy, 0.0), cq.Vector(0, 0, 1)))      # ends in the base tube, below the lower cross bar (z 36.3)
+                    _s = _s.cut(cq.Solid.makeCylinder(_wb.INSERT_POCKET_D / 2, 32.0, cq.Vector(_sx * _hx, _hy, 0.0), cq.Vector(0, 0, 1)))      # ends in the base tube, below the lower cross bar (z 36.3)
                     _flat = _flat.cut(cq.Solid.makeCylinder(1.7, 60.0, cq.Vector(_sx * _hx, _hy, -10.0) - _off, cq.Vector(0, 0, 1)))
         assert _s.isValid() and len(_s.Solids()) == 1, _n + ' broke when seated on the deck'
         print('seated on the deck:', _n, 'removed mm3', round(_v0 - _s.Volume(), 1))
@@ -661,8 +669,38 @@ for _n, _s, _g, _c, _seat in _stops.all_parts():
             _flat = _flat.cut(cq.Solid.makeCylinder(1.7, 60.0, cq.Vector(_hx, _hy, -10.0) - _off, cq.Vector(0, 0, 1)))
         assert _s.isValid() and len(_s.Solids()) == 1, _n + ' broke when seated on the deck'
     _stop_parts.append((_n, _s, _g, _c))
+# front deck edge relieved under the lower arms: at the droop stop (psi of parts/stops.py droop_psi, also the lean limit's low side) the arm came
+# 0.97 mm from the deck's top edge; the deck is cut by the arm turned DECK_RELIEF_DEG further down (about 1.8 mm more at the edge)
+DECK_RELIEF_DEG = 3.0
+for _sx in (1, -1):
+    _la = [q for n_, q, g_, c_ in _wparts if n_ == 'Lower arm %d' % _sx][0]
+    _lp = _la.moved(_wb._loc_axis((_sx * _wb.XI, 0, _wb.ZL), (0, 1, 0), _stops.droop_psi(_sx) + _sx * DECK_RELIEF_DEG))
+    _v0 = _flat.Volume(); _flat = _big(_flat.cut(_lp.moved(cq.Location(-_off))))
+    print('deck edge relief under lower arm', _sx, 'removed mm3', round(_v0 - _flat.Volume(), 1))
 assert _flat.isValid() and len(_flat.Solids()) == 1, 'head screw holes broke the flat deck'
 _dfn.obj = _flat
+# Sill fixing of the Front shell (November 27): ISO 10642 M3 from under the deck, head flush in the deck underside, into an insert in a tab on the shell's
+# inner skin. World positions (x, y); the deck holes are cut here, the tabs and inserts in the shell fixing block further down.
+SILL_FIX_X = 50.0
+SILL_FIX = ((1, -80.0), (1, -20.0), (-1, -20.0))   # (side, world y): no front fixing on the -x side, the receiver box fills that deck margin (y -120.5 .. -69.9, x to -52.7)
+from soma.fasteners import Screw as _Scr0
+_sill_screws = []
+for _sx, _sy in SILL_FIX:
+    _dn = _dfn if _sy < -60.0 else _drn            # front deck ahead of the lap (y -69 world), rear deck behind it
+    _d = _ob0(_dn)
+    if True:
+        _xc, _yc = _sx * SILL_FIX_X, _sy - _off.y          # chassis frame
+        _seg = _d.intersect(cq.Solid.makeCylinder(0.05, 200.0, cq.Vector(_xc, _yc, -80.0), cq.Vector(0, 0, 1)))
+        _zs = [v.Z for v in _seg.Vertices()]
+        assert _zs, 'sill fixing: no deck at x %.1f y %.1f' % (_sx * SILL_FIX_X, _sy)
+        _zb, _zt = min(_zs), max(_zs)
+        _s0 = _Scr0("ISO 10642", "M3x10", at=(_xc, _yc, _zb), direction="+Z")
+        _d = _d.cut(_s0.clearance_hole())
+        assert _d.isValid() and len(_d.Solids()) == 1, 'sill fixing broke the deck'
+        _sill_screws.append((_s0.translate((_off.x, _off.y, _off.z)), _sx, _sy, _zt + _off.z))
+    _dn.obj = _d
+    if _dn is _dfn: _flat = _d
+print('sill fixing: %d deck holes (ISO 10642 M3 countersunk from below)' % len(_sill_screws))
 # Edge break of every printed part that moves or carries a moving joint (owner, November 24; parts/util.py chamfer_moving: EDGE_OUT outside,
 # EDGE_BORE on bore entries, nothing on gear or pulley teeth). NOT the traced drivetrain blocks (w3 pillow, w3 rbc, w3 rring hub): they are faceted
 # meshes from parts/chassis_ref.step; the chamfer took 8 of 24 edges on the pillow block and crashed the kernel (segmentation fault) on the carrier.
@@ -683,6 +721,7 @@ if CHAMFER_MOVING:
     for _n in list(_ch.objects.values()):
         if _nn(_n) in _CHM_NODES and _n.obj is not None: _chm_obj(_n, _nn(_n))
 add_part('Chassis', _ch, alpha=1, color=(0.55, 0.57, 0.60))
+_UPPER_ARMS = {}   # registered upper arms (for the up stop pads under the cage brace)
 for _n, _s, _g, _c in _wparts + _stop_parts:
     if _n.startswith(_FEM_NO_CHAMFER):          # FEM diagnosis only (environment FUGU_FEM_NO_CHAMFER): the part without any edge break
         pass
@@ -690,8 +729,10 @@ for _n, _s, _g, _c in _wparts + _stop_parts:
         _s = _chm(clean_registered(_s), _n, bore=0.0)
     elif CHAMFER_MOVING and _n.startswith(_CHM_PARTS):
         # cleaned first, then chamfered; add_part's clean skips chamfered shapes: OCC's clean() crashed (segmentation fault) on the chamfered upper arm
-        _s = _chm(clean_registered(_s), _n)
+        # upper arm: edges under 4 mm stay sharp (the 2 to 4 mm edges at the apex nose left 0.0018 mm edges after the break: the FEM mesh failed as built)
+        _s = _chm(clean_registered(_s), _n, **({'min_len': 4.0} if _n.startswith('Upper arm') else {}))
     add_part(_n, _s, group=_g, alpha=1, color=_c)
+    if _n in ('Upper arm 1', 'Upper arm -1'): _UPPER_ARMS[int(_n.rsplit(' ', 1)[-1])] = _s
 # Rear swingarm group rotates about its pivot to carry the bigger rear tire; the axle rises with the tire radius.
 # Redesigned as one printable high-strength part (parts/swingarm.py): twin ladder-truss plates around the belt, arch over the top ending in twin shock ears.
 from parts.swingarm import make_rear_arm
@@ -779,7 +820,8 @@ def _m6_clevis_bolt(c, half_span):
     nut_dome = _cyl(4.5, 1.5, c - _X * (half_span + 6.0), _X)
     return shank.fuse(head).fuse(nut_hex).fuse(nut_dome).clean()
 
-_pin_lo = _m6_clevis_bolt(_eb, 10.4)   # M6 bolt + locknut clamping the lower swingarm clevis ears (|x| = 4.4..10.4 mm)
+from parts.swingarm import EAR_GAP as _EG, EAR_T as _ET
+_pin_lo = _m6_clevis_bolt(_eb, _EG / 2 + _ET)   # M6 bolt + locknut clamping the lower swingarm clevis ears (|x| = 4.4..12.8 mm)
 add_part('M6 shock pin (lower)', _pin_lo, group='Chassis', alpha=1, color=(0.78, 0.80, 0.84))
 # No separate tower: the shock top pin is carried by the cage's overhead double-shear clevis bracket (|x| = 4.4..12.0 mm).
 _pin = _m6_clevis_bolt(_et, 12.0)      # M6 bolt + locknut clamping the upper cage clevis ears (|x| = 4.4..12.0 mm)
@@ -844,13 +886,76 @@ for _sx, _w in _liners.items():
     if _near.Volume() > 0.01:
         for _d in ((0, 0, 0), (_g, 0, 0), (-_g, 0, 0), (0, _g, 0), (0, -_g, 0), (0, 0, _g), (0, 0, -_g)):
             _w = _w.cut(_near.translate(cq.Vector(*_d)))
+    if STEALTH and not isinstance(_sx, tuple) and LINER_CORNER_R:   # wheel-well liner: kept out of a small ball at the outer hood corner (SHOULDER), where
+        # the hood, cheek and flank planes meet: its fuse there left a fan of 0.02 to 0.57 mm2 faces (the ball lies inside the 3 mm wall at that corner)
+        _w = _w.cut(cq.Solid.makeSphere(LINER_CORNER_R, cq.Vector(_sx * abs(_ss.SHOULDER[0]), _ss.SHOULDER[1], _ss.SHOULDER[2])))
     _w = strip_dust(_w.clean(), min_volume=30.0)
     _f0 = _shells['Front shell']
     _f1 = strip_dust(_f0.fuse(_w).clean(), min_volume=1500.0)
     assert _f1.isValid() and len(_f1.Solids()) == 1 and _f1.Volume() > _f0.Volume(), 'wheel-well liner did not fuse into the front shell (%d solids)' % len(_f1.Solids())
     print('wheel-well liner' if not isinstance(_sx, tuple) else 'arch side panel' if _sx[0] == 'panel' else 'arm tunnel frame', _sx, 'wall mm3', round(_w.Volume(), 1), 'added mm3', round(_f1.Volume() - _f0.Volume(), 1))
     _shells['Front shell'] = _f1
+# shoulder seam region (November 26): the liner fuses leave 0.00 mm2 faces where the liner's clip planes meet the skin's creases (both ends of the
+# shoulder edge, 88 / 90, -228 / -208, z 134.2); one more flat-face merge after the last fuse folds them into their planes
+if STEALTH and EXACT_ARCH_CHAMFER: _shells['Front shell'] = _ss.exact_arch_chamfer(_shells['Front shell'])   # after the liners, which reach the rim
+if STEALTH: _shells['Front shell'] = _unify_flat(_shells['Front shell'], 'Front shell (after liners)', volume_tol=0.001, max_tol=0.01)   # pinned at 0.01: the 0.1 merge flips between accepted (+88 mm3) and a -1867 mm3 collapse as the hull changes
+# Shell fixing (November 27): the Front shell is screwed to the cage's two shell bosses (B upright, y 38), which carry M3 heat-set inserts (parts/cage.py
+# BOSS_INSERT). Per boss: a pad on the inner skin out to SHELL_PAD_GAP off the boss face, a clearance hole on the boss axis and a counterbore deep enough
+# that the ISO 7380 button head sits below the slanted skin (31 deg to the axis) all round; screw length picked for the grip and the 4 mm insert.
+SHELL_PAD_D, SHELL_PAD_GAP, SHELL_HEAD_SINK = 14.0, 0.2, 0.2
+from soma.fasteners import Screw as _Screw, pick_length as _pick_length
+import parts.cage as _cage_bosses
+_shell_screws = []
+if STEALTH and SHOW_CAGE:
+    import math as _m
+    for (_bx, _by, _bz, _sx, _br) in _cage_bosses.BOSS_LOG:
+        _face = _bx + _sx * _br
+        _f = _shells['Front shell']
+        def _skin_x(y, z, _f=_f, _sx=_sx, _face=_face):      # outer skin along the axis direction at (y, z): the far end of the first wall from the boss face
+            seg = _f.intersect(cq.Solid.makeCylinder(0.02, 40.0, cq.Vector(_face, y, z), cq.Vector(_sx, 0, 0)))
+            xs = [v.X for v in seg.Vertices()]
+            return (max(xs) if _sx > 0 else min(xs)) if xs else None
+        _probe = _Screw("ISO 7380", "M3x10", at=(0, 0, 0))
+        _rc = (_probe.head_diameter + 0.6) / 2
+        _rim = [_skin_x(_by + _rc * _m.cos(a), _bz + _rc * _m.sin(a)) for a in [k * _m.pi / 8 for k in range(16)]]
+        assert all(v is not None for v in _rim), 'shell fixing: no shell wall on the boss axis at y %.1f' % _by
+        _top = (min(_rim) if _sx > 0 else max(_rim)) - _sx * SHELL_HEAD_SINK          # head top: below the skin everywhere on the counterbore rim
+        _seat = _top - _sx * _probe.head_height
+        _grip = abs(_seat - _face)
+        _L = _pick_length("ISO 7380", "M3", _grip + 2.0, _grip + 4.0)
+        _scr = _Screw("ISO 7380", "M3x%g" % _L, at=(_seat, _by, _bz), direction=('-X' if _sx > 0 else '+X'))
+        _pad = cq.Solid.makeCylinder(SHELL_PAD_D / 2, 40.0, cq.Vector(_face + _sx * SHELL_PAD_GAP, _by, _bz), cq.Vector(_sx, 0, 0)).intersect(_ss.outer_solid(inset=1.0))
+        _cb = cq.Solid.makeCylinder(_rc, 30.0, cq.Vector(_seat, _by, _bz), cq.Vector(_sx, 0, 0))
+        _f = _f.fuse(_pad).clean().cut(_scr.clearance_hole()).cut(_cb).clean()
+        assert _f.isValid() and len(_f.Solids()) == 1, 'shell fixing broke the Front shell'
+        _shells['Front shell'] = _f
+        _shell_screws.append(_scr)
+        print('shell fixing: boss face x %.2f, skin on the rim x %.2f..%.2f, head top %.2f, grip %.2f mm, screw ISO 7380 M3x%g' % (_face, min(_rim), max(_rim), _top, _grip, _L))
 add_part('Front shell',_shells['Front shell'],color=BODY,group='Print shell')
+SILL_TAB_X0, SILL_TAB_W, SILL_TAB_H, SILL_TAB_GAP = 46.0, 12.0, 7.0, 0.1
+if STEALTH:
+    _f = _shells['Front shell']
+    _deck_all = _ob0(_dfn).moved(cq.Location(_off)).fuse(_ob0(_drn).moved(cq.Location(_off)))
+    for (_s0, _sx, _sy, _zt) in _sill_screws:
+        _x0, _x1 = sorted((_sx * SILL_TAB_X0, _sx * 75.0))
+        _tab = cq.Solid.makeBox(_x1 - _x0, SILL_TAB_W, SILL_TAB_H + 1.0, cq.Vector(_x0, _sy - SILL_TAB_W / 2, _zt - 1.0))
+        _tab = _tab.intersect(_ss.outer_solid(inset=1.0)).cut(_deck_all.translate(cq.Vector(0, 0, SILL_TAB_GAP)))   # inside the skin, 0.1 mm off the deck top
+        _tab = max(_tab.Solids(), key=lambda q: q.Volume())
+        _f = _f.fuse(_tab).clean()
+        _f = _f.cut(cq.Solid.makeCylinder(_cage_bosses.INSERT_M3_POCKET_D / 2, 5.0, cq.Vector(_sx * SILL_FIX_X, _sy, _zt), cq.Vector(0, 0, 1))).clean()   # M3 x 4 insert from below
+        assert _f.isValid() and len(_f.Solids()) == 1, 'sill tab broke the Front shell at y %.1f' % _sy
+    _shells['Front shell'] = _f
+    print('sill fixing: %d tabs on the Front shell' % len(_sill_screws))
+for _k, _scr in enumerate(_shell_screws): add_part('Shell screw %d' % (_k + 1), _scr, group='Hardware')
+for _k, (_s0, _sx, _sy, _zt) in enumerate(_sill_screws): add_part('Sill screw %d' % (_k + 1), _s0, group='Hardware')
+UP_STOPS = True    # up stop pads under the cage brace (the brace is the lean stop: the front hoop legs carry its 257 N, analyses/cage_upstop.py, NOTES)
+if UP_STOPS and SHOW_CAGE and len(_UPPER_ARMS) == 2:   # up stops (lean stops): TPU saddles bonded under the cage's front brace (parts/stops.py up_stop_pad)
+    for _sx in (1, -1):
+        _up, _upc, _upd, _pilot, _ups = _stops.up_stop_pad(_sx, _UPPER_ARMS[_sx], _cage)
+        assert _up.intersect(_cage).Volume() < 0.01, 'up stop pad overlaps the cage'
+        _cage = _cage.cut(_pilot)       # M2 pilot hole for the pad's screw
+        print('up stop pad', _sx, 'mm3', round(_up.Volume(), 1), 'at', tuple(round(v, 1) for v in _upc), 'arm to brace at the end pose %.2f mm' % _upd, 'arm psi %.2f' % _stops.up_psi(_sx), 'screw at', tuple(round(v, 1) for v in _ups))
+        add_part('Up stop pad %d' % _sx, _up, group='Chassis/Stops', alpha=1, color=(0.05, 0.05, 0.05))
 if SHOW_CAGE: add_part('Cage', _cage, color=(0.05, 0.05, 0.06), group='Cage')   # matt black so it disappears behind the shell windows
 if _cabin and SHOW_CAGE:   # roof plate on the cage's roof frame (parts/roof_plate.py)
     from parts.cage import cabin_nodes as _cabn, CABIN_BEAM as _CBM, _half as _hf

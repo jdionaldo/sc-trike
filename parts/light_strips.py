@@ -258,7 +258,8 @@ TAIL_SCREW_X = 16.0      # mm from the centre line: clear of the LED sockets (x 
 TAIL_SCREW_V = -1.0      # mm along the lens face from its centre (+ is down): keeps the stub above the housing floor
 SCREW_D = 3.4            # M3 clearance
 CSK_D = 6.3              # countersink diameter at the seat floor (M3 flat head 5.7 + clearance)
-INSERT_D, INSERT_DEPTH = 4.2, 5.0   # M3 heat-set insert pocket (insert OD 4.6 x 4 mm long)
+from parts.params import INSERT_M3_D
+INSERT_D, INSERT_DEPTH = INSERT_M3_D, 5.0   # M3 heat-set insert pocket (insert OD 4.2 x 4 mm long)
 TAIL_PAD_R, TAIL_PAD_L = 4.5, 3.5   # boss on the inside of the housing wall under the screw head
 TAIL_STUB_R = 4.0        # mm: stub on the cross tube
 HEAD_UNDER = 0.4         # mm: the screw head's highest point stays this far under the lens seat floor

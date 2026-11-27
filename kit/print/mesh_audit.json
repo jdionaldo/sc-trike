@@ -6,11 +6,11 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 158151.8,
-  "overhang": 4001.0,
-  "floating": 81.78,
+  "volume": 181127.4,
+  "overhang": 6328.4,
+  "floating": 82.89,
   "extents": [
-   181.5,
+   187.0,
    163.1,
    168.9
   ],
@@ -23,13 +23,13 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 177626.7,
-  "overhang": 5513.5,
+  "volume": 196344.8,
+  "overhang": 5530.9,
   "floating": 0.16,
   "extents": [
    196.3,
    125.9,
-   178.1
+   187.2
   ],
   "fits_bed": true
  },
@@ -40,13 +40,13 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 66167.1,
-  "overhang": 1490.0,
+  "volume": 69330.7,
+  "overhang": 1873.0,
   "floating": 0.0,
   "extents": [
-   73.4,
-   79.2,
-   134.1
+   68.9,
+   78.9,
+   124.9
   ],
   "fits_bed": true
  },
@@ -91,8 +91,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 94786.5,
-  "overhang": 658.1,
+  "volume": 95074.2,
+  "overhang": 804.6,
   "floating": 0.0,
   "extents": [
    21.2,
@@ -176,8 +176,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 43938.4,
-  "overhang": 2113.1,
+  "volume": 44009.0,
+  "overhang": 2104.9,
   "floating": 0.0,
   "extents": [
    75.1,
@@ -193,8 +193,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 11672.5,
-  "overhang": 595.9,
+  "volume": 11694.6,
+  "overhang": 593.2,
   "floating": 0.0,
   "extents": [
    25.6,
@@ -261,13 +261,13 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 133903.5,
-  "overhang": 8361.0,
+  "volume": 138327.1,
+  "overhang": 8339.0,
   "floating": 0.0,
   "extents": [
-   78.8,
+   78.7,
    149.8,
-   90.4
+   92.8
   ],
   "fits_bed": true
  },
@@ -533,8 +533,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 102697.7,
-  "overhang": 3263.9,
+  "volume": 102541.1,
+  "overhang": 3311.0,
   "floating": 15.7,
   "extents": [
    83.2,
@@ -686,13 +686,13 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 4045.7,
+  "volume": 5864.7,
   "overhang": 0.0,
   "floating": 0.0,
   "extents": [
    24.2,
-   63.0,
-   15.8
+   62.5,
+   11.1
   ],
   "fits_bed": true
  },
@@ -737,8 +737,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 9101.7,
-  "overhang": 540.9,
+  "volume": 9175.1,
+  "overhang": 534.3,
   "floating": 0.0,
   "extents": [
    22.2,
@@ -788,8 +788,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 2585.3,
-  "overhang": 166.6,
+  "volume": 2598.3,
+  "overhang": 165.3,
   "floating": 0.0,
   "extents": [
    73.4,
@@ -805,8 +805,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 2585.3,
-  "overhang": 166.6,
+  "volume": 2598.3,
+  "overhang": 165.3,
   "floating": 0.0,
   "extents": [
    73.4,
@@ -856,9 +856,9 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 47001.8,
-  "overhang": 1742.6,
-  "floating": 384.18,
+  "volume": 49785.7,
+  "overhang": 1792.3,
+  "floating": 320.94,
   "extents": [
    63.3,
    47.7,
@@ -907,12 +907,12 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 34630.5,
-  "overhang": 375.3,
+  "volume": 35132.9,
+  "overhang": 322.8,
   "floating": 0.0,
   "extents": [
    89.0,
-   57.6,
+   58.4,
    38.0
   ],
   "fits_bed": true
@@ -924,12 +924,12 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 34629.8,
-  "overhang": 375.3,
+  "volume": 35132.2,
+  "overhang": 322.8,
   "floating": 0.0,
   "extents": [
    89.0,
-   57.6,
+   58.4,
    38.0
   ],
   "fits_bed": true
@@ -941,8 +941,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 18753.2,
-  "overhang": 181.1,
+  "volume": 18781.2,
+  "overhang": 177.9,
   "floating": 0.0,
   "extents": [
    88.2,
@@ -958,8 +958,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 18753.2,
-  "overhang": 181.1,
+  "volume": 18781.2,
+  "overhang": 177.9,
   "floating": 0.0,
   "extents": [
    88.2,
@@ -992,8 +992,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 17962.9,
-  "overhang": 924.0,
+  "volume": 18225.2,
+  "overhang": 899.4,
   "floating": 0.0,
   "extents": [
    48.4,
@@ -1009,8 +1009,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 17980.0,
-  "overhang": 924.4,
+  "volume": 18242.3,
+  "overhang": 899.9,
   "floating": 0.0,
   "extents": [
    48.4,
@@ -1043,8 +1043,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 2030.2,
-  "overhang": 37.3,
+  "volume": 2042.4,
+  "overhang": 35.6,
   "floating": 0.0,
   "extents": [
    10.4,
@@ -1060,8 +1060,8 @@
   "bodies": 1,
   "cavities": 0,
   "slivers": 0,
-  "volume": 2030.2,
-  "overhang": 37.0,
+  "volume": 2042.4,
+  "overhang": 35.7,
   "floating": 0.0,
   "extents": [
    10.4,
@@ -1135,6 +1135,40 @@
    12.0,
    12.0,
    5.9
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU8L",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 232.8,
+  "overhang": 2.5,
+  "floating": 0.0,
+  "extents": [
+   10.4,
+   12.0,
+   12.0
+  ],
+  "fits_bed": true
+ },
+ {
+  "name": "SU8R",
+  "watertight": true,
+  "winding": true,
+  "bodies": 1,
+  "cavities": 0,
+  "slivers": 0,
+  "volume": 232.8,
+  "overhang": 2.5,
+  "floating": 0.0,
+  "extents": [
+   10.4,
+   12.0,
+   12.0
   ],
   "fits_bed": true
  }

@@ -234,6 +234,22 @@
      "infill": "100%",
      "support": "off",
      "slot": 4
+    },
+    {
+     "stl": "stl/SU8L.stl",
+     "name": "SU8L",
+     "walls": 3,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
+    },
+    {
+     "stl": "stl/SU8R.stl",
+     "name": "SU8R",
+     "walls": 3,
+     "infill": "100%",
+     "support": "off",
+     "slot": 4
     }
    ]
   },

@@ -18,7 +18,12 @@ import os
 from soma.fem import Study
 _MESH = float(os.environ["FEM_MESH"]) if os.environ.get("FEM_MESH") else 1.5   # FEM_MESH: mesh size override for convergence runs
 # the shock force is applied on the outer side face of each fork cheek (the pin bore faces cannot be selected in the mesh)
+# Load basis (NOTES, November 26): car 3.09 kg from the model (sliced kit 1866 g + bought parts), CG at y -41.4: 61.3 % front, 38.7 % rear;
+# landing 8.5 g (0.30 m drop stopped over the 35 mm wheel travel). The loads below were written for 2.6 kg / 60 %: K scales them.
+K = 1.216   # front wheel 79.0 N for 65 N: 3.09 kg x 0.613 / 2 x 9.81 x 8.5 / 65
 study = Study("Upper wishbone, one-wheel landing: 65 N up + 26.5 N in at the ball, 254.6 N shock at the post eye", material="PETG", safety=2, mesh=_MESH)   # 2.0 gave 10 distorted elements at the edge breaks (Nov 24)
+_force = study.force
+study.force = lambda part, N, **kw: _force(part, N=tuple(K * n for n in N), **kw)
 # supports as the pivot rod gives them: the bore carries the radial loads (x, z), the two thrust collars only hold the arm along the rod (y)
 study.fix("Upper arm 1", faces="%CYLINDER", near=(15.0, -177.2, 73.1), axes="xz")
 study.fix("Upper arm 1", near=(15.0, -189.16, 74.5), axes="y")

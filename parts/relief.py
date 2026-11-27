@@ -132,6 +132,7 @@ def wheel_well_liners():
 # wedge faces showed. Now one prism along x makes the opening through skin and liner: its section is the octagon (support lines at 0, 45, 90 and
 # 135 deg in the y-z plane) around the upper arm's travel envelope outboard of ARM_TUNNEL_X0, and a frame of LINER_WALL around it joins liner and
 # skin, so the opening reads as one framed aperture with straight facets.
+TUNNEL_FRAME_FLUSH = True  # arm tunnel frame clipped flush with the skin's bevelled outer boundary (False: 1 mm inside the outer face)
 ARM_TUNNEL_X0 = 64.0       # inner face of the wheel-well liner at the arm (the raw liner starts at x 64.9 there)
 
 
@@ -160,7 +161,9 @@ def arm_tunnels():
             return p if s > 0 else p.mirror('YZ')
 
         cutter = prism(0.0, x0)
-        frame = prism(LINER_WALL, ARM_TUNNEL_X0).cut(cutter).intersect(ss._skin_inset(1.0))
+        # clipped by the skin's own bevelled boundary (as the wheel-well liners, November 27): clipped 1 mm inside the outer face, its inset plane met the
+        # cheek's lower facet and the arch top in a 0.13 mm2 sliver at (77, -227, 102)
+        frame = prism(LINER_WALL, ARM_TUNNEL_X0).cut(cutter).intersect(ss.outer_solid(bevel=True) if TUNNEL_FRAME_FLUSH else ss._skin_inset(1.0))
         for k in ss.arch_cut() + wishbone_relief_tools(kinds=('knuckle', 'tyre'), sides=(s,)):
             frame = frame.cut(k)
         out[s] = (cutter, frame.clean())

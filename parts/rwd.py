@@ -9,6 +9,7 @@ Everything is built in the chassis reference frame (world = ref + (0, CHASSIS_Y,
 """
 import math
 import cadquery as cq
+from parts.params import INSERT_M3_D
 
 # stand-ins that only served the front drive or the centre differential (names as in parts/chassis_ref.step)
 REMOVE = ['b front pinion shaft', 'b front ring', 'mock fdiff carrier', 'w3 fdc upper', 'diff out 1', 'diff out -1',
@@ -78,7 +79,7 @@ def pivot_block(sx, pivot, deck):
     blk = blk.cut(cq.Solid.makeCylinder(AXLE_D / 2, 200, cq.Vector(-100, pivot[0], pivot[1]), cq.Vector(1, 0, 0)))
     zb = blk.BoundingBox().zmin
     for xs, ys in screw_xy(sx, pivot):
-        blk = blk.cut(cq.Solid.makeCylinder(2.1, 6.0 + 3.0, cq.Vector(xs, ys, zb - 3.0), cq.Vector(0, 0, 1)))
+        blk = blk.cut(cq.Solid.makeCylinder(INSERT_M3_D / 2, 6.0 + 3.0, cq.Vector(xs, ys, zb - 3.0), cq.Vector(0, 0, 1)))
     assert blk.isValid() and len(blk.Solids()) == 1, 'pivot block broke'
     return blk
 

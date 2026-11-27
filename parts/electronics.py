@@ -40,7 +40,8 @@ LEG_Y = (-104.0, -74.0)
 PAD_X = (20.0, 28.0)     # foot pad around the inserts
 PAD_H = 8.0              # pad height above the deck
 BEAM_Y, BEAM_Z0 = (-80.0, -74.0), 60.0   # cross beam between the legs, above the servo (top z 54.7)
-INSERT_R, INSERT_D = 2.1, 7.0            # M3 heat-set insert bore
+from parts.params import INSERT_M3_D
+INSERT_R, INSERT_D = INSERT_M3_D / 2, 7.0   # M3 heat-set insert bore
 HOLE_R = 1.7                             # M3 clearance through the deck
 
 RX_IN = (15.6, 33.2)     # receiver space x, y between the side walls and the pillars (receiver 15 x 24.6 plus 8 mm for the plugs)

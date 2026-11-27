@@ -19,7 +19,7 @@ The owner asked to "make sure i can either print this whole kit or use a steel p
 | Part | Printed version | Off-the-shelf metal version | Interface (both) | Status |
 |---|---|---|---|---|
 | Tie rod (2) | ST3L / ST3R, options plate. PETG body D7 with D7.8 x 6 end collars, one M3 insert each (cup shank clearance D4.0 x 13). Strength (hand calculation, below): safety 8.1 at the servo's stall load. front_check with the printed rods (PRINTED_TIE=1): 0 overlaps at rest and in the poses, nothing under 1 mm outside the whitelist (a D9 collar came 0.47 mm from the cage, hence D7.8) | Secraft SEC349 SUS303 M3 turnbuckle, 80 mm, R/L thread, rod 5.0 mm, 15 mm thread each end. https://macgregor.co.uk/secraft/SEC349.htm (pack of 2, price not on the page). Alt. Gator RC M3 titanium turnbuckle 80 mm, $8.99 for 2 | 93 mm ball centre to ball centre, M3 ball cups for 6.8 mm balls on both ends | metal VERIFIED (length, thread); printed passes 2 by hand calculation, not FEM |
-| Steering horn (1) | ST1: PETG T horn, 25T spline in a tall hub, balls 51 mm out (HORN_L) | Hudy HUD293509 aluminium 25T double arm, threaded 3 mm holes, $19.55. The model's HORN_METAL option is a 25T disc with the printed T bar bolted on | 25T servo spline; ball studs at the horn ends 51 mm from the spline centre | metal ASSUMED: no listing gives the hole radius, so a bought arm will not put the balls at 51 mm by itself; use HORN_METAL (disc plus printed bar) |
+| Steering horn (1) | No longer a print option: the fully printed horn's 25T spline shears at the servo's stall torque (hand check: about 17 MPa on D5.1 x 4.3, safety about 0.6). Kept in `../do_not_print/` only | Buy the aluminium 25T arm Hot Racing SH25TH01 ($10.88, HobbyETC, opened 2026-11-25: M3 holes at 16 and 20 mm, 5 mm offset) and print the T bar ST1, bolted on with 2 x M3 x 12 in slots of +-1 mm (the 16 / 20 mm are read as radii from the spline centre: ASSUMED until measured). Bar at stall: safety 2.8 at the inner bolt, 2.5 at the outer, 4.0 beyond the arm; bolt bearing 1.4 MPa (hand) | 25T servo spline; ball studs 51 mm from the spline centre | metal arm VERIFIED (spline, hole distances), radii ASSUMED. This row is now "buy the arm, print the bar" |
 | Heave bump stop (1) | SU7: TPU 95A sleeve on the shock shaft | JConcepts JCO2662 rubber up-travel limiters, 10 mm long, fit 3-3.5 mm shafts, $10.20 for 8. https://www.amainhobbies.com/jconcepts-monster-truck-suspension-uptravel-limiters-8-jco2662/p717482 | on the 3-3.5 mm shock shaft at the eye neck; trim it to the SU7 length | VERIFIED |
 
 ### Printed tie rod: strength (hand calculation, same loads as the steel rod)
@@ -72,6 +72,6 @@ Result: above 2 on every line, even at the old 101 N. The steel turnbuckle stays
 
 ## Counts
 
-- **Both paths:** 3 parts (tie rod, steering horn, heave bump stop). The metal horn is ASSUMED, because its hole radius is not on the listing.
+- **Both paths:** 2 parts (tie rod, heave bump stop). The steering horn is now bought arm + printed T bar (no all-printed horn): its hole radii are ASSUMED until measured.
 - **Print only:** 14 rows (25 printed files counting L/R and the block halves), 5 of them with a machinable interface in `interfaces.md`.
 - **Buy only:** 13 rows. A printed fallback is offered for one: the shims, not recommended.

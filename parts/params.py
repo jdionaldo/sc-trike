@@ -81,3 +81,8 @@ REAR_SHOULDER_PY=215.0  # halfway from the original peak (144) toward the lower 
 SERVO_BACK = 20.0   # mm: front steering servos, horns and tie-rod horn ends moved back (+y); the deck under them is a flat seat
 SERVO_TILT_DEG = 4.289   # servo and horn tilt about x: parallel to the deck slope (0.9 mm rise per 12 mm toward the rear)
 STEER_OUT = 6.0   # mm: steering servos, horns and tie-rod horn ends moved outboard so a 26.5 mm low-profile servo (AGFRC B44BLS class) clears the front diff housing
+
+# M3 heat-set insert used everywhere in the kit: Adafruit 4255, M3 x 4 mm brass, OD 4.2 (listing opened 2026-11-24, VERIFIED).
+# Pocket: OD - 0.4 (0.2 mm melted in per side, the ratio the ruthex M3 pocket uses: OD 4.6 in D4.04). ASSUMED: print the test coupon first.
+INSERT_M3_OD, INSERT_M3_L = 4.2, 4.0
+INSERT_M3_D = 3.8

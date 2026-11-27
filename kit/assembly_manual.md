@@ -8,16 +8,16 @@ Open `kit/print/bambu/all_plates.3mf` (every plate) or one plate file. Slot 3 = 
 
 | Plate file | Filament | Time | Grams (Bambu slice) | Notes |
 |---|---|---|---|---|
-| plate_01_CH_PETG_1.3mf | PETG | 552 min | 337 | sliced clean |
+| plate_01_CH_PETG_1.3mf | PETG | 562 min | 340 | sliced clean |
 | plate_01_CH_PETG_2.3mf | PETG | 48 min | 18 | sliced clean |
-| plate_02_SU_PETG.3mf | PETG | 403 min | 218 | sliced clean |
-| plate_02_SU_TPU_95A.3mf | TPU 95A | 4 min | 1 | sliced clean |
-| plate_03_ST_PETG.3mf | PETG | 34 min | 16 | sliced clean |
-| plate_04_DT_PETG_1.3mf | PETG | 622 min | 323 | sliced clean |
+| plate_02_SU_PETG.3mf | PETG | 411 min | 222 | sliced clean |
+| plate_02_SU_TPU_95A.3mf | TPU 95A | 6 min | 2 | sliced clean |
+| plate_03_ST_PETG.3mf | PETG | 40 min | 18 | sliced clean |
+| plate_04_DT_PETG_1.3mf | PETG | 632 min | 328 | sliced clean |
 | plate_04_DT_PETG_2.3mf | PETG | 40 min | 21 | sliced clean |
-| plate_05_CG_PETG_1.3mf | PETG | 460 min | 210 | sliced clean |
-| plate_05_CG_PETG_2.3mf | PETG | 679 min | 278 | sliced clean |
-| plate_06_SH_PLA_1.3mf | PLA | 383 min | 184 | sliced clean |
+| plate_05_CG_PETG_1.3mf | PETG | 530 min | 234 | sliced clean |
+| plate_05_CG_PETG_2.3mf | PETG | 680 min | 278 | sliced clean |
+| plate_06_SH_PLA_1.3mf | PLA | 384 min | 184 | sliced clean |
 | plate_06_SH_PLA_2.3mf | PLA | 337 min | 157 | sliced clean |
 | plate_06_SH_PLA_3.3mf | PLA | 98 min | 62 | sliced clean |
 | plate_07_LT_PLA_translucent.3mf | PLA | 27 min | 7 | sliced clean |
@@ -40,8 +40,9 @@ Open `kit/print/bambu/all_plates.3mf` (every plate) or one plate file. Slot 3 = 
 | SU4L, SU4R | Knuckle | Front suspension | PETG | SU2, SU3 (ball studs M3), 6 mm axle pin, tie rod ball stud |
 | SU5L, SU5R | Droop stop | Front suspension | PETG | CH1 (2 x M3 from below into inserts), SU6 |
 | SU6L, SU6R | Droop stop pad | Front suspension | TPU 95A | SU5 (glued) |
+| SU8L, SU8R | Up stop pad (lean stop) | Front suspension | TPU 95A | CG1 front brace (M2 x 8 self-tapping + CA) |
 | SU7 | Heave bump stop | Front suspension | TPU 95A | heave shock shaft |
-| ST1 | Steering horn | Steering | PETG | steering servo, tie rod ball studs |
+| ST1 | Steering horn T bar | Steering | PETG | metal 25T arm Hot Racing SH25TH01 on the servo, tie rod ball studs |
 | ST2 | Steering servo mount | Steering | PETG | CH1, steering servo |
 | ST3L, ST3R | Tie rod, printed (option) | Steering | PETG | 2 x M3 insert, 2 x ball cup M3 6.8 mm |
 | DT5 | Pillow block lower | Drivetrain housings and rear arm | PETG | DT6 |
@@ -54,7 +55,7 @@ Open `kit/print/bambu/all_plates.3mf` (every plate) or one plate file. Slot 3 = 
 | DT15 | Rear axle pulley 30T GT2 (6 mm belt) | Drivetrain housings and rear arm | PETG | 2GT-300 belt, 8 mm axle |
 | DT16L, DT16R | Front wheel 1.9 in, 6-spoke | Drivetrain housings and rear arm | PETG | 2 x 6x12x4 bearings, 6 mm stub axle, front tyre |
 | DT17 | Rear wheel 2.2 in, 6-spoke | Drivetrain housings and rear arm | PETG | 12 mm hex hub, rear tyre |
-| CG1a, CG1b, CG1c | Cage | Cage | PETG | CH1/CH2 (6 x M3 into inserts), SH1, SH2, SH3, rear shock pin |
+| CG1a, CG1b, CG1c | Cage | Cage | PETG | CH1/CH2 (8 x M3 into inserts: 6 rail feet, 2 front hoop legs), SH1, SH2, SH3, rear shock pin, SU8 (M2 screws) |
 | CG2 | Front light contact block | Cage | PETG | CG1 front bridge |
 | CG3 | Roof plate | Cage | PETG | CG1 roof rails |
 | SH1a, SH1b1, SH1b2, SH1c1, SH1c2 | Front shell | Shell | PLA | SH2 (lap flange), SH4, LT1, CG1 bosses |
@@ -104,7 +105,7 @@ Glue the three cage pieces on their pins (a to b to c), let cure 30 min. Press M
 
 ### Step 6: shell (SH1a/b, SH4)
 
-Glue SH1a to SH1b on their pins, then the grille SH4 from inside the nose. Dry-fit over the cage first. Screw M2 into the cage bosses. Check: both front wheels at full lean and full lock clear the arches.
+Glue SH1a to SH1b on their pins, then the grille SH4 from inside the nose. Dry-fit over the cage first. Press an M3 insert into each of the two cage shell bosses (B upright), press M3 inserts into the three sill tabs inside the shell (two on the right, one on the left), set the shell over the cage and fix it with two ISO 7380 M3 x 8 through the counterbores in the flanks (heads sit below the skin) and three ISO 10642 M3 x 10 from under the deck into the sill tabs. Check: both front wheels at full lean and full lock clear the arches.
 
 ### Step 7: lights (LT1, LT2, SH3, CG2)
 

@@ -1,6 +1,6 @@
 # Snapshot
 
-Current state of the local branch shell/defect-sweep at commit e2b6192 (2026-11-25), as one commit without history.
+Current state of the local branch shell/defect-sweep at commit 408750c (2026-11-27); each push is one snapshot commit, without the local history.
 
 Left out (over GitHub's 100 MB file limit, or not ours to publish):
 

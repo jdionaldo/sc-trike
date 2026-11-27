@@ -5,7 +5,7 @@ Reads the STEP only (no model rerun, nothing written). Exits 1 if anything overl
 
 Rest check: every front suspension and steering part, the battery, the receiver, the front wheels and tyres against every other part.
 Pose check: body (head) frame, so the body stays put and only the parts that move against it are placed, with the same Locations as
-lean_front.build().pose(): arms by psi about their pivot rods, wheel groups by the ball displacement and the kingpin steer, tie rods,
+parts/lean_anim.py build().pose(): arms by psi about their pivot rods, wheel groups by the ball displacement and the kingpin steer, tie rods,
 horn, heave shock. Poses: body roll phi x servo horn eta.
 Collision threshold: a common volume above MIN_VOL (0.01 mm3) is an overlap.
 
@@ -33,10 +33,14 @@ V = cq.Vector
 MIN_VOL = 0.01          # mm3, collision threshold
 GROW = 0.2              # mm, bounding box prefilter
 PHIS = (-10.0, 0.0, 10.0)
+import os
+_LEAN = float(os.environ.get('FRONT_LEAN', '0'))      # FRONT_LEAN: check this lean instead of 10 deg (the stops' limit is 14.0 deg at 1.55 mm heave)
+if _LEAN: PHIS = (-_LEAN, 0.0, _LEAN)
 ETAS = (-30.0, 0.0, 30.0)
 import os
 BUMP = float(os.environ.get('FRONT_BUMP', '0'))      # extra wheel travel of both wheels, mm (bump +, droop -)
 SWEEP_PHIS = (-10.0, -5.0, 0.0, 5.0, 10.0)
+if _LEAN: SWEEP_PHIS = (-_LEAN, -_LEAN / 2, 0.0, _LEAN / 2, _LEAN)
 CLEAR = 1.0             # mm, swept clearance rule
 TOUCH = 0.2             # mm, a stop touches its arm at its end pose when closer than this
 CLIP_M = 1.5            # mm, clip box margin around a moving part's swept bounding box
@@ -56,9 +60,13 @@ WHITELIST = [
     ('Heave shock body', 'Heave bump stop', 'heave bump stop: the TPU sleeve meets the shock body at 12 mm heave + 10 deg lean (designed end of travel)', 0.0),
     ('Steer servo', 'Steer horn', 'horn on the servo spline, hub 0.5 mm above the case', 0.45),
     ('Steer servo', 'Steer servo shaft', 'output shaft of the servo', 0.0),
+    ('Steer servo', 'Steer horn metal', 'metal arm on the servo spline, hub 0.5 mm above the case', 0.45),
+    ('Steer servo shaft', 'Steer horn metal', 'metal arm on the servo spline', 0.0),
+    ('Steer horn', 'Steer horn metal', 'printed T bar bolted on the metal arm', 0.15),
 ]
 # travel stops: (stop, arm, end pose as (phi, FRONT_BUMP)); a stop is static (body frame)
 STOPS = [('Droop stop pad {s}', 'Lower arm {s}', lambda s: (-s * 10.0, -8.0)),
+         ('Up stop pad {s}', 'Upper arm {s}', lambda s: (s * 10.0, 12.0)),
          ('Droop stop {s}', 'Lower arm {s}', None)]
 
 
@@ -115,7 +123,7 @@ def overlap(a, b):
 
 
 def moving_groups():
-    """{group id: [part names as in lean_front.py]} of everything that moves against the body."""
+    """{group id: [part names as in parts/lean_anim.py]} of everything that moves against the body."""
     g = {}
     for s in (1, -1):
         g[('wheel', s)] = ['Knuckle %d' % s, 'Axle pin %d' % s, 'Axle nut %d' % s, 'wheel f %d' % s, 'mock tire %d' % s, 'Wheel bearing inner %d' % s, 'Wheel bearing outer %d' % s, 'Axle shim inner %d' % s, 'Axle shim outer %d' % s,
@@ -124,7 +132,7 @@ def moving_groups():
         g[('arm_lo', s)] = ['Lower arm %d' % s, 'Rod end lower %d' % s]
         g[('arm_up', s)] = ['Upper arm %d' % s, 'Rod end upper %d' % s, 'Heave shock pin %d' % s]
         g[('tie', s)] = ['Tie rod %d' % s, 'Tie rod end knuckle %d' % s, 'Tie rod end horn %d' % s]
-    g[('horn', 0)] = ['Steer horn', 'Steer servo shaft'] + ['Steer stud%s horn %d' % (k, s) for k in ('', ' nut') for s in (1, -1)]
+    g[('horn', 0)] = ['Steer horn', 'Steer horn metal', 'Steer servo shaft'] + ['Steer stud%s horn %d' % (k, s) for k in ('', ' nut') for s in (1, -1)]
     g[('shock_b', 0)] = ['Heave shock body']
     g[('shock_s', 0)] = ['Heave shock shaft', 'Heave bump stop']      # the TPU heave stop rides on the shaft (parts/wishbone.py HEAVE_STOP_*)
     return g
@@ -324,7 +332,7 @@ def main():
             else:
                 group_of[k] = gid
     if missing:
-        print('MISSING in the STEP (named in lean_front.py): ' + ', '.join(missing))
+        print('MISSING in the STEP (named in parts/lean_anim.py): ' + ', '.join(missing))
     eye0 = wb.shock_locs(0.0, 0.0)[2]
     pose_hits, worst = 0, {}
     for phi in PHIS:

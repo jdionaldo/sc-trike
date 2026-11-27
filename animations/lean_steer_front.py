@@ -1,6 +1,6 @@
 """Lean steer from the front: same motion as lean_steer.py, camera fixed in front of the nose."""
 from soma.anim import Animation
-import lean_front as lf
+from parts import lean_anim as lf
 
 a = Animation("Lean steer front")
 pose = lf.build(a)

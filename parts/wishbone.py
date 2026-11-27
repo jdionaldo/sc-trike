@@ -48,21 +48,51 @@ YF = HY0 + TS / 2 + 0.4 + BOSS_L / 2      # front leg pivot y
 YR = YF + 16.0                             # rear leg pivot y
 HY1 = YR + BOSS_L / 2 + 0.4 + TS / 2       # rear post centre y
 ROD_D = 6.0
+# Pivot screws: ISO 7379 shoulder screw 6 x 35, M5 x 9.75 thread, head D10 x 4.4 (GWR Fasteners 94656, listing opened 2026-11-25, VERIFIED). The
+# head sits in a counterbore of the rear post (PIV_HEAD_SINK deep, so it stands 2.0 mm proud as before: the horn's ball discs and the tie rods
+# pass behind it); the rear post gets a boss of PIV_BOSS_R around the counterbore for its wall. The 35 mm shoulder then ends 1.16 mm inside the
+# front post, on the top of an M5 heat-set insert (McMaster 94459A774: 5.7 long, hole 6.4, VERIFIED) pressed in from the post's rear face, in a
+# boss of PIV_SEAT_R for its wall. (The 6 x 45 screw listed before put 6.8 mm of thread out through the front post into the skid, and the M5 had
+# nothing to grip in the D6.1 bore; a 4.4 mm head standing proud hit the horn and the tie rods.)
+PIV_SHOULDER, PIV_THREAD, PIV_HEAD = 35.0, 9.75, (10.0, 4.4)
+PIV_HEAD_SINK, PIV_CB_D, PIV_BOSS_R = 2.4, 10.5, 7.5
+PIV_INSERT_D, PIV_INSERT_L = 6.4, 5.7
+PIV_SEAT_R = 6.0
+ARM_APEX_TAPER = True   # upper arm: apex boss as a taper from the tube section (see a_arm)
+STUB_IN_F = 1.2         # front stub flank inside the barrel's end; tried 0.4 (flush): swept clearance to the head under 1 mm, landing 2.07 / 1.75
+POST_FOOT_D = None      # tried 15 (slim foot, flared to 18): stop case 2.36 / 2.15, but landing 1.64 at the foot (the shock bends it)
+POST_DOWN = True        # attempt 3: the upright's d 18 section runs straight down through the arm to its bottom face (at the eye's y its front face
+                        # stood 0.5 mm proud of the front leg's face at x 27: a lip and a notch, stop case 1.77); now one vertical face meets the leg
+POST_FOOT_DY = 0.0      # mm: tried 2.5 (the post then leans: 0.003 mm edges at the fork). Foot offset behind the eye; at 0 the front face crosses the front leg (at the eye's y it
+                        # crossed the leg's front face 0.5 mm proud at x 27: a notch, FEM as built 1.65 in the stop case at (27.1, -190.5, 76))
 APEX_BACK = 9.0       # arm end face to ball centre along x
-HEAD_WEDGE, HEAD_WEDGE_D = 10.0, 8.0   # brace across the front post / upper cross bar corner: legs 10 mm along the bar and the post
+HEAD_WEDGE, HEAD_WEDGE_D = 14.0, HEAD_D   # brace across the front post / upper cross bar corner: legs 14 mm along the bar and the post (was 10, D8: FEM 1.71 at its end on the bar;
+                                         # 12 x D9 left 0.003 mm2 faces at the post / bar corner after the edge break: the mesh failed as built. 14 x D13: none under 0.09)
 BAR_END_R = (6.5, 8.6)   # lower / upper cross bar end radius about the pivot rod: the lower arm's leg stubs come to 7.5 mm from the rod, the upper's to 9.6
 HEAD_TOP = 82.0       # top face of the head (the heave shock passes above it)
 FOOT_X = (22.0, 34.0)  # half length of the front / rear base tube: the lower arm's front leg passes over the front frame outboard of x 23.7 and drops there
+PIV_SEAT_Y = HY1 + TS / 2 - PIV_HEAD_SINK - PIV_SHOULDER   # shoulder end = top of the M5 insert, inside the front post (y)
 HEAD_SCREWS = ((16.0, HY0), (28.0, HY1))   # M3 from below through the deck into inserts in the base tubes (x, y), +x side
 # ---- ball joints (bought): 6.8 mm ball stud, M3, with a ball cup ----
 BALL_R, CUP_OD, CUP_T = 3.4, 10.5, 6.0
 NECK_R, NECK_L, FLANGE_R, FLANGE_T = 1.6, 3.5, 3.5, 2.0
 TAB_Y0 = KY + CUP_T / 2 + NECK_L + FLANGE_T      # knuckle plate: front face (the arm studs screw into it from the front)
+KNUCKLE_HULL = False  # tried: block-to-plate joint as one convex hull: FEM 1.43, a new peak where its top met the plate front (NOTES)
+KNUCKLE_HULL_PT = (110.5, 4.0)
+KNUCKLE_CORNER = True   # rim side: slanted block inboard face + block top sloped into the gusset (one convex fill, see knuckle())
+KNUCKLE_CORNER_UP = ()   # tried (attempt 2): the fill's top run up the plate's outboard end face to z 63: a hull tip there, FEM 0.85 to 0.97
+KNUCKLE_CORNER_CH = 3.0  # attempt 3: 45 deg chamfer prism in the corner of the gusset top (z 57.6) and the plate's outboard end face (x 112.5), y0 .. y0 + 6
+KNUCKLE_CORNER_Y = -212.6   # front end of the slant at x 112.5 (7.6 mm from the kingpin axis)
+# plate thickened forward between the two ball cups, beside the rim block: the block's top corner moves KNUCKLE_FWD[2] mm toward the axle (FEM: the
+# block-to-plate inner corner was the peak at safety 2.0). x from KNUCKLE_FWD[0] to the block, z KNUCKLE_FWD[1] (the cup rings reach z 47.25 / 64.75)
+KNUCKLE_FWD = None   # tried (107.5, (49.5, 63.0), 5.0): flat underside 0.91, sloped 1.52, a new peak where the boss met the block face (NOTES)
+KNUCKLE_FWD_ZIN = 56.0   # the boss's underside rises from zf0 at the block face to this z at its inboard edge (a flat underside notched the block face: FEM 0.91)
 TAB_T = 10.0          # FEM: a 5 mm plate was at safety 0.58 around the upper stud (the stud pries 11 mm ahead of it)
 KNUCKLE_SWEEP_R = 8.3  # the plate's front inboard corner stays inside this radius about the kingpin (the arm end faces are 9 mm from it, 7.2 at their edges in full lean)
 BLOCK_SWEEP_R = 7.3    # the rim block's inboard face, in the lower ball cup's height band, stays outside this radius about the kingpin: the cup ring (r 5.25, 6 mm long)
                        # stays 1 mm and more from it at full lock
-INSERT_POCKET_D, INSERT_DEPTH = 4.2, 5.0   # M3 heat-set insert (OD 4.6 x 4 mm) pocket: insert + 1 mm
+from parts.params import INSERT_M3_D
+INSERT_POCKET_D, INSERT_DEPTH = INSERT_M3_D, 5.0   # M3 heat-set insert (Adafruit 4255, OD 4.2 x 4 mm) pocket: insert + 1 mm
 M3_CLEAR = 3.3
 NUT_AF, NUT_H = 5.5, 4.0
 UPPER_INSERT_Y = 7.5                       # back-set insert pockets of the knuckle's arm studs: from the boss's back face 7.5 mm deep (insert at 7.5..11.5 mm
@@ -84,13 +114,18 @@ HORN_L = 51.0                              # shaft to the ball line: with the 71
 SERVO_SHAFT_Y = HORN_BALL[1] + HORN_L      # the servo lies on the deck behind the head, shaft up, horn pointing forward
 SERVO_BOX = (20.2, 40.8, 26.5)             # x, y, z of the low-profile servo (AGFRC B44BLS class) standing on its base, output shaft up
 SERVO_EAR = (7.0, 2.5, 17.5)               # mounting ears at both ends: length along y, thickness, underside above the servo's base
-HORN_METAL = False                         # True: an aluminium 25T disc horn on the servo (MH_*), the printed T bar on a spacer bolted to it (not built by default)
-MH_R, MH_H, MH_DISC_T, MH_BOLT_R = 12.0, 6.0, 2.5, 8.0   # assumed horn: 25T aluminium disc horn, 24 mm across, 6 mm tall over the hub, M3 tapped holes 16 mm apart
-MH_PAD_R = 7.5                             # printed spacer under the T bar, clamped on the disc (bolt holes at +-MH_BOLT_R)
+HORN_METAL = True                          # aluminium 25T arm on the servo spline (MH_*), the printed T bar on a spacer bolted to its two M3 holes. The printed
+                                           # 25T spline alone (False) shears at the servo's stall torque (hand check: 17 MPa on D5.1 x 4.3, safety about 0.6)
+# Hot Racing SH25TH01 25T aluminium offset arm (HobbyETC listing opened 2026-11-25, 10.88 USD): M3 holes at 16 and 20 mm (VERIFIED as "Distance A 16,
+# B 20"; read here as the radius from the spline centre, ASSUMED), 5 mm offset. Hub D10, arm 7 wide x 3 thick, 24 long: ASSUMED (not on the listing).
+MH_HUB_R, MH_H, MH_ARM_T, MH_ARM_W, MH_ARM_L = 5.0, 6.0, 3.0, 7.0, 24.0
+MH_HOLES = (16.0, 20.0)                    # M3 holes along the arm, toward the ball line (-y)
+MH_PAD_W = 12.0                            # printed spacer under the T bar along the metal arm (bolt holes through it)
+MH_SLOT = 1.0                              # bolt holes slotted +-1 mm along the arm: the 16 / 20 mm hole radii are ASSUMED until measured
 SERVO_SHAFT_IN = 10.2                      # output shaft from the servo's rear end: the servo is turned with its shaft to the rear, so the long horn reaches forward over
                                            # the servo's body and the body stays clear of the motor behind it (rear ear ends at y -78.8, motor from y -69.5)
 SERVO_Z0 = 28.2                            # servo underside (above the deck under it; the cradle fills the wedge)
-HORN_Z0, HORN_T = ZT + CUP_T / 2 + NECK_L + FLANGE_T, 2.5      # the horn's arm lies above the tie rods on a tall hub; the ball studs hang down from it                # horn plate
+HORN_Z0, HORN_T = ZT + CUP_T / 2 + NECK_L + FLANGE_T, 3.5      # the horn's arm lies above the tie rods on a tall hub; the ball studs hang down from it                # horn plate
 ARM_PLATE_Z0, ARM_PLATE_T = ZT - CUP_T / 2 - NECK_L - FLANGE_T - 4.5, 4.5      # steering arm plate on the knuckle (under the tie rod cup)
 
 
@@ -114,7 +149,7 @@ def _fuse(*shapes):
 
 def _stub_y(d, rear):
     """y of a leg stub's centre line: its outer flank lies 1.2 mm inside the barrel's end (the turning arm's bend joint then clears the head's bar ends), so nothing of the joint has to be trimmed."""
-    off = -BOSS_L / 2 + 1.2 + d * 0.44
+    off = -BOSS_L / 2 + (1.2 if rear else STUB_IN_F) + d * 0.44    # front: flush with the barrel's trimmed end (a 0.8 mm step there was the landing low spot)
     return YR - off if rear else YF + off
 
 
@@ -142,23 +177,49 @@ def a_arm(z, upper):
     for rear in (False, True):
         ys = round(_stub_y(d, rear), 1)
         f.tube((XI, ys, z), (STUB_X, ys, z), d); f.tube((STUB_X, ys, z), ap, d)
-    f.add(cyl((ax - 14.0, KY, z), (ax, KY, z), 6.0))   # apex boss for the cup shank
+    if upper and ARM_APEX_TAPER:   # upper arm attempt 1 (November 26): full-section prism over the leg node's nose, then a taper to the r 6 end face;
+        # the round boss stepped down from the 14 mm square (FEM as built: 1.85 / 1.70 there, landing / stop)
+        from parts.tubeframe import hull_solid
+        import math as _m
+        hs, cs = d * 0.44, d * 0.88 * 0.18
+        octo = lambda x_: [(x_, KY + u, z + v) for u, v in ((hs, hs - cs), (hs - cs, hs), (-(hs - cs), hs), (-hs, hs - cs), (-hs, -(hs - cs)), (-(hs - cs), -hs), (hs - cs, -hs), (hs, -(hs - cs)))]
+        rr = 6.0 / _m.cos(_m.pi / 16)
+        f.add(hull_solid(octo(ax - 12.0) + octo(ax - 5.8)))
+        f.add(hull_solid(octo(ax - 5.8) + [(ax, KY + rr * _m.cos(k * _m.pi / 8 + _m.pi / 16), z + rr * _m.sin(k * _m.pi / 8 + _m.pi / 16)) for k in range(16)]))
+    else:
+        f.add(cyl((ax - 14.0, KY, z), (ax, KY, z), 6.0))   # apex boss for the cup shank
     if upper:
         e = SHOCK_EYE; pw = POST_D * 0.88
         for x, ym in zip(POST_X, _PM):
             f.tube((x, round(_leg_y(z, x, False), 1), z), (x, round(_leg_y(z, x, True), 1), z), HEAD_D)      # brace between the legs
-            f.tube((x, ym, z), (e[0], e[1], e[2] + 7.0) if x == POST_X[0] else e, POST_D)   # upright runs 7 mm past the pin, the diagonal ends on it
+            if x == POST_X[0] and POST_FOOT_D:   # upright: a slimmer foot (its front face 1 mm inside the front leg's), flared to POST_D under the fork
+                from parts.tubeframe import hull_solid
+                z1, z2 = z + 16.5, z + 18.5      # flare above the corner wedge's top (z + 16.04) and under the fork (z + 18.8)
+                sq = lambda d_, zz: [(x + u, round(ym, 1) + v, zz) for h_, c_ in ((d_ * 0.44, d_ * 0.88 * 0.18),) for u, v in ((h_, h_ - c_), (h_ - c_, h_), (-(h_ - c_), h_), (-h_, h_ - c_), (-h_, -(h_ - c_)), (-(h_ - c_), -h_), (h_ - c_, -h_), (h_, -(h_ - c_)))]
+                f.tube((x, ym, z), (x, ym, z1), POST_FOOT_D)
+                f.add(hull_solid(sq(POST_FOOT_D, z1) + sq(POST_D, z2)))   # flare: its end faces are the tubes' end faces
+                f.tube((x, ym, z2), (e[0], e[1], e[2] + 7.0), POST_D)
+            else:
+                f.tube((x, ym, z), (e[0], e[1], e[2] + 7.0) if x == POST_X[0] else e, POST_D)   # upright runs 7 mm past the pin, the diagonal ends on it
+                if x == POST_X[0] and POST_DOWN:
+                    from parts.tubeframe import hull_solid
+                    sq = lambda d_, zz: [(x + u, round(ym, 1) + v, zz) for h_, c_ in ((d_ * 0.44, d_ * 0.88 * 0.18),) for u, v in ((h_, h_ - c_), (h_ - c_, h_), (-(h_ - c_), h_), (-h_, h_ - c_), (-h_, -(h_ - c_)), (-(h_ - c_), -h_), (h_ - c_, -h_), (h_, -(h_ - c_)))]
+                    h_ = POST_D * 0.44; xs, ys_ = x, round(ym, 1)
+                    box4 = lambda zz: [(xs + u, ys_ + v, zz) for u in (-h_, h_) for v in (-h_, h_)]
+                    # square corners through the arm (the octagon's 45 deg corner crossed the leg's face at 16 deg: a 0.05 mm edge), ramped into the octagon above
+                    f.add(hull_solid(box4(z - d * 0.44) + box4(z + d * 0.44) + sq(POST_D, z + d * 0.44 + 4.0)))
         # wedge in the inner corner between the upright post and the arm's top (FEM: the sharp corner there was at safety 1.32)
         from parts.tubeframe import hull_solid
-        xi, zt = e[0] - pw / 2, z + d * 0.44
-        f.add(hull_solid([(x_, y_, z_) for y_ in (e[1] - pw / 2, e[1] + pw / 2) for x_, z_ in ((xi - 9.0, zt - 1.0), (xi + 1.0, zt - 1.0), (xi + 1.0, zt + 9.0), (xi - 9.0, zt))]))
+        xi, zt = e[0] - (POST_FOOT_D * 0.88 if POST_FOOT_D else pw) / 2, z + d * 0.44
+        pw_ = POST_FOOT_D * 0.88 if POST_FOOT_D else pw        # the wedge is as wide as the post's foot (its sides continue the foot's)
+        f.add(hull_solid([(x_, y_, z_) for y_ in (round(e[1], 1) - pw_ / 2, round(e[1], 1) + pw_ / 2) for x_, z_ in ((xi - 9.0, zt - 1.0), (xi + 1.0, zt - 1.0), (xi + 1.0, zt + 9.0), (xi - 9.0, zt))]))
     arm = f.build()
     y0, y1 = YF - BOSS_L / 2 + 0.4, YR + BOSS_L / 2 - 0.4       # guard: beside the head's frames (x < 22.5) only the barrel's end collars reach its ends
     arm = arm.cut(box(-20, 22.5, y0 - 30, y0, z - 30, z + 30)).cut(box(-20, 22.5, y1, y1 + 30, z - 30, z + 30))
-    arm = arm.fuse(cyl((XI, YF - BOSS_L / 2, z), (XI, YR + BOSS_L / 2, z), 5.0)).clean()      # round thrust collars: the barrel's ends, proud of the trimmed joint
+    arm = arm.fuse(cyl((XI, YF - BOSS_L / 2, z), (XI, YR + BOSS_L / 2, z), 5.0)).clean()      # round thrust collars: the barrel's ends, proud of the trimmed joint      # round thrust collars: the barrel's ends, proud of the trimmed joint
     arm = arm.cut(cyl((XI, y0 - 2, z), (XI, y1 + 2, z), ROD_D / 2 + 0.1))
     arm = max(arm.Solids(), key=lambda q: q.Volume())
-    arm = arm.cut(cyl((ax - 15.0, KY, z), (ax + 1, KY, z), 2.05))                        # M3 insert / shank
+    arm = arm.cut(cyl((ax - 15.0, KY, z), (ax + 1, KY, z), INSERT_POCKET_D / 2))           # M3 insert / shank
     if upper:
         # fork for the shock eye: a slot around the eye, open upward and outboard (the eye drops in from above) and a channel inboard for the
         # shock's neck. The post tubes below the pocket stay whole, so each cheek is a full 4.4 mm (FEM: a slot down through the posts left
@@ -182,7 +243,7 @@ def ball_cup(c, axis, d):
     d = V(*d).normalized()
     ring = cq.Solid.makeCylinder(CUP_OD / 2, CUP_T, c - a * (CUP_T / 2), a)
     neck = cq.Solid.makeCylinder(2.6, 8.0, c, d)
-    shank = cq.Solid.makeCylinder(1.95, 13.5, c + d * 8.0, d)
+    shank = cq.Solid.makeCylinder(1.45, 13.5, c + d * 8.0, d)   # M3 thread of the rod end (was 3.9: the old D4.1 bore)
     cup = _fuse(ring.fuse(neck), shank).cut(cq.Solid.makeSphere(BALL_R + 0.05, c, angleDegrees1=-90))
     for q in (1, -1):        # relief cone on each face: apex at the ball centre, 52 degrees half angle
         cup = cup.cut(cq.Solid.makeCone(0.05, 0.05 + 6.0 * math.tan(math.radians(52.0)), 6.0, c, a * q))
@@ -208,6 +269,30 @@ def knuckle():
     pieces.append(cyl((WHEEL_IN_X - 0.5, KY, ZC), (142.0, KY, ZC), 8.0))                   # axle boss
     pieces.append(box(WHEEL_IN_X - 0.5, 119.5, y0, y0 + 6.0, ZC + 12.0, ZC + 17.0))        # gusset behind the plate, inside the rim (its far corner is 22.3 from the axle, rim 24)
     pieces.append(box(KX - 7.0, WHEEL_IN_X - 0.5, y1, y1 + TAB_BACK, ZL - 7.0, ZU + 7.0))      # back boss over the plate's full height: both stud inserts sit in it
+    if KNUCKLE_HULL:      # FEM: the block-to-plate inner corner (block top, block inboard end, plate front) was the peak at safety 2.0
+        from parts.tubeframe import hull_solid
+        xa, xb, xp = WHEEL_IN_X - 0.5, 119.5, KNUCKLE_HULL_PT[0]
+        pts = [(x_, y_, z_) for x_ in (xa, xb) for y_ in (KY - 9.0, y1) for z_ in (ZC - 12.0, ZC + 12.0)]      # block
+        pts += [(x_, y_, ZC + 17.0) for x_ in (xa, xb) for y_ in (y0, y0 + 6.0)]                                # gusset top
+        pts += [(xp, y_, z_) for y_ in (y0, y1) for z_ in (ZC + 12.0, ZC + 17.0)]                               # plate end, gusset height
+        pts += [(xp, y0 - KNUCKLE_HULL_PT[1], ZC + 12.0)]                                                       # ahead of the plate
+        pieces.append(hull_solid(pts))
+    if KNUCKLE_FWD:
+        xf, (zf0, zf1), df = KNUCKLE_FWD
+        from parts.tubeframe import hull_solid
+        xo = WHEEL_IN_X - 0.5 + 0.01
+        pieces.append(hull_solid([(x_, y_, z_) for y_ in (y0 - df, y0 + 0.01) for x_, z_ in ((xf, zf1), (xo, zf1), (xo, zf0), (xf, KNUCKLE_FWD_ZIN))]))   # underside sloped up inboard
+    if KNUCKLE_CORNER:   # rim side, attempt 1 (November 26): one convex corner fill where the block, the gusset and the plate front met in a 3D corner
+        # (the peak at safety 2.0 / 1.64 at 79 N). The block's inboard face slants back to the plate front (x 110 at the plate, 112.5 at y -212.6, 7.6 mm
+        # from the kingpin: outside the 7.3 sweep of the lower cup) and the block top slopes up into the gusset, so no vertical faces meet at the block top.
+        from parts.tubeframe import hull_solid
+        yf, zt, zg = KNUCKLE_CORNER_Y, ZC + 12.0, ZC + 17.0
+        pieces.append(hull_solid([(110.0, y0, ZL - 7.0), (110.0, y0, zg), (112.5, yf, ZL - 7.0), (112.5, yf, zt), (119.5, yf, zt), (119.5, y0, zg),
+                                  (110.0, y0 + 3.0, ZL - 7.0), (110.0, y0 + 3.0, zg), (119.5, y0 + 3.0, zg), (119.5, yf, ZL - 7.0), (119.5, y0 + 3.0, ZL - 7.0)]
+                                 + [(112.5, y0 + dy, z) for dy, z in KNUCKLE_CORNER_UP]))
+        if KNUCKLE_CORNER_CH:   # attempt 1 left its peak on that 90 deg edge (2.03 / 1.70 / 1.44 at meshes 2.5 / 1.8 / 1.5): one constant section along y, no tip
+            c_ = KNUCKLE_CORNER_CH
+            pieces.append(hull_solid([(x_, y_, z_) for y_ in (y0, y0 + 6.0) for x_, z_ in ((112.5 - 1.0, zg + c_), (112.5 - 1.0, zg - 1.0), (112.5 + c_, zg), (112.5 + c_, zg - 1.0), (112.5, zg + c_))]))
     sx, sy = STEER_ARM_XY
     arm = cq.Workplane('XY', origin=(0, 0, ARM_PLATE_Z0)).polyline([(KX - 7.0, y0), (KX + 6.5, y0), (KX + 6.5, y1), (sx + 5.0, sy), (sx - 5.0, sy)]).close().extrude(ARM_PLATE_T).val()
     pad = cq.Workplane('XY', origin=(0, 0, ARM_PLATE_Z0)).moveTo(sx, sy).circle(5.0).extrude(ARM_PLATE_T).val()
@@ -257,9 +342,17 @@ def head():
                 x0 = s * XI
                 blk = box(min(x0, x0 + s * 10.0), max(x0, x0 + s * 10.0), y - TS / 2 - 0.2, y + TS / 2 + 0.2, z - TS / 2 - 0.2, z + TS / 2 + 0.2)
                 h = h.cut(blk.cut(cyl((x0, y - TS, z), (x0, y + TS, z), r)))
+    yseat, yb = PIV_SEAT_Y, HY1 + TS / 2
+    for s in (1, -1):
+        for z in (ZU, ZL):
+            h = h.fuse(cyl((s * XI, HY0 - TS / 2 + 0.5, z), (s * XI, HY0 + TS / 2, z), PIV_SEAT_R))      # wall around the M5 insert: the whole front post
+            h = h.fuse(cyl((s * XI, HY1 - TS / 2, z), (s * XI, yb, z), PIV_BOSS_R))                     # wall around the head's counterbore
+    h = h.clean()
     for s in (1, -1):
         for z in (ZU, ZL):
             h = h.cut(cyl((s * XI, HY0 - TS, z), (s * XI, HY1 + TS, z), ROD_D / 2 + 0.05))
+            h = h.cut(cyl((s * XI, yseat - PIV_INSERT_L - 0.5, z), (s * XI, HY0 + TS / 2 + 0.1, z), PIV_INSERT_D / 2))   # M5 insert pocket from the post's rear face, insert top at yseat
+            h = h.cut(cyl((s * XI, yb - PIV_HEAD_SINK, z), (s * XI, yb + 1.0, z), PIV_CB_D / 2))                        # counterbore for the screw head
     assert h.isValid() and len(h.Solids()) == 1, 'head is not one valid solid'
     return h
 
@@ -268,9 +361,11 @@ def pivot_hardware(s):
     """Side s: the two pivot rods (6 mm shoulder screws from the rear: head behind the rear post, thread in the front post): [(name, shape)]."""
     out = []
     for nm, z in (('upper', ZU), ('lower', ZL)):
-        rod = cyl((s * XI, HY0 - TS / 2 + 1.0, z), (s * XI, HY1 + TS / 2, z), ROD_D / 2)
-        hd = cyl((s * XI, HY1 + TS / 2 + 0.05, z), (s * XI, HY1 + TS / 2 + 2.0, z), 4.5)      # low head: the tie rod ends pass 1.5 mm behind it
-        out.append(('Pivot rod %s %d' % (nm, s), _fuse(rod, hd)))
+        yh = HY1 + TS / 2 - PIV_HEAD_SINK                                      # head underside on the counterbore floor
+        rod = cyl((s * XI, PIV_SEAT_Y, z), (s * XI, yh, z), ROD_D / 2)
+        th = cyl((s * XI, PIV_SEAT_Y - PIV_THREAD, z), (s * XI, PIV_SEAT_Y + 0.01, z), 2.45)     # M5 thread in the insert
+        hd = cyl((s * XI, yh + 0.05, z), (s * XI, yh + 0.05 + PIV_HEAD[1], z), PIV_HEAD[0] / 2)
+        out.append(('Pivot rod %s %d' % (nm, s), _fuse(rod, th, hd)))
     return out
 
 
@@ -359,7 +454,9 @@ def servo_parts():
     shaft = cyl((0, SERVO_SHAFT_Y, zt), (0, SERVO_SHAFT_Y, zt + 4.0), 2.5)
     wp = cq.Workplane('XY', origin=(0, 0, HORN_Z0))
     if HORN_METAL:       # printed spacer on the metal horn's disc, the T bar on top: two M3 screws down into the disc's tapped holes
-        hub = cyl((0, SERVO_SHAFT_Y, zt + MH_H + 0.2), (0, SERVO_SHAFT_Y, HORN_Z0 + HORN_T), MH_PAD_R)
+        hub = _fuse(cyl((0, SERVO_SHAFT_Y, zt + MH_H + 0.2), (0, SERVO_SHAFT_Y, HORN_Z0 + HORN_T), MH_PAD_W / 2),
+                    box(-MH_PAD_W / 2, MH_PAD_W / 2, SERVO_SHAFT_Y - MH_ARM_L - 0.5, SERVO_SHAFT_Y, zt + MH_H + 0.2, HORN_Z0 + HORN_T),
+                    cyl((0, SERVO_SHAFT_Y - MH_ARM_L - 0.5, zt + MH_H + 0.2), (0, SERVO_SHAFT_Y - MH_ARM_L - 0.5, HORN_Z0 + HORN_T), MH_PAD_W / 2))
     else:
         hub = cyl((0, SERVO_SHAFT_Y, zt + 0.5), (0, SERVO_SHAFT_Y, HORN_Z0 + HORN_T), 6.5)              # tall hub from the servo's top up to the arm
     bx_, by_ = HORN_BALL
@@ -367,8 +464,10 @@ def servo_parts():
     horn = _fuse(hub, strip, *[wp.moveTo(q * bx_, by_).circle(5.5).extrude(HORN_T).val() for q in (1, -1)])
     if HORN_METAL:
         horn = horn.cut(cyl((0, SERVO_SHAFT_Y, zt), (0, SERVO_SHAFT_Y, HORN_Z0 + HORN_T + 1), 3.0))      # access to the metal horn's centre screw
-        for q in (1, -1):
-            horn = horn.cut(cyl((q * MH_BOLT_R, SERVO_SHAFT_Y, zt), (q * MH_BOLT_R, SERVO_SHAFT_Y, HORN_Z0 + HORN_T + 1), M3_CLEAR / 2))
+        for r in MH_HOLES:     # M3 x 12 from above through the bar and spacer into the arm's threaded holes, slotted along the arm (radius +-MH_SLOT)
+            ya, yb = SERVO_SHAFT_Y - r - MH_SLOT, SERVO_SHAFT_Y - r + MH_SLOT
+            horn = horn.cut(_fuse(cyl((0, ya, zt), (0, ya, HORN_Z0 + HORN_T + 1), M3_CLEAR / 2), cyl((0, yb, zt), (0, yb, HORN_Z0 + HORN_T + 1), M3_CLEAR / 2),
+                                  box(-M3_CLEAR / 2, M3_CLEAR / 2, ya, yb, zt, HORN_Z0 + HORN_T + 1)))
     else:
         horn = horn.cut(cyl((0, SERVO_SHAFT_Y, zt), (0, SERVO_SHAFT_Y, zt + 4.3), 2.55))                # blind bore for the output shaft (spline)
         horn = horn.cut(cyl((0, SERVO_SHAFT_Y, zt + 4.3), (0, SERVO_SHAFT_Y, HORN_Z0 + HORN_T + 1), 1.6))   # horn screw from above
@@ -398,12 +497,16 @@ def m3_nut(xy, z0):
 
 
 def metal_horn():
-    """Assumed aluminium 25T disc horn (HORN_METAL): hub on the spline, disc on top, two M3 tapped holes at +-MH_BOLT_R along x."""
+    """Stand-in of the aluminium 25T arm (HORN_METAL, Hot Racing SH25TH01): hub on the spline, the arm on top of it toward the ball line (-y),
+    two M3 threaded holes at MH_HOLES from the spline centre."""
     zt = SERVO_Z0 + SERVO_BOX[2]
-    c = (0, SERVO_SHAFT_Y)
-    h = _fuse(cyl((0, c[1], zt), (0, c[1], zt + MH_H), 4.5), cyl((0, c[1], zt + MH_H - MH_DISC_T), (0, c[1], zt + MH_H), MH_R))
-    for q in (1, -1):
-        h = h.cut(cyl((q * MH_BOLT_R, c[1], zt), (q * MH_BOLT_R, c[1], zt + MH_H + 1), 1.25))
+    y = SERVO_SHAFT_Y
+    z1 = zt + MH_H
+    h = _fuse(cyl((0, y, zt + 0.5), (0, y, z1), MH_HUB_R), box(-MH_ARM_W / 2, MH_ARM_W / 2, y - MH_ARM_L, y, z1 - MH_ARM_T, z1),
+              cyl((0, y - MH_ARM_L, z1 - MH_ARM_T), (0, y - MH_ARM_L, z1), MH_ARM_W / 2))
+    h = h.cut(cyl((0, y, zt), (0, y, zt + 4.3), 2.55)).cut(cyl((0, y, zt + 4.3), (0, y, z1 + 1), 1.6))   # spline bore, centre screw
+    for r in MH_HOLES:
+        h = h.cut(cyl((0, y - r, z1 - MH_ARM_T - 1), (0, y - r, z1 + 1), 1.25))
     return h
 
 
@@ -416,7 +519,7 @@ def tie_rod(s):
 
 
 PTR_OD, PTR_COLLAR_OD, PTR_COLLAR_L = 7.0, 7.8, 6.0     # printed tie rod option (kit ST3): body as the steel tube, collars at the ends carry the inserts
-PTR_INSERT_D, PTR_INSERT_L = 4.2, 5.0                   # M3 heat-set insert pockets (OD 4.6 x 4), the same ball cups screw in as on the steel rod
+PTR_INSERT_D, PTR_INSERT_L = INSERT_POCKET_D, 5.0       # M3 heat-set insert pockets (OD 4.2 x 4), the same ball cups screw in as on the steel rod
 PTR_SHANK_D, PTR_SHANK_L = 4.0, 13.0                    # clearance for the cup's M3 shank beyond the insert (the cup stand-in reaches 11 mm into the rod)
 
 

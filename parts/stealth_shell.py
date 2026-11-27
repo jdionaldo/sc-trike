@@ -24,7 +24,7 @@ COWL_TONGUE_Y = -204.0  # rear edge of that tongue
 RIDGE_NOSE = (0, -307, 112)          # hood centre line at the nose
 RIDGE_COWL = (0, -214, 139)          # hood centre line at the cowl
 SHOULDER_XY = (88, -228)             # outer hood corner, where the hood, cheek and flank meet (z on the rear hood plane)
-RIDGE_MID = (0, -265, 128)           # the hood kinks here, as on the original (nose droop)
+RIDGE_MID_0 = (0, -265, 128)         # the hood kinks here, as on the original (nose droop); RIDGE_MID (below) is this point lifted for the hood merge
 HOOD_MID = (63, -265, 121)           # outer hood edge at the kink
 NOSE_BOT = (46, -272, 59)            # lower front corner of the nose box (37 deg rake, as the skid plate)
 NOSE_BACK_Y = -253.0                 # the nose box ends here; behind it the belly is open over the front axle
@@ -67,11 +67,30 @@ def _z_on_plane(a, b, c, x, y):
 # Hood: two planes per side, split at the kink. The nose corner sits on the front one, the shoulder on the rear one.
 SHOULDER_LIFT = 8.0   # outer hood corner held this far above the rear hood plane: the hood crowns toward the windscreen foot (post z 137) and the drop
                       # to the shoulder shrinks from 11 to 3 mm. With the taller canopy tabs 9 mm is the limit (10 splits the canopy into 3 pieces).
-SHOULDER = SHOULDER_XY + (_z_on_plane(RIDGE_MID, RIDGE_COWL, HOOD_MID, *SHOULDER_XY) + SHOULDER_LIFT,)
+SHOULDER = SHOULDER_XY + (_z_on_plane(RIDGE_MID_0, RIDGE_COWL, HOOD_MID, *SHOULDER_XY) + SHOULDER_LIFT,)
 # Wedge at the front shoulder: the hood's outer edge ran 7 mm down to the belt line, leaving the canopy's pointed front foot below it (a V notch).
 # This corner point holds the shoulder level out to the canopy front, so the body skin fills the notch.
 WEDGE = (BELT_FRONT[0], BELT_FRONT[1], SHOULDER[2])
-NOSE_TOP = (42, -307, _z_on_plane(RIDGE_NOSE, RIDGE_MID, HOOD_MID, 42, -307))
+NOSE_TOP_0 = (42, -307, _z_on_plane(RIDGE_NOSE, RIDGE_MID_0, HOOD_MID, 42, -307))
+# Hood merge (November 27): with the shoulder lifted the hull's front hood is two facets folded 1.6 deg along RIDGE_NOSE - SHOULDER, P1 (RIDGE_MID,
+# RIDGE_NOSE, SHOULDER) and P11 (NOSE_TOP, RIDGE_NOSE, SHOULDER): two hood seams per side and a 0.7 mm ledge strip at (80.7, -240). The fold is convex,
+# so one plane through the hinge lies above one of the two points; NOSE_TOP and RIDGE_MID are both lifted by the same smallest amount that puts them on
+# one plane through RIDGE_NOSE and SHOULDER (about 0.47 mm). The shoulder itself is still set from the unlifted kink.
+HOOD_MERGE = True
+def _hood_merge_lift():
+    rn, sh = np.array(RIDGE_NOSE, float), np.array(SHOULDER, float)
+    def miss(d):     # RIDGE_MID_0 + d against the plane through RIDGE_NOSE, SHOULDER and NOSE_TOP_0 + d
+        nt = (NOSE_TOP_0[0], NOSE_TOP_0[1], NOSE_TOP_0[2] + d)
+        return _z_on_plane(tuple(rn), tuple(sh), nt, RIDGE_MID_0[0], RIDGE_MID_0[1]) - (RIDGE_MID_0[2] + d)
+    lo, hi = 0.0, 2.0
+    assert miss(lo) > 0 > miss(hi), 'hood merge: no lift between 0 and 2 mm'
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if miss(mid) > 0 else (lo, mid)
+    return (lo + hi) / 2
+HOOD_LIFT = _hood_merge_lift() if HOOD_MERGE else 0.0
+RIDGE_MID = (RIDGE_MID_0[0], RIDGE_MID_0[1], RIDGE_MID_0[2] + HOOD_LIFT)
+NOSE_TOP = (NOSE_TOP_0[0], NOSE_TOP_0[1], NOSE_TOP_0[2] + HOOD_LIFT)
 # Canopy side glass: one plane per side through the belt front corner, the B-pillar foot and the roof peak. The roof front
 # corner and the cowl post sit on it. Behind the B-pillar a second plane (roof peak, B-pillar foot, belt rear) is the closed rear quarter panel.
 ROOF_FRONT = (_x_on_plane(BELT_FRONT, B_FOOT, ROOF_PEAK, *ROOF_FRONT_YZ),) + ROOF_FRONT_YZ
@@ -551,10 +570,17 @@ def grille_insert():
     return plate[0].fuse(flange[0]).clean()
 
 
-def outer_solid():
-    """Everything inside the outer skin of the body (fuselage and nose box), for seating the canopy on it."""
+def outer_solid(inset=0.0, bevel=False):
+    """Everything inside the outer skin of the body (fuselage and nose box), for seating the canopy on it. inset > 0 moves every outer plane
+    that far inward (the wheel-well liners are clipped half a wall inside the skin, so they never share a face or a crease with the outer skin)."""
     pts = [RIDGE_NOSE, RIDGE_MID, HOOD_MID, RIDGE_COWL, SHOULDER, NOSE_TOP, BELT_FRONT, WEDGE, B_FOOT, BELT_REAR] + CHINE + ROCKER
-    return _solid(_planes(_both(pts)))
+    planes = _planes(_both(pts))
+    if inset:
+        planes = planes.copy(); planes[:, 3] += inset
+    if bevel:   # the skin's own outer boundary: the same 0.5 mm bevels as block(bevel=True) puts on the fuselage (the wheel-well liners are clipped
+        # with this, so their faces that reach the outside lie in a skin facet or bevel and end on its fold lines: NOTES, liner rebuild theory)
+        planes = np.vstack([planes, _bevel(planes)])
+    return _solid(planes)
 
 
 def _grow(poly, d):
@@ -737,4 +763,63 @@ def chamfer_rims(shell, growers, size=CHAMFER):
                 piece = gc.intersect(slab)
                 if piece.Volume() > 1e-6:
                     shell = shell.cut(piece)
+    return shell.clean()
+
+
+def _arch_outline(x0=56.5, step=0.5):
+    """The arch opening's real outline (lines and splines of _arch_solid) as a dense (y, z) polygon, counter-clockwise."""
+    sol = _arch_solid(x0)
+    f = [f for f in sol.Faces() if f.geomType() == 'PLANE' and abs(f.Center().x - x0) < 1e-6][0]
+    pts = []
+    for e in f.outerWire().Edges():
+        n = max(2, int(math.ceil(e.Length() / step)))
+        for v in e.positions([i / n for i in range(n)]):
+            pts.append((v.y, v.z))
+    P = []
+    for p in pts:
+        if not P or math.hypot(p[0] - P[-1][0], p[1] - P[-1][1]) > 1e-6: P.append(p)
+    P = np.array(P)
+    if 0.5 * np.sum(P[:, 0] * np.roll(P[:, 1], -1) - np.roll(P[:, 0], -1) * P[:, 1]) < 0: P = P[::-1]
+    return P
+
+
+def exact_arch_chamfer(shell, x0=56.5, size=CHAMFER):
+    """Exact 45 degree break on the outside edge of both wheel arches (replaces the stepped chamfer_rims there). For every outer plane k of the
+    fuselage that faces the arch's side, a ruled cutter runs from the real arch outline grown by `size` on plane k down to the outline itself `size`
+    deeper; it is clipped to the region of the body closer to plane k than to any other outer plane, so the cutters of two facets meet exactly on
+    their fold. The outline is the real one (splines included), not the straight-sided stand-in the stepped version grew."""
+    planes = _planes(_both(_fuselage_points()))
+    P0 = _arch_outline(x0); P1 = np.array(_grow([tuple(p) for p in P0], size))
+    big = 600.0
+    box = [np.array([1, 0, 0, -big]), np.array([-1, 0, 0, -big]), np.array([0, 1, 0, -big]), np.array([0, -1, 0, -big]),
+           np.array([0, 0, 1, -big]), np.array([0, 0, -1, -big])]
+    n_cut = 0
+    for side in (1, -1):
+        for k, q in enumerate(planes):
+            n, d = q[:3], q[3]
+            if side * n[0] < 0.2: continue
+            on = lambda yz, depth: np.array(((-(d + depth) - n[1] * yz[0] - n[2] * yz[1]) / n[0], yz[0], yz[1]))
+            outer = [on(p, 0.0) for p in P1]; inner = [on(p, size) for p in P0]
+            mk = lambda ps: cq.Wire.makePolygon([cq.Vector(*p) for p in ps], close=True)
+            faces = [cq.Face.makeFromWires(mk(outer)), cq.Face.makeFromWires(mk(inner))]
+            m = len(outer)
+            for i in range(m):
+                j = (i + 1) % m
+                faces.append(cq.Face.makeFromWires(mk([outer[i], outer[j], inner[j]])))
+                faces.append(cq.Face.makeFromWires(mk([outer[i], inner[j], inner[i]])))
+            try:
+                fr = cq.Solid.makeSolid(cq.Shell.makeShell(faces)).fix()
+                if fr.Volume() < 0: fr = cq.Solid(fr.wrapped.Reversed())
+            except Exception:
+                continue
+            # Voronoi cell of plane k: depth to k <= depth to every other outer plane, inside a big box
+            cell = [np.append(planes[j][:3] - n, planes[j][3] - d) for j in range(len(planes)) if j != k]
+            try:
+                c = _solid(np.array(cell + box))
+            except Exception:
+                continue
+            cut = fr.intersect(c)
+            if cut.Volume() > 1e-6:
+                shell = shell.cut(cut); n_cut += 1
+    print('exact arch chamfer: %d facet cutters' % n_cut)
     return shell.clean()

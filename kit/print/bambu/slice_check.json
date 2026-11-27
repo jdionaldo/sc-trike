@@ -1,7 +1,7 @@
 {
  "plate_01_CH_PETG_1.3mf": {
-  "minutes": 552,
-  "grams": 336.8,
+  "minutes": 562,
+  "grams": 339.7,
   "problems": []
  },
  "plate_01_CH_PETG_2.3mf": {
@@ -10,23 +10,23 @@
   "problems": []
  },
  "plate_02_SU_PETG.3mf": {
-  "minutes": 403,
-  "grams": 217.9,
+  "minutes": 411,
+  "grams": 222.1,
   "problems": []
  },
  "plate_02_SU_TPU_95A.3mf": {
-  "minutes": 4,
-  "grams": 1.2,
+  "minutes": 6,
+  "grams": 1.7,
   "problems": []
  },
  "plate_03_ST_PETG.3mf": {
-  "minutes": 34,
-  "grams": 15.9,
+  "minutes": 40,
+  "grams": 18.2,
   "problems": []
  },
  "plate_04_DT_PETG_1.3mf": {
-  "minutes": 622,
-  "grams": 323.3,
+  "minutes": 632,
+  "grams": 328.1,
   "problems": []
  },
  "plate_04_DT_PETG_2.3mf": {
@@ -35,18 +35,18 @@
   "problems": []
  },
  "plate_05_CG_PETG_1.3mf": {
-  "minutes": 460,
-  "grams": 210.5,
+  "minutes": 530,
+  "grams": 233.9,
   "problems": []
  },
  "plate_05_CG_PETG_2.3mf": {
-  "minutes": 679,
-  "grams": 277.7,
+  "minutes": 680,
+  "grams": 277.6,
   "problems": []
  },
  "plate_06_SH_PLA_1.3mf": {
-  "minutes": 383,
-  "grams": 184.1,
+  "minutes": 384,
+  "grams": 184.0,
   "problems": []
  },
  "plate_06_SH_PLA_2.3mf": {
